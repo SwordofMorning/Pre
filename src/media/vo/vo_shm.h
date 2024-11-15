@@ -11,26 +11,23 @@
 #include <sys/shm.h>
 #include <sys/sem.h>
 #include "../../config/config.h"
+#include "../algo/algo.h"
 
 // 定义共享内存key
 #define ALGO_SHM_YUV_KEY 0x0010
 #define ALGO_SHM_FLOAT_KEY 0x0011
 #define ALGO_SEM_KEY 0x0012
 
-// 图像尺寸定义
-#define ALGO_WIDTH 640
-#define ALGO_HEIGHT 512
-
 // YUV420P buffer size
-#define ALGO_YUV_SIZE (ALGO_WIDTH * ALGO_HEIGHT * 3 / 2)
+#define SHM_OUT_YUV_SIZE (v4l2_ir_dvp_valid_width * v4l2_ir_dvp_valid_height * 3 / 2)
 // Float buffer size
-#define ALGO_FLOAT_SIZE (ALGO_WIDTH * ALGO_HEIGHT * sizeof(float))
+#define SHM_OUT_FLOAT_SIZE (v4l2_ir_dvp_valid_width * v4l2_ir_dvp_valid_height * sizeof(float))
 
 // 初始化算法模块
-int algo_init();
+int SHM_Init();
 
 // 处理一帧数据
-int algo_process();
+int SHM_Process();
 
 // 退出算法模块
-void algo_exit();
+void SHM_Exit();

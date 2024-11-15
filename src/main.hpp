@@ -19,7 +19,7 @@ void dvp_thread_func()
 
 void vo_thread_func()
 {
-    algo_init();
+    SHM_Init();
     while (vo_running)
     {
         pthread_mutex_lock(&v4l2_ir_dvp_share_buffer_mutex);
@@ -35,7 +35,7 @@ void vo_thread_func()
         v4l2_ir_dvp_share_buffer_updated = 0;
         pthread_mutex_unlock(&v4l2_ir_dvp_share_buffer_mutex);
 
-        algo_process();
+        SHM_Process();
     }
-    algo_exit();
+    SHM_Exit();
 }
