@@ -1,0 +1,5 @@
+.vscode/
+build/
+builds/
+others/version/version.h
+.clang-format.diff

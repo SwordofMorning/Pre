@@ -1,0 +1,5 @@
+#pragma once
+
+#define __GIT_BRANCH__ "@GIT_BRANCH@"
+#define __GIT_COMMIT_ID__ "@GIT_COMMIT_ID@"
+#define __GIT_USER__ "@GIT_USER@"
