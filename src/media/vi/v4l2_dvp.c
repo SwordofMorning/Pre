@@ -453,39 +453,13 @@ static int DVP_Save(FILE* fp)
 static void DVP_Send()
 {
     pthread_mutex_lock(&v4l2_ir_dvp_share_buffer_mutex);
-    
-    // 验证源数据
-    uint16_t* src = (uint16_t*)v4l2_ir_dvp_buffer_global[v4l2_ir_dvp_buffer_global_index].start;
-    bool hasData = false;
-    for(int i = 0; i < v4l2_ir_dvp_valid_width * v4l2_ir_dvp_valid_height; i++) {
-        if(src[i] != 0) {
-            hasData = true;
-            break;
-        }
-    }
-    if(!hasData) {
-        printf("Warning: source data is all zeros in DVP_Send\n");
-    }
-    
-    memcpy(v4l2_ir_dvp_share_buffer, src,
+    memcpy(v4l2_ir_dvp_share_buffer, (uint16_t*)v4l2_ir_dvp_buffer_global[v4l2_ir_dvp_buffer_global_index].start,
            v4l2_ir_dvp_valid_width * v4l2_ir_dvp_valid_height * sizeof(uint16_t));
-           
-    // 验证目标数据
-    hasData = false;
-    for(int i = 0; i < v4l2_ir_dvp_valid_width * v4l2_ir_dvp_valid_height; i++) {
-        if(v4l2_ir_dvp_share_buffer[i] != 0) {
-            hasData = true;
-            break;
-        }
-    }
-    if(!hasData) {
-        printf("Warning: destination buffer is all zeros after copy in DVP_Send\n");
-    }
-    
     v4l2_ir_dvp_share_buffer_updated = 1;
     pthread_cond_signal(&v4l2_ir_dvp_share_buffer_cond);
     pthread_mutex_unlock(&v4l2_ir_dvp_share_buffer_mutex);
 }
+
 static int DVP_Capture()
 {
     // __LOG__("DVP_Capture() Begin.");
