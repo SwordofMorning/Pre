@@ -31,7 +31,7 @@
 extern "C" {
 #endif
 
-/* IR */
+/* ========== V4L2 ========== */
 
 // Share memory of dvp captured data.
 extern uint16_t v4l2_ir_dvp_share_buffer[V4L2_IR_DVP_VALID_WIDTH_640 * V4L2_IR_DVP_VALID_HEIGHT_640];
@@ -42,7 +42,20 @@ extern pthread_cond_t v4l2_ir_dvp_share_buffer_cond;
 // Count of dvp shm.
 extern int v4l2_ir_dvp_share_buffer_updated;
 
-/* Config */
+/* ========== SHM ========== */
+
+extern uint16_t* algo_in;
+extern uint8_t* algo_out_yuv;
+extern float* algo_out_float;
+
+extern int shmid_yuv;
+extern int shmid_float;
+extern int semid;
+
+extern uint8_t* shm_yuv;
+extern float* shm_float;
+
+/* ========== Config ========== */
 
 // Gas Enhancement Param.
 extern int gas_enhancement;

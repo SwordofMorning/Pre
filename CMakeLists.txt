@@ -25,6 +25,7 @@ SET(TEST_NAME "pre_test")
 # ===== Setp 4 : Add Subdirectory =====
 
 ADD_SUBDIRECTORY(src bin)
+ADD_SUBDIRECTORY(test)
 
 # ===== Step 5: Generate Version Info =====
 
