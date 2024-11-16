@@ -27,6 +27,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "../../config/config.h"
+#include "../../utils/log/litelog.h"
 
 #ifdef __cplusplus
 extern "C" {
