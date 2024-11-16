@@ -58,7 +58,8 @@ extern float* shm_float;
 #define SHM_FRAME_BUFFER_SIZE 8
 #define IR_TARGET_FPS 25
 
-struct FrameSync {
+struct FrameSync
+{
     pthread_mutex_t mutex;
     pthread_cond_t producer_cond;
     pthread_cond_t consumer_cond;
