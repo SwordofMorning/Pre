@@ -257,13 +257,13 @@ static void DVP_IR_Preprocess()
 
 static void DVP_Error(const char* error_str)
 {
-    printf("%s\n", error_str);
+    litelog.log.fatal("%s", error_str);
     exit(EXIT_FAILURE);
 }
 
 static int DVP_Open_Device()
 {
-    // __LOG__("DVP_Open_Device() Begin.");
+    litelog.log.trace("DVP_Open_Device() Begin.");
 
     v4l2_ir_dvp_fd = open(V4L2_IR_DVP_DEVICE_NAME, O_RDWR /*| O_NONBLOCK*/, 0);
     if (v4l2_ir_dvp_fd == -1)
@@ -273,7 +273,7 @@ static int DVP_Open_Device()
 
 static int DVP_MMAP()
 {
-    // __LOG__("DVP_MMAP() Begin.");
+    litelog.log.trace("DVP_MMAP() Begin.");
     /* Step 1 : Request Buffer */
     struct v4l2_requestbuffers reqbuf;
     CLEAR(reqbuf);
@@ -336,7 +336,7 @@ static int DVP_MMAP()
         v4l2_ir_dvp_buffer_global[i].length = buff.m.planes[0].length;
         v4l2_ir_dvp_buffer_global_length = v4l2_ir_dvp_buffer_global[i].length;
         
-        printf("mmap buffer index[%d], length = %d, phyaddr = %p, viraddr = %p\n",
+        litelog.log.trace("mmap buffer index[%d], length = %d, phyaddr = %p, viraddr = %p",
             buff.index, v4l2_ir_dvp_buffer_global[i].length,
             buff.m.planes[0].m.mem_offset, v4l2_ir_dvp_buffer_global[i].start);
         // clang-format on
@@ -351,7 +351,7 @@ static int DVP_MMAP()
 
 static int DVP_Init_Device()
 {
-    // __LOG__("DVP_Init_Device() Begin.");
+    litelog.log.trace("DVP_Init_Device() Begin.");
 
     DVP_Open_Device();
 
@@ -424,7 +424,7 @@ static int DVP_Init_Device()
         DVP_Error("DVP_Init_Device() set fmt fail.");
 
     v4l2_ir_dvp_nplanes = fmt.fmt.pix_mp.num_planes;
-    printf("v4l2_ir_dvp_nplanes = %d\n", v4l2_ir_dvp_nplanes);
+    litelog.log.trace("v4l2_ir_dvp_nplanes = %d", v4l2_ir_dvp_nplanes);
 
     /* Step 4 : Init MMAP */
     return DVP_MMAP();
@@ -432,7 +432,7 @@ static int DVP_Init_Device()
 
 static int DVP_Start_Capture()
 {
-    // __LOG__("DVP_Start_Capture() Begin.");
+    litelog.log.trace("DVP_Start_Capture() Begin.");
 
     enum v4l2_buf_type type;
     type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
@@ -452,21 +452,43 @@ static int DVP_Save(FILE* fp)
 
 static void DVP_Send()
 {
-    pthread_mutex_lock(&v4l2_ir_dvp_share_buffer_mutex);
-    memcpy(v4l2_ir_dvp_share_buffer, (uint16_t*)v4l2_ir_dvp_buffer_global[v4l2_ir_dvp_buffer_global_index].start,
+    struct timeval current_time;
+    gettimeofday(&current_time, NULL);
+
+    pthread_mutex_lock(&frame_sync.mutex);
+
+    // Check if the buffer is full
+    while (frame_sync.buffer_full)
+    {
+        pthread_cond_wait(&frame_sync.producer_cond, &frame_sync.mutex);
+    }
+
+    // clang-format off
+    memcpy(frame_sync.frame_buffer[frame_sync.write_pos],
+           (uint16_t*)v4l2_ir_dvp_buffer_global[v4l2_ir_dvp_buffer_global_index].start,
            v4l2_ir_dvp_valid_width * v4l2_ir_dvp_valid_height * sizeof(uint16_t));
-    v4l2_ir_dvp_share_buffer_updated = 1;
-    pthread_cond_signal(&v4l2_ir_dvp_share_buffer_cond);
-    pthread_mutex_unlock(&v4l2_ir_dvp_share_buffer_mutex);
+    // clang-format on
+
+    // Update write index
+    frame_sync.write_pos = (frame_sync.write_pos + 1) % SHM_FRAME_BUFFER_SIZE;
+    frame_sync.frame_count++;
+
+    if (frame_sync.write_pos == frame_sync.read_pos)
+    {
+        frame_sync.buffer_full = true;
+    }
+
+    pthread_cond_signal(&frame_sync.consumer_cond);
+    pthread_mutex_unlock(&frame_sync.mutex);
 }
 
 static int DVP_Capture()
 {
-    // __LOG__("DVP_Capture() Begin.");
+    litelog.log.trace("DVP_Capture() Begin.");
 
 #if __DVP_SAVE__
     FILE* fp = fopen("out.yuv", "a");
-    printf("DVP Save Begin.\n");
+    litelog.log.trace("DVP Save Begin.");
 #endif
 
 #if !(__DVP_CONTINUOUS_CAPTURE__)
@@ -519,7 +541,7 @@ static int DVP_Capture()
             background_captured = true;
         }
         DVP_IR_Preprocess();
-        printf("DVP Save: %d\n", i);
+        litelog.log.trace("DVP Save: %d", i);
         DVP_Save(fp);
 #endif
         DVP_Send();
@@ -541,12 +563,12 @@ static int DVP_Capture()
     // 计算平均帧率
     double fps = captured_frames / elapsed_time;
 
-    printf("Captured %d frames in %.2f seconds. Average FPS: %.2f\n", captured_frames, elapsed_time, fps);
+    litelog.log.trace("Captured %d frames in %.2f seconds. Average FPS: %.2f", captured_frames, elapsed_time, fps);
 #endif
 
 #if __DVP_SAVE__
     fclose(fp);
-    printf("DVP Save End.\n");
+    litelog.log.trace("DVP Save End.");
 #endif
 
     return 0;
@@ -554,7 +576,7 @@ static int DVP_Capture()
 
 static int DVP_Stop_Capture()
 {
-    // __LOG__("DVP_Stop_Capture() Begin.");
+    litelog.log.trace("DVP_Stop_Capture() Begin.");
 
     enum v4l2_buf_type type;
     type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
@@ -567,7 +589,7 @@ static int DVP_Stop_Capture()
 
 static int DVP_Close_Device()
 {
-    // __LOG__("DVP_Close_Device() Begin.");
+    litelog.log.trace("DVP_Close_Device() Begin.");
 
     if (-1 == close(v4l2_ir_dvp_fd))
         DVP_Error("DVP_Close_Device() fail.");
@@ -576,7 +598,7 @@ static int DVP_Close_Device()
 
 static int DVP_MUNMAP()
 {
-    // __LOG__("DVP_MUNMAP() Begin.");
+    litelog.log.trace("DVP_MUNMAP() Begin.");
 
     for (int i = 0; i < V4L2_IR_DVP_REQ_COUNT; ++i)
     {
@@ -587,7 +609,7 @@ static int DVP_MUNMAP()
 
 static int DVP_Exit_Device()
 {
-    // __LOG__("DVP_Exit_Device() Begin.");
+    litelog.log.trace("DVP_Exit_Device() Begin.");
 
     DVP_MUNMAP();
     DVP_Close_Device();
@@ -595,7 +617,7 @@ static int DVP_Exit_Device()
 
 int DVP_Streaming()
 {
-    // __LOG__("DVP_Streaming() Begin in mode: %d.", v4l2_ir_dvp_mode);
+    litelog.log.trace("DVP_Streaming() Begin in mode: %d.", v4l2_ir_dvp_mode);
 
     DVP_Init_Device();
     DVP_Start_Capture();
@@ -605,14 +627,14 @@ int DVP_Streaming()
     DVP_Stop_Capture();
     DVP_Exit_Device();
 
-    // __LOG__("DVP_Streaming() End.");
+    litelog.log.trace("DVP_Streaming() End.");
 
     return 0;
 }
 
 int DVP_Mode(int mode)
 {
-    // __LOG__("DVP_Mode() Current is %d, switch to: %d.", v4l2_ir_dvp_mode, mode);
+    litelog.log.trace("DVP_Mode() Current is %d, switch to: %d.", v4l2_ir_dvp_mode, mode);
 
     int retval = 0;
 
