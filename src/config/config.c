@@ -24,6 +24,24 @@ pthread_mutex_t v4l2_ir_dvp_share_buffer_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t v4l2_ir_dvp_share_buffer_cond = PTHREAD_COND_INITIALIZER;
 int v4l2_ir_dvp_share_buffer_updated;
 
+/* ----- SHM ---- */
+
+struct FrameSync frame_sync;
+
+// Buffer
+uint16_t* algo_in = NULL;
+uint8_t* algo_out_yuv = NULL;
+float* algo_out_float = NULL;
+
+// ID
+int shmid_yuv = -1;
+int shmid_float = -1;
+int semid = -1;
+
+// Pointer
+uint8_t* shm_yuv = NULL;
+float* shm_float = NULL;
+
 /* ----- Pseudo Color ----- */
 
 int pseudo_color;
@@ -31,19 +49,27 @@ int pseudo_color;
 /* ----- Gas Enhancement ----- */
 int gas_enhancement;
 
-/* ----- Socket ---- */
-
-int sockfd;
-int rws;
-uint8_t socket_buffer[128];
-
-/* ----- Script ---- */
-
-pthread_t guardian_thread;
-
 /* ========================================================================================== */
 /* ======================================== Function ======================================== */
 /* ========================================================================================== */
+
+static void Init_Frame_Sync()
+{
+    pthread_mutex_init(&frame_sync.mutex, NULL);
+    pthread_cond_init(&frame_sync.producer_cond, NULL);
+    pthread_cond_init(&frame_sync.consumer_cond, NULL);
+    frame_sync.write_pos = 0;
+    frame_sync.read_pos = 0;
+    frame_sync.frame_count = 0;
+    frame_sync.buffer_full = false;
+    gettimeofday(&frame_sync.last_frame_time, NULL);
+    
+    // 初始化帧缓冲区
+    for(int i = 0; i < SHM_FRAME_BUFFER_SIZE; i++) {
+        frame_sync.frame_buffer[i] = (uint16_t*)malloc(
+            v4l2_ir_dvp_valid_width * v4l2_ir_dvp_valid_height * sizeof(uint16_t));
+    }
+}
 
 void Config_Init()
 {
@@ -68,6 +94,8 @@ void Config_Init()
 
     /* Init: gas enhancement */
     gas_enhancement = GAS_ENHANCEMENT_NONE;
+
+    Init_Frame_Sync();
 }
 
 void Config_Exit()

@@ -452,12 +452,33 @@ static int DVP_Save(FILE* fp)
 
 static void DVP_Send()
 {
-    pthread_mutex_lock(&v4l2_ir_dvp_share_buffer_mutex);
-    memcpy(v4l2_ir_dvp_share_buffer, (uint16_t*)v4l2_ir_dvp_buffer_global[v4l2_ir_dvp_buffer_global_index].start,
+    struct timeval current_time;
+    gettimeofday(&current_time, NULL);
+
+    pthread_mutex_lock(&frame_sync.mutex);
+
+    // 检查缓冲区是否已满
+    while(frame_sync.buffer_full)
+    {
+        pthread_cond_wait(&frame_sync.producer_cond, &frame_sync.mutex);
+    }
+
+    // 复制数据到缓冲区
+    memcpy(frame_sync.frame_buffer[frame_sync.write_pos],
+           (uint16_t*)v4l2_ir_dvp_buffer_global[v4l2_ir_dvp_buffer_global_index].start,
            v4l2_ir_dvp_valid_width * v4l2_ir_dvp_valid_height * sizeof(uint16_t));
-    v4l2_ir_dvp_share_buffer_updated = 1;
-    pthread_cond_signal(&v4l2_ir_dvp_share_buffer_cond);
-    pthread_mutex_unlock(&v4l2_ir_dvp_share_buffer_mutex);
+
+    // 更新写位置
+    frame_sync.write_pos = (frame_sync.write_pos + 1) % SHM_FRAME_BUFFER_SIZE;
+    frame_sync.frame_count++;
+    
+    if(frame_sync.write_pos == frame_sync.read_pos)
+    {
+        frame_sync.buffer_full = true;
+    }
+
+    pthread_cond_signal(&frame_sync.consumer_cond);
+    pthread_mutex_unlock(&frame_sync.mutex);
 }
 
 static int DVP_Capture()
