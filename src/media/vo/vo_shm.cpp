@@ -13,20 +13,19 @@ static int SHM_Copy()
     pthread_mutex_lock(&frame_sync.mutex);
 
     // Wait new frame
-    while(frame_sync.frame_count == 0)
+    while (frame_sync.frame_count == 0)
     {
         pthread_cond_wait(&frame_sync.consumer_cond, &frame_sync.mutex);
     }
 
     // Calculate time interval between frames
-    double frame_interval = (current_time.tv_sec - frame_sync.last_frame_time.tv_sec) +
-                          (current_time.tv_usec - frame_sync.last_frame_time.tv_usec) / 1000000.0;
+    double frame_interval = (current_time.tv_sec - frame_sync.last_frame_time.tv_sec) + (current_time.tv_usec - frame_sync.last_frame_time.tv_usec) / 1000000.0;
 
     // If processing is too slow, skip some frames
-    if(frame_interval > 1.0 / IR_TARGET_FPS)
+    if (frame_interval > 1.0 / IR_TARGET_FPS)
     {
         // Skip the intermediate frames and process only the latest ones
-        while(frame_sync.frame_count > 1)
+        while (frame_sync.frame_count > 1)
         {
             frame_sync.read_pos = (frame_sync.read_pos + 1) % SHM_FRAME_BUFFER_SIZE;
             frame_sync.frame_count--;
@@ -35,14 +34,13 @@ static int SHM_Copy()
     }
 
     // Copy Data
-    memcpy(algo_in, frame_sync.frame_buffer[frame_sync.read_pos],
-           v4l2_ir_dvp_valid_width * v4l2_ir_dvp_valid_height * sizeof(uint16_t));
+    memcpy(algo_in, frame_sync.frame_buffer[frame_sync.read_pos], v4l2_ir_dvp_valid_width * v4l2_ir_dvp_valid_height * sizeof(uint16_t));
 
     // Update frame index
     frame_sync.read_pos = (frame_sync.read_pos + 1) % SHM_FRAME_BUFFER_SIZE;
     frame_sync.frame_count--;
     frame_sync.buffer_full = false;
-    
+
     // Update timestamp
     frame_sync.last_frame_time = current_time;
 
@@ -163,14 +161,13 @@ int SHM_Process()
     }
 
     gettimeofday(&end_time, NULL);
-    
+
     // Calculate process time
-    double process_time = (end_time.tv_sec - start_time.tv_sec) +
-                          (end_time.tv_usec - start_time.tv_usec) / 1000000.0;
-                         
+    double process_time = (end_time.tv_sec - start_time.tv_sec) + (end_time.tv_usec - start_time.tv_usec) / 1000000.0;
+
     // If the processing time is less than the frame interval, wait (control FPS)
     double frame_interval = 1.0 / IR_TARGET_FPS;
-    if(process_time < frame_interval)
+    if (process_time < frame_interval)
     {
         usleep((frame_interval - process_time) * 1000000);
     }

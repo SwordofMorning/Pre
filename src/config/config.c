@@ -63,11 +63,11 @@ static void Init_Frame_Sync()
     frame_sync.frame_count = 0;
     frame_sync.buffer_full = false;
     gettimeofday(&frame_sync.last_frame_time, NULL);
-    
+
     // 初始化帧缓冲区
-    for(int i = 0; i < SHM_FRAME_BUFFER_SIZE; i++) {
-        frame_sync.frame_buffer[i] = (uint16_t*)malloc(
-            v4l2_ir_dvp_valid_width * v4l2_ir_dvp_valid_height * sizeof(uint16_t));
+    for (int i = 0; i < SHM_FRAME_BUFFER_SIZE; i++)
+    {
+        frame_sync.frame_buffer[i] = (uint16_t*)malloc(v4l2_ir_dvp_valid_width * v4l2_ir_dvp_valid_height * sizeof(uint16_t));
     }
 }
 
