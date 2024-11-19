@@ -457,15 +457,14 @@ static void DVP_Send()
 
     pthread_mutex_lock(&frame_sync.mutex);
 
-    // Check if the buffer is full
+    // 检查缓冲区是否已满
     while (frame_sync.buffer_full)
     {
         pthread_cond_wait(&frame_sync.producer_cond, &frame_sync.mutex);
     }
 
-    // clang-format off
-    memcpy(frame_sync.frame_buffer[frame_sync.write_pos],
-           (uint16_t*)v4l2_ir_dvp_buffer_global[v4l2_ir_dvp_buffer_global_index].start,
+    // 复制数据到缓冲区
+    memcpy(frame_sync.frame_buffer[frame_sync.write_pos], (uint16_t*)v4l2_ir_dvp_buffer_global[v4l2_ir_dvp_buffer_global_index].start,
            v4l2_ir_dvp_valid_width * v4l2_ir_dvp_valid_height * sizeof(uint16_t));
     // clang-format on
 
