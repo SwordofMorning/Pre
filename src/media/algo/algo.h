@@ -10,6 +10,9 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <sys/sem.h>
+#include "../../config/lut/lut.h"
 #include "../../config/config.h"
 
-int algo_convert();
+int Process_One_Frame();
+
+void Pseudo(uint16_t* input, uint8_t* y_out, uint8_t* u_out, uint8_t* v_out, int width, int height);

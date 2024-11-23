@@ -42,12 +42,9 @@ int semid = -1;
 uint8_t* shm_yuv = NULL;
 float* shm_float = NULL;
 
-/* ----- Pseudo Color ----- */
+/* ----- User Config ---- */
 
-int pseudo_color;
-
-/* ----- Gas Enhancement ----- */
-int gas_enhancement;
+struct UserConfig usr;
 
 /* ========================================================================================== */
 /* ======================================== Function ======================================== */
@@ -71,6 +68,49 @@ static void Init_Frame_Sync()
     }
 }
 
+static void Init_User_Config()
+{
+    usr.pseudo = PSEUDO_IRONBOW_FORWARD;
+    usr.gas_enhancement = GAS_ENHANCEMENT_NONE;
+}
+
+static int Init_LUTs()
+{
+    if (Init_LUT(LUT_IRONBOW_FORWARD, "/root/pseudo/ironbow_forward.bin") < 0)
+    {
+        return -1;
+    }
+    if (Init_LUT(LUT_IRONBOW_REVERSE, "/root/pseudo/ironbow_reverse.bin") < 0)
+    {
+        return -1;
+    }
+    if (Init_LUT(LUT_LAVA_FORWARD, "/root/pseudo/lava_forward.bin") < 0)
+    {
+        return -1;
+    }
+    if (Init_LUT(LUT_LAVA_REVERSE, "/root/pseudo/lava_reverse.bin") < 0)
+    {
+        return -1;
+    }
+    if (Init_LUT(LUT_RAINBOW_FORWARD, "/root/pseudo/rainbow_forward.bin") < 0)
+    {
+        return -1;
+    }
+    if (Init_LUT(LUT_RAINBOW_REVERSE, "/root/pseudo/rainbow_reverse.bin") < 0)
+    {
+        return -1;
+    }
+    if (Init_LUT(LUT_RAINBOWHC_FORWARD, "/root/pseudo/rainbowhc_forward.bin") < 0)
+    {
+        return -1;
+    }
+    if (Init_LUT(LUT_RAINBOWHC_REVERSE, "/root/pseudo/rainbowhc_reverse.bin") < 0)
+    {
+        return -1;
+    }
+    return 0;
+}
+
 void Config_Init()
 {
     /* Init: Without any action  */
@@ -89,16 +129,12 @@ void Config_Init()
     /* Init: DVP shm */
     v4l2_ir_dvp_share_buffer_updated = 0;
 
-    /* Init: pseudo color */
-    pseudo_color = PSEUDO_COLOR_IRON_BOW;
-
-    /* Init: gas enhancement */
-    gas_enhancement = GAS_ENHANCEMENT_NONE;
-
+    Init_User_Config();
     Init_Frame_Sync();
+    Init_LUTs();
 }
 
 void Config_Exit()
 {
-    // do nothing
+    Free_All_LUTs();
 }

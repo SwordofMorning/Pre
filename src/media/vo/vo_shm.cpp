@@ -57,6 +57,24 @@ static int SHM_Copy()
  */
 static int SHM_Send()
 {
+    static uint8_t last_frame_sum = 0;
+    uint8_t current_frame_sum = 0;
+
+    // 计算当前帧的校验和
+    for (int i = 0; i < 100; i++)
+    {
+        current_frame_sum += algo_out_yuv[i];
+    }
+
+    // 验证数据是否有更新
+    if (current_frame_sum == last_frame_sum)
+    {
+        printf("Duplicate frame detected in SHM_Send\n");
+        return 0;
+    }
+    printf("current sum: %d\n", current_frame_sum);
+    last_frame_sum = current_frame_sum;
+
     struct sembuf sem_op;
 
     // Wait signal
@@ -70,12 +88,14 @@ static int SHM_Send()
         return -1;
     }
 
-    // Copay data to shm
+    // Copy data to shm with verification
     memcpy(shm_yuv, algo_out_yuv, SHM_OUT_YUV_SIZE);
     memcpy(shm_float, algo_out_float, SHM_OUT_FLOAT_SIZE);
 
     // Release signal
+    sem_op.sem_num = 0;
     sem_op.sem_op = 1;
+    sem_op.sem_flg = 0;
     if (semop(semid, &sem_op, 1) < 0)
     {
         litelog.log.fatal("Release signal error.");
@@ -137,6 +157,7 @@ int SHM_Init()
         return -1;
     }
 
+    printf("shm init\n");
     return 0;
 }
 
@@ -150,7 +171,7 @@ int SHM_Process()
         return -1;
     }
 
-    if (algo_convert() < 0)
+    if (Process_One_Frame() < 0)
     {
         return -1;
     }

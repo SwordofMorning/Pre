@@ -22,19 +22,6 @@ void vo_thread_func()
     SHM_Init();
     while (vo_running)
     {
-        pthread_mutex_lock(&v4l2_ir_dvp_share_buffer_mutex);
-        while (!v4l2_ir_dvp_share_buffer_updated && vo_running)
-        {
-            pthread_cond_wait(&v4l2_ir_dvp_share_buffer_cond, &v4l2_ir_dvp_share_buffer_mutex);
-        }
-        if (!vo_running)
-        {
-            pthread_mutex_unlock(&v4l2_ir_dvp_share_buffer_mutex);
-            break;
-        }
-        v4l2_ir_dvp_share_buffer_updated = 0;
-        pthread_mutex_unlock(&v4l2_ir_dvp_share_buffer_mutex);
-
         SHM_Process();
     }
     SHM_Exit();

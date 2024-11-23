@@ -20,11 +20,13 @@ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -s -O3 -lrt -pthread -std=c++20")
 # ===== Setp 3 : Set Application Name =====
 
 SET(APP_NAME "pre")
+SET(SHM_NAME "pre_shm")
 SET(TEST_NAME "pre_test")
 
 # ===== Setp 4 : Add Subdirectory =====
 
 ADD_SUBDIRECTORY(src bin)
+ADD_SUBDIRECTORY(shm)
 ADD_SUBDIRECTORY(test)
 
 # ===== Step 5: Generate Version Info =====
