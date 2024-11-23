@@ -10,6 +10,7 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <sys/sem.h>
+#include "../../config/lut/lut.h"
 #include "../../config/config.h"
 
 int Process_One_Frame();

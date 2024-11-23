@@ -67,10 +67,9 @@ extern struct FrameSync frame_sync;
 struct UserConfig
 {
     int pseudo;
-    bool pseudo_reverse;
     int gas_enhancement;
 };
-extern struct UserConfig usf;
+extern struct UserConfig usr;
 
 #ifdef __cplusplus
 }

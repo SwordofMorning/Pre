@@ -53,36 +53,38 @@ void Pseudo(uint16_t* input, uint8_t* y_out, uint8_t* u_out, uint8_t* v_out, int
     }
 
     // 避免除零错误
-    if(max_val == min_val) {
+    if(max_val == min_val)
         max_val = min_val + 1;
-    }
 
-    // Y分量映射
-    for(int i = 0; i < height; i++) {
-        for(int j = 0; j < width; j++) {
-            uint16_t val = input[i * width + j];
-            // 将值映射到颜色表范围
-            int color_idx = ((uint32_t)(val - min_val) * (COLOR_MAP_SIZE - 1)) / (max_val - min_val);
-            y_out[i * width + j] = lava_lut.y[color_idx];
+    if (usr.pseudo != PSEUDO_BLACK_HOT or usr.pseudo != PSEUDO_WHITE_HOT)
+    {
+        const struct YUV420P_LUT* lut = Get_LUT(usr.pseudo);
+        // Y分量映射
+        for(int i = 0; i < height; i++) {
+            for(int j = 0; j < width; j++) {
+                uint16_t val = input[i * width + j];
+                // 将值映射到颜色表范围
+                int color_idx = ((uint32_t)(val - min_val) * (lut->size - 1)) / (max_val - min_val);
+                y_out[i * width + j] = lut->y[color_idx];
+            }
+        }
+
+        // UV分量需要4:2:0采样
+        for(int i = 0; i < height/2; i++) {
+            for(int j = 0; j < width/2; j++) {
+                uint16_t val00 = input[(i*2) * width + (j*2)];
+                uint16_t val01 = input[(i*2) * width + (j*2+1)];
+                uint16_t val10 = input[(i*2+1) * width + (j*2)];
+                uint16_t val11 = input[(i*2+1) * width + (j*2+1)];
+                
+                uint32_t avg_val = (val00 + val01 + val10 + val11) / 4;
+                
+                int color_idx = ((uint32_t)(avg_val - min_val) * (lut->size - 1)) / (max_val - min_val);
+                
+                u_out[i * (width/2) + j] = lut->u[color_idx];
+                v_out[i * (width/2) + j] = lut->v[color_idx];
+            }
         }
     }
-
-    // UV分量需要4:2:0采样
-    for(int i = 0; i < height/2; i++) {
-        for(int j = 0; j < width/2; j++) {
-            // 取2x2块的平均值
-            uint16_t val00 = input[(i*2) * width + (j*2)];
-            uint16_t val01 = input[(i*2) * width + (j*2+1)];
-            uint16_t val10 = input[(i*2+1) * width + (j*2)];
-            uint16_t val11 = input[(i*2+1) * width + (j*2+1)];
-            
-            uint32_t avg_val = (val00 + val01 + val10 + val11) / 4;
-            
-            // 映射到颜色表范围
-            int color_idx = ((uint32_t)(avg_val - min_val) * (COLOR_MAP_SIZE - 1)) / (max_val - min_val);
-            
-            u_out[i * (width/2) + j] = lava_lut.u[color_idx];
-            v_out[i * (width/2) + j] = lava_lut.v[color_idx];
-        }
-    }
+    
 }

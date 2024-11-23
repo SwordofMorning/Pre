@@ -1,6 +1,8 @@
 #include "../src/config/lut/lut.h"
 #include "../src/config/config.h"
 #include "../src/media/algo/algo.h"
+#include <iostream>
+#include <string>
 
 // 测试数据生成
 uint16_t* Generate_Test_Pattern(int width, int height)
@@ -28,7 +30,7 @@ uint16_t* Generate_Test_Pattern(int width, int height)
 }
 
 // 测试函数
-void Test_Pseudo_Color()
+void Test_Pseudo_Color(std::string filename)
 {
     // 生成测试数据
     uint16_t* test_data = Generate_Test_Pattern(640, 512);
@@ -55,7 +57,7 @@ void Test_Pseudo_Color()
     Pseudo(test_data, y_out, u_out, v_out, 640, 512);
 
     // 保存结果到文件
-    FILE* fp = fopen("test_pseudo.yuv", "wb");
+    FILE* fp = fopen(filename.c_str(), "wb");
     if (fp) {
         // 写入Y分量
         fwrite(y_out, 1, 640 * 512, fp);
@@ -87,11 +89,25 @@ void Test_Pseudo_Color()
 
 int main()
 {
-    // 初始化LUT
     Config_Init();
     
-    // 运行测试
-    Test_Pseudo_Color();
+    usr.pseudo = PSEUDO_IRONBOW_FORWARD;
+    Test_Pseudo_Color("PSEUDO_IRONBOW_FORWARD.yuv");
+    usr.pseudo = PSEUDO_IRONBOW_REVERSE;
+    Test_Pseudo_Color("PSEUDO_IRONBOW_REVERSE.yuv");
+    usr.pseudo = PSEUDO_LAVA_FORWARD;
+    Test_Pseudo_Color("PSEUDO_LAVA_FORWARD.yuv");
+    usr.pseudo = PSEUDO_LAVA_REVERSE;
+    Test_Pseudo_Color("PSEUDO_LAVA_REVERSE.yuv");
+    usr.pseudo = PSEUDO_RAINBOW_FORWARD;
+    Test_Pseudo_Color("PSEUDO_RAINBOW_FORWARD.yuv");
+    usr.pseudo = PSEUDO_RAINBOW_REVERSE;
+    Test_Pseudo_Color("PSEUDO_RAINBOW_REVERSE.yuv");
+    usr.pseudo = PSEUDO_RAINBOWHC_FORWARD;
+    Test_Pseudo_Color("PSEUDO_RAINBOWHC_FORWARD.yuv");
+    usr.pseudo = PSEUDO_RAINBOWHC_REVERSE;
+    Test_Pseudo_Color("PSEUDO_RAINBOWHC_REVERSE.yuv");
     
+    Config_Exit();
     return 0;
 }
