@@ -154,23 +154,58 @@ void cleanup_resources() {
 
 // 保存一帧数据
 int save_frame() {
+    static uint8_t last_frame_sum = 0;
+    uint8_t current_frame_sum = 0;
+    
+    // 计算当前帧的校验和
+    for(int i = 0; i < 100; i++) {
+        current_frame_sum += shm_yuv[i];
+    }
+    
+    // 检查是否是新帧
+    if(current_frame_sum == last_frame_sum) {
+        printf("Duplicate frame detected\n");
+        // return 0;
+    }
+    last_frame_sum = current_frame_sum;
+
+    // 数据验证
+    bool has_yuv_data = false;
+    bool has_float_data = false;
+    
+    for(int i = 0; i < ALGO_YUV_SIZE; i++) {
+        if(shm_yuv[i] > 0) {
+            has_yuv_data = true;
+            break;
+        }
+    }
+    
+    for(int i = 0; i < ALGO_WIDTH * ALGO_HEIGHT; i++) {
+        if(shm_float[i] > 0) {
+            has_float_data = true;
+            break;
+        }
+    }
+    
+    printf("Frame received: has_yuv_data=%d, has_float_data=%d, checksum=%d\n",
+           has_yuv_data, has_float_data, current_frame_sum);
+
     if (!fp_yuv || !fp_float) {
         return -1;
     }
 
-    // 写入YUV数据
+    // 写入数据
     if (fwrite(shm_yuv, 1, ALGO_YUV_SIZE, fp_yuv) != ALGO_YUV_SIZE) {
         perror("Failed to write YUV data");
         return -1;
     }
-    fflush(fp_yuv);  // 确保数据写入磁盘
+    fflush(fp_yuv);
 
-    // 写入float数据
     if (fwrite(shm_float, 1, ALGO_FLOAT_SIZE, fp_float) != ALGO_FLOAT_SIZE) {
         perror("Failed to write float data");
         return -1;
     }
-    fflush(fp_float);  // 确保数据写入磁盘
+    fflush(fp_float);
 
     return 0;
 }
@@ -221,7 +256,9 @@ int main() {
 #endif
 
         // 释放信号量
+        sem_op.sem_num = 0;
         sem_op.sem_op = 1;
+        sem_op.sem_flg = 0;
         if (semop(semid, &sem_op, 1) < 0) {
             break;
         }

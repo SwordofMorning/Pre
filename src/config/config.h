@@ -16,6 +16,7 @@
 #include "./include/enum.h"
 #include "./include/global.h"
 #include "./include/debug.h"
+#include "./lut/lut.h"
 
 #ifdef __cplusplus
 extern "C" {

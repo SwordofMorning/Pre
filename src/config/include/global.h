@@ -31,17 +31,6 @@
 extern "C" {
 #endif
 
-/* ========== V4L2 ========== */
-
-// Share memory of dvp captured data.
-extern uint16_t v4l2_ir_dvp_share_buffer[V4L2_IR_DVP_VALID_WIDTH_640 * V4L2_IR_DVP_VALID_HEIGHT_640];
-// Mutex of dvp shm.
-extern pthread_mutex_t v4l2_ir_dvp_share_buffer_mutex;
-// Cond of dvp shm.
-extern pthread_cond_t v4l2_ir_dvp_share_buffer_cond;
-// Count of dvp shm.
-extern int v4l2_ir_dvp_share_buffer_updated;
-
 /* ========== SHM ========== */
 
 extern uint16_t* algo_in;
@@ -75,11 +64,13 @@ extern struct FrameSync frame_sync;
 
 /* ========== Config ========== */
 
-// Gas Enhancement Param.
-extern int gas_enhancement;
-
-// To specific which pseudo color mode we use.
-extern int pseudo_color;
+struct UserConfig
+{
+    int pseudo;
+    bool pseudo_reverse;
+    int gas_enhancement;
+};
+extern struct UserConfig usf;
 
 #ifdef __cplusplus
 }

@@ -42,12 +42,9 @@ int semid = -1;
 uint8_t* shm_yuv = NULL;
 float* shm_float = NULL;
 
-/* ----- Pseudo Color ----- */
+/* ----- User Config ---- */
 
-int pseudo_color;
-
-/* ----- Gas Enhancement ----- */
-int gas_enhancement;
+struct UserConfig usf;
 
 /* ========================================================================================== */
 /* ======================================== Function ======================================== */
@@ -71,6 +68,13 @@ static void Init_Frame_Sync()
     }
 }
 
+static void Init_User_Config()
+{
+    usf.pseudo = PSEUDO_IRON_BOW;
+    usf.pseudo_reverse = false;
+    usf.gas_enhancement = GAS_ENHANCEMENT_NONE;
+}
+
 void Config_Init()
 {
     /* Init: Without any action  */
@@ -89,13 +93,9 @@ void Config_Init()
     /* Init: DVP shm */
     v4l2_ir_dvp_share_buffer_updated = 0;
 
-    /* Init: pseudo color */
-    pseudo_color = PSEUDO_COLOR_IRON_BOW;
-
-    /* Init: gas enhancement */
-    gas_enhancement = GAS_ENHANCEMENT_NONE;
-
+    Init_User_Config();
     Init_Frame_Sync();
+    Init_Lava_LUT();
 }
 
 void Config_Exit()
