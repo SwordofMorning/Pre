@@ -9,9 +9,11 @@
 extern "C" {
 #endif
 
+// clang-format off
 #define RGB2Y(r, g, b) ((( 66 * r + 129 * g +  25 * b + 128) >> 8) +  16)
 #define RGB2U(r, g, b) (((-38 * r -  74 * g + 112 * b + 128) >> 8) + 128)
 #define RGB2V(r, g, b) (((112 * r -  94 * g -  18 * b + 128) >> 8) + 128)
+// clang-format on
 
 struct YUV420P_LUT
 {

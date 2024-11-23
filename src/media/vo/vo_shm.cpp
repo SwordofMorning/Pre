@@ -59,14 +59,16 @@ static int SHM_Send()
 {
     static uint8_t last_frame_sum = 0;
     uint8_t current_frame_sum = 0;
-    
+
     // 计算当前帧的校验和
-    for(int i = 0; i < 100; i++) {
+    for (int i = 0; i < 100; i++)
+    {
         current_frame_sum += algo_out_yuv[i];
     }
-    
+
     // 验证数据是否有更新
-    if(current_frame_sum == last_frame_sum) {
+    if (current_frame_sum == last_frame_sum)
+    {
         printf("Duplicate frame detected in SHM_Send\n");
         return 0;
     }
