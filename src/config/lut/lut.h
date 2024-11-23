@@ -6,11 +6,11 @@
 #define RGB2U(r, g, b) (((-38 * r -  74 * g + 112 * b + 128) >> 8) + 128)
 #define RGB2V(r, g, b) (((112 * r -  94 * g -  18 * b + 128) >> 8) + 128)
 
-struct YUV420P_LUT
-{
-    uint8_t y[65536];
-    uint8_t u[65536];
-    uint8_t v[65536];
+#define COLOR_MAP_SIZE 625  // lava.csv的实际颜色数量
+struct YUV420P_LUT {
+    uint8_t y[COLOR_MAP_SIZE];
+    uint8_t u[COLOR_MAP_SIZE];
+    uint8_t v[COLOR_MAP_SIZE];
 };
 
 extern struct YUV420P_LUT lava_lut;

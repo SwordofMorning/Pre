@@ -133,18 +133,12 @@ void Init_Lava_LUT()
         {13,6,2}, {10,4,1}, {8,4,2}, {5,3,1}, {4,2,1}
     };
 
-    // 对每个可能的uint16值，计算对应的YUV值
-    for(uint32_t i = 0; i < 65536; i++)
+    for(int i = 0; i < COLOR_MAP_SIZE; i++)
     {
-        // 将16位值映射到RGB表的索引
-        int idx = (i * 624) / 65535;  // 624是RGB表的长度-1
-        
-        // 获取RGB值
-        uint8_t r = lava_rgb[idx][0];
-        uint8_t g = lava_rgb[idx][1];
-        uint8_t b = lava_rgb[idx][2];
+        uint8_t r = lava_rgb[i][0];
+        uint8_t g = lava_rgb[i][1];
+        uint8_t b = lava_rgb[i][2];
 
-        // 转换为YUV
         lava_lut.y[i] = RGB2Y(r, g, b);
         lava_lut.u[i] = RGB2U(r, g, b);
         lava_lut.v[i] = RGB2V(r, g, b);

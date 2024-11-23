@@ -40,21 +40,36 @@ int Process_One_Frame()
 
 void Pseudo(uint16_t* input, uint8_t* y_out, uint8_t* u_out, uint8_t* v_out, int width, int height)
 {
-    // Y分量直接映射
-    for(int i = 0; i < height; i++)
-    {
-        for(int j = 0; j < width; j++)
-        {
+    // 找出数据范围
+    uint16_t min_val = 65535;
+    uint16_t max_val = 0;
+    
+    for(int i = 0; i < height; i++) {
+        for(int j = 0; j < width; j++) {
             uint16_t val = input[i * width + j];
-            y_out[i * width + j] = lava_lut.y[val];
+            if(val < min_val) min_val = val;
+            if(val > max_val) max_val = val;
+        }
+    }
+
+    // 避免除零错误
+    if(max_val == min_val) {
+        max_val = min_val + 1;
+    }
+
+    // Y分量映射
+    for(int i = 0; i < height; i++) {
+        for(int j = 0; j < width; j++) {
+            uint16_t val = input[i * width + j];
+            // 将值映射到颜色表范围
+            int color_idx = ((uint32_t)(val - min_val) * (COLOR_MAP_SIZE - 1)) / (max_val - min_val);
+            y_out[i * width + j] = lava_lut.y[color_idx];
         }
     }
 
     // UV分量需要4:2:0采样
-    for(int i = 0; i < height/2; i++)
-    {
-        for(int j = 0; j < width/2; j++)
-        {
+    for(int i = 0; i < height/2; i++) {
+        for(int j = 0; j < width/2; j++) {
             // 取2x2块的平均值
             uint16_t val00 = input[(i*2) * width + (j*2)];
             uint16_t val01 = input[(i*2) * width + (j*2+1)];
@@ -63,8 +78,11 @@ void Pseudo(uint16_t* input, uint8_t* y_out, uint8_t* u_out, uint8_t* v_out, int
             
             uint32_t avg_val = (val00 + val01 + val10 + val11) / 4;
             
-            u_out[i * (width/2) + j] = lava_lut.u[avg_val];
-            v_out[i * (width/2) + j] = lava_lut.v[avg_val];
+            // 映射到颜色表范围
+            int color_idx = ((uint32_t)(avg_val - min_val) * (COLOR_MAP_SIZE - 1)) / (max_val - min_val);
+            
+            u_out[i * (width/2) + j] = lava_lut.u[color_idx];
+            v_out[i * (width/2) + j] = lava_lut.v[color_idx];
         }
     }
 }
