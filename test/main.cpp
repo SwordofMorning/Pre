@@ -107,6 +107,10 @@ int main()
     Test_Pseudo_Color("PSEUDO_RAINBOWHC_FORWARD.yuv");
     usr.pseudo = PSEUDO_RAINBOWHC_REVERSE;
     Test_Pseudo_Color("PSEUDO_RAINBOWHC_REVERSE.yuv");
+    usr.pseudo = PSEUDO_BLACK_HOT;
+    Test_Pseudo_Color("PSEUDO_BLACK_HOT.yuv");
+    usr.pseudo = PSEUDO_WHITE_HOT;
+    Test_Pseudo_Color("PSEUDO_WHITE_HOT.yuv");
     
     Config_Exit();
     return 0;
