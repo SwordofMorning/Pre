@@ -56,8 +56,8 @@
 /** socket operation completed successfully */
 #define TCPSOCKET_COMPLETE 0
 #if !defined(SOCKET_ERROR)
-	/** error in socket operation */
-	#define SOCKET_ERROR -1
+/** error in socket operation */
+#define SOCKET_ERROR -1
 #endif
 /** must be the same as SOCKETBUFFER_INTERRUPTED */
 #define TCPSOCKET_INTERRUPTED -22
@@ -67,9 +67,8 @@
 #define INET6_ADDRSTRLEN 46 /** only needed for gcc/cygwin on windows */
 #endif
 
-
 #if !defined(max)
-#define max(A,B) ( (A) > (B) ? (A):(B))
+#define max(A, B) ((A) > (B) ? (A) : (B))
 #endif
 
 #include "LinkedList.h"
@@ -93,28 +92,26 @@ def SOCKETS
 }
 BE*/
 
-
 /**
  * Structure to hold all socket data for the module
  */
 typedef struct
 {
-	fd_set rset, /**< socket read set (see select doc) */
-		rset_saved; /**< saved socket read set */
-	int maxfdp1; /**< max descriptor used +1 (again see select doc) */
-	List* clientsds; /**< list of client socket descriptors */
-	ListElement* cur_clientsds; /**< current client socket descriptor (iterator) */
-	List* connect_pending; /**< list of sockets for which a connect is pending */
-	List* write_pending; /**< list of sockets for which a write is pending */
-	fd_set pending_wset; /**< socket pending write set for select */
+    fd_set rset,                /**< socket read set (see select doc) */
+        rset_saved;             /**< saved socket read set */
+    int maxfdp1;                /**< max descriptor used +1 (again see select doc) */
+    List* clientsds;            /**< list of client socket descriptors */
+    ListElement* cur_clientsds; /**< current client socket descriptor (iterator) */
+    List* connect_pending;      /**< list of sockets for which a connect is pending */
+    List* write_pending;        /**< list of sockets for which a write is pending */
+    fd_set pending_wset;        /**< socket pending write set for select */
 } Sockets;
-
 
 void Socket_outInitialize(void);
 void Socket_outTerminate(void);
-int Socket_getReadySocket(int more_work, struct timeval *tp);
+int Socket_getReadySocket(int more_work, struct timeval* tp);
 int Socket_getch(int socket, char* c);
-char *Socket_getdata(int socket, int bytes, int* actual_len);
+char* Socket_getdata(int socket, int bytes, int* actual_len);
 int Socket_putdatas(int socket, char* buf0, size_t buf0len, int count, char** buffers, size_t* buflens, int* frees);
 void Socket_close(int socket);
 int Socket_new(char* addr, int port, int* socket);

@@ -12,4 +12,5 @@ ADD_EXECUTABLE(${SHM_NAME} ${SRC_LIST})
 # Link lib and so
 TARGET_LINK_LIBRARIES(
     ${SHM_NAME}
+    libcjson.so
 )

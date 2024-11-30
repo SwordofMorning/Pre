@@ -29,35 +29,35 @@
 #endif
 
 #if defined(WIN32) || defined(WIN64)
-	typedef WSABUF iobuf;
+typedef WSABUF iobuf;
 #else
-	typedef struct iovec iobuf;
+typedef struct iovec iobuf;
 #endif
 
 typedef struct
 {
-	int socket;
-	int index, headerlen;
-	char fixed_header[5];	/**< header plus up to 4 length bytes */
-	int buflen, 			/**< total length of the buffer */
-		datalen; 			/**< current length of data in buf */
-	char* buf;
+    int socket;
+    int index, headerlen;
+    char fixed_header[5]; /**< header plus up to 4 length bytes */
+    int buflen,           /**< total length of the buffer */
+        datalen;          /**< current length of data in buf */
+    char* buf;
 } socket_queue;
 
 typedef struct
 {
-	int socket, total, count;
+    int socket, total, count;
 #if defined(OPENSSL)
-	SSL* ssl;
+    SSL* ssl;
 #endif
-	unsigned long bytes;
-	iobuf iovecs[5];
-	int frees[5];
+    unsigned long bytes;
+    iobuf iovecs[5];
+    int frees[5];
 } pending_writes;
 
 #define SOCKETBUFFER_COMPLETE 0
 #if !defined(SOCKET_ERROR)
-	#define SOCKET_ERROR -1
+#define SOCKET_ERROR -1
 #endif
 #define SOCKETBUFFER_INTERRUPTED -22 /* must be the same value as TCPSOCKET_INTERRUPTED */
 

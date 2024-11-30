@@ -8,6 +8,7 @@ SET(_SDK_PATH_ "/hdd/System/")
 SET(_BUILDROOT_PATH_ "${_SDK_PATH_}rk3588-linux/buildroot/output/rockchip_rk3588/host/")
 SET(_COMPILER_PATH_ "${_BUILDROOT_PATH_}bin/")
 SET(_INCLUDE_PATH_ "${_BUILDROOT_PATH_}/aarch64-buildroot-linux-gnu/sysroot/usr/include/")
+SET(_LIB_PATH_ "${_BUILDROOT_PATH_}/aarch64-buildroot-linux-gnu/sysroot/usr/lib/")
 
 SET(CMAKE_C_COMPILER ${_COMPILER_PATH_}aarch64-buildroot-linux-gnu-gcc)
 SET(CMAKE_CXX_COMPILER ${_COMPILER_PATH_}aarch64-buildroot-linux-gnu-g++)
@@ -16,6 +17,9 @@ SET(CMAKE_CXX_COMPILER ${_COMPILER_PATH_}aarch64-buildroot-linux-gnu-g++)
 
 SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -s -O3 -lrt -pthread")
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -s -O3 -lrt -pthread -std=c++20")
+
+LINK_DIRECTORIES(${_LIB_PATH_})
+INCLUDE_DIRECTORIES(${_INCLUDE_PATH_})
 
 # ===== Setp 3 : Set Application Name =====
 

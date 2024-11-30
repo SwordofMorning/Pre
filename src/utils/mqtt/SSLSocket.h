@@ -17,11 +17,11 @@
 #define SSLSOCKET_H
 
 #if defined(WIN32) || defined(WIN64)
-	#define ssl_mutex_type HANDLE
+#define ssl_mutex_type HANDLE
 #else
-	#include <pthread.h>
-	#include <semaphore.h>
-	#define ssl_mutex_type pthread_mutex_t
+#include <pthread.h>
+#include <semaphore.h>
+#define ssl_mutex_type pthread_mutex_t
 #endif
 
 #include <openssl/ssl.h>
@@ -34,7 +34,7 @@ int SSLSocket_initialize();
 void SSLSocket_terminate();
 int SSLSocket_setSocketForSSL(networkHandles* net, MQTTClient_SSLOptions* opts);
 int SSLSocket_getch(SSL* ssl, int socket, char* c);
-char *SSLSocket_getdata(SSL* ssl, int socket, int bytes, int* actual_len);
+char* SSLSocket_getdata(SSL* ssl, int socket, int bytes, int* actual_len);
 
 int SSLSocket_close(networkHandles* net);
 int SSLSocket_putdatas(SSL* ssl, int socket, char* buf0, size_t buf0len, int count, char** buffers, size_t* buflens, int* frees);

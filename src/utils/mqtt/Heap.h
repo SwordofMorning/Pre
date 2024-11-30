@@ -15,7 +15,6 @@
  *    Ian Craggs - use tree data structure instead of list
  *******************************************************************************/
 
-
 #if !defined(HEAP_H)
 #define HEAP_H
 
@@ -56,10 +55,9 @@
  */
 typedef struct
 {
-	int current_size;	/**< current size of the heap in bytes */
-	int max_size;		/**< max size the heap has reached in bytes */
+    int current_size; /**< current size of the heap in bytes */
+    int max_size;     /**< max size the heap has reached in bytes */
 } heap_info;
-
 
 void* mymalloc(char*, int, size_t size);
 void* myrealloc(char*, int, void* p, size_t size);

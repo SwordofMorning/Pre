@@ -32,20 +32,18 @@
 
 #include "Heap.h"
 
-
 /**
  * Sets a list structure to empty - all null values.  Does not remove any items from the list.
  * @param newl a pointer to the list structure to be initialized
  */
 void ListZero(List* newl)
 {
-	memset(newl, '\0', sizeof(List));
-	/*newl->first = NULL;
+    memset(newl, '\0', sizeof(List));
+    /*newl->first = NULL;
 	newl->last = NULL;
 	newl->current = NULL;
 	newl->count = newl->size = 0;*/
 }
-
 
 /**
  * Allocates and initializes a new list structure.
@@ -53,11 +51,10 @@ void ListZero(List* newl)
  */
 List* ListInitialize(void)
 {
-	List* newl = malloc(sizeof(List));
-	ListZero(newl);
-	return newl;
+    List* newl = malloc(sizeof(List));
+    ListZero(newl);
+    return newl;
 }
-
 
 /**
  * Append an already allocated ListElement and content to a list.  Can be used to move
@@ -69,18 +66,17 @@ List* ListInitialize(void)
  */
 void ListAppendNoMalloc(List* aList, void* content, ListElement* newel, int size)
 { /* for heap use */
-	newel->content = content;
-	newel->next = NULL;
-	newel->prev = aList->last;
-	if (aList->first == NULL)
-		aList->first = newel;
-	else
-		aList->last->next = newel;
-	aList->last = newel;
-	++(aList->count);
-	aList->size += size;
+    newel->content = content;
+    newel->next = NULL;
+    newel->prev = aList->last;
+    if (aList->first == NULL)
+        aList->first = newel;
+    else
+        aList->last->next = newel;
+    aList->last = newel;
+    ++(aList->count);
+    aList->size += size;
 }
-
 
 /**
  * Append an item to a list.
@@ -90,10 +86,9 @@ void ListAppendNoMalloc(List* aList, void* content, ListElement* newel, int size
  */
 void ListAppend(List* aList, void* content, int size)
 {
-	ListElement* newel = malloc(sizeof(ListElement));
-	ListAppendNoMalloc(aList, content, newel, size);
+    ListElement* newel = malloc(sizeof(ListElement));
+    ListAppendNoMalloc(aList, content, newel, size);
 }
-
 
 /**
  * Insert an item to a list at a specific position.
@@ -105,27 +100,26 @@ void ListAppend(List* aList, void* content, int size)
  */
 void ListInsert(List* aList, void* content, int size, ListElement* index)
 {
-	ListElement* newel = malloc(sizeof(ListElement));
+    ListElement* newel = malloc(sizeof(ListElement));
 
-	if ( index == NULL )
-		ListAppendNoMalloc(aList, content, newel, size);
-	else
-	{
-		newel->content = content;
-		newel->next = index;
-		newel->prev = index->prev;
+    if (index == NULL)
+        ListAppendNoMalloc(aList, content, newel, size);
+    else
+    {
+        newel->content = content;
+        newel->next = index;
+        newel->prev = index->prev;
 
-		index->prev = newel;
-		if ( newel->prev != NULL )
-			newel->prev->next = newel;
-		else
-			aList->first = newel;
+        index->prev = newel;
+        if (newel->prev != NULL)
+            newel->prev->next = newel;
+        else
+            aList->first = newel;
 
-		++(aList->count);
-		aList->size += size;
-	}
+        ++(aList->count);
+        aList->size += size;
+    }
 }
-
 
 /**
  * Finds an element in a list by comparing the content pointers, rather than the contents
@@ -135,9 +129,8 @@ void ListInsert(List* aList, void* content, int size, ListElement* index)
  */
 ListElement* ListFind(List* aList, void* content)
 {
-	return ListFindItem(aList, content, NULL);
+    return ListFindItem(aList, content, NULL);
 }
-
 
 /**
  * Finds an element in a list by comparing the content or pointer to the content.  A callback
@@ -147,43 +140,41 @@ ListElement* ListFind(List* aList, void* content)
  * @param callback pointer to a function which compares each element (NULL means compare by content pointer)
  * @return the list element found, or NULL
  */
-ListElement* ListFindItem(List* aList, void* content, int(*callback)(void*, void*))
+ListElement* ListFindItem(List* aList, void* content, int (*callback)(void*, void*))
 {
-	ListElement* rc = NULL;
+    ListElement* rc = NULL;
 
-	if (aList->current != NULL && ((callback == NULL && aList->current->content == content) ||
-		   (callback != NULL && callback(aList->current->content, content))))
-		rc = aList->current;
-	else
-	{
-		ListElement* current = NULL;
+    if (aList->current != NULL && ((callback == NULL && aList->current->content == content) || (callback != NULL && callback(aList->current->content, content))))
+        rc = aList->current;
+    else
+    {
+        ListElement* current = NULL;
 
-		/* find the content */
-		while (ListNextElement(aList, &current) != NULL)
-		{
-			if (callback == NULL)
-			{
-				if (current->content == content)
-				{
-					rc = current;
-					break;
-				}
-			}
-			else
-			{
-				if (callback(current->content, content))
-				{
-					rc = current;
-					break;
-				}
-			}
-		}
-		if (rc != NULL)
-			aList->current = rc;
-	}
-	return rc;
+        /* find the content */
+        while (ListNextElement(aList, &current) != NULL)
+        {
+            if (callback == NULL)
+            {
+                if (current->content == content)
+                {
+                    rc = current;
+                    break;
+                }
+            }
+            else
+            {
+                if (callback(current->content, content))
+                {
+                    rc = current;
+                    break;
+                }
+            }
+        }
+        if (rc != NULL)
+            aList->current = rc;
+    }
+    return rc;
 }
-
 
 /**
  * Removes and optionally frees an element in a list by comparing the content.
@@ -194,40 +185,39 @@ ListElement* ListFindItem(List* aList, void* content, int(*callback)(void*, void
  * @param freeContent boolean value to indicate whether the item found is to be freed
  * @return 1=item removed, 0=item not removed
  */
-int ListUnlink(List* aList, void* content, int(*callback)(void*, void*), int freeContent)
+int ListUnlink(List* aList, void* content, int (*callback)(void*, void*), int freeContent)
 {
-	ListElement* next = NULL;
-	ListElement* saved = aList->current;
-	int saveddeleted = 0;
+    ListElement* next = NULL;
+    ListElement* saved = aList->current;
+    int saveddeleted = 0;
 
-	if (!ListFindItem(aList, content, callback))
-		return 0; /* false, did not remove item */
+    if (!ListFindItem(aList, content, callback))
+        return 0; /* false, did not remove item */
 
-	if (aList->current->prev == NULL)
-		/* so this is the first element, and we have to update the "first" pointer */
-		aList->first = aList->current->next;
-	else
-		aList->current->prev->next = aList->current->next;
+    if (aList->current->prev == NULL)
+        /* so this is the first element, and we have to update the "first" pointer */
+        aList->first = aList->current->next;
+    else
+        aList->current->prev->next = aList->current->next;
 
-	if (aList->current->next == NULL)
-		aList->last = aList->current->prev;
-	else
-		aList->current->next->prev = aList->current->prev;
+    if (aList->current->next == NULL)
+        aList->last = aList->current->prev;
+    else
+        aList->current->next->prev = aList->current->prev;
 
-	next = aList->current->next;
-	if (freeContent)
-		free(aList->current->content);
-	if (saved == aList->current)
-		saveddeleted = 1;
-	free(aList->current);
-	if (saveddeleted)
-		aList->current = next;
-	else
-		aList->current = saved;
-	--(aList->count);
-	return 1; /* successfully removed item */
+    next = aList->current->next;
+    if (freeContent)
+        free(aList->current->content);
+    if (saved == aList->current)
+        saveddeleted = 1;
+    free(aList->current);
+    if (saveddeleted)
+        aList->current = next;
+    else
+        aList->current = saved;
+    --(aList->count);
+    return 1; /* successfully removed item */
 }
-
 
 /**
  * Removes but does not free an item in a list by comparing the pointer to the content.
@@ -237,9 +227,8 @@ int ListUnlink(List* aList, void* content, int(*callback)(void*, void*), int fre
  */
 int ListDetach(List* aList, void* content)
 {
-	return ListUnlink(aList, content, NULL, 0);
+    return ListUnlink(aList, content, NULL, 0);
 }
-
 
 /**
  * Removes and frees an item in a list by comparing the pointer to the content.
@@ -249,9 +238,8 @@ int ListDetach(List* aList, void* content)
  */
 int ListRemove(List* aList, void* content)
 {
-	return ListUnlink(aList, content, NULL, 1);
+    return ListUnlink(aList, content, NULL, 1);
 }
-
 
 /**
  * Removes and frees an the first item in a list.
@@ -260,24 +248,23 @@ int ListRemove(List* aList, void* content)
  */
 void* ListDetachHead(List* aList)
 {
-	void *content = NULL;
-	if (aList->count > 0)
-	{
-		ListElement* first = aList->first;
-		if (aList->current == first)
-			aList->current = first->next;
-		if (aList->last == first) /* i.e. no of items in list == 1 */
-			aList->last = NULL;
-		content = first->content;
-		aList->first = aList->first->next;
-		if (aList->first)
-			aList->first->prev = NULL;
-		free(first);
-		--(aList->count);
-	}
-	return content;
+    void* content = NULL;
+    if (aList->count > 0)
+    {
+        ListElement* first = aList->first;
+        if (aList->current == first)
+            aList->current = first->next;
+        if (aList->last == first) /* i.e. no of items in list == 1 */
+            aList->last = NULL;
+        content = first->content;
+        aList->first = aList->first->next;
+        if (aList->first)
+            aList->first->prev = NULL;
+        free(first);
+        --(aList->count);
+    }
+    return content;
 }
-
 
 /**
  * Removes and frees an the first item in a list.
@@ -286,10 +273,9 @@ void* ListDetachHead(List* aList)
  */
 int ListRemoveHead(List* aList)
 {
-	free(ListDetachHead(aList));
-	return 0;
+    free(ListDetachHead(aList));
+    return 0;
 }
-
 
 /**
  * Removes but does not free the last item in a list.
@@ -298,24 +284,23 @@ int ListRemoveHead(List* aList)
  */
 void* ListPopTail(List* aList)
 {
-	void* content = NULL;
-	if (aList->count > 0)
-	{
-		ListElement* last = aList->last;
-		if (aList->current == last)
-			aList->current = last->prev;
-		if (aList->first == last) /* i.e. no of items in list == 1 */
-			aList->first = NULL;
-		content = last->content;
-		aList->last = aList->last->prev;
-		if (aList->last)
-			aList->last->next = NULL;
-		free(last);
-		--(aList->count);
-	}
-	return content;
+    void* content = NULL;
+    if (aList->count > 0)
+    {
+        ListElement* last = aList->last;
+        if (aList->current == last)
+            aList->current = last->prev;
+        if (aList->first == last) /* i.e. no of items in list == 1 */
+            aList->first = NULL;
+        content = last->content;
+        aList->last = aList->last->prev;
+        if (aList->last)
+            aList->last->next = NULL;
+        free(last);
+        --(aList->count);
+    }
+    return content;
 }
-
 
 /**
  * Removes but does not free an element in a list by comparing the content.
@@ -325,11 +310,10 @@ void* ListPopTail(List* aList)
  * @param callback pointer to a function which compares each element
  * @return 1=item removed, 0=item not removed
  */
-int ListDetachItem(List* aList, void* content, int(*callback)(void*, void*))
+int ListDetachItem(List* aList, void* content, int (*callback)(void*, void*))
 { /* do not free the content */
-	return ListUnlink(aList, content, callback, 0);
+    return ListUnlink(aList, content, callback, 0);
 }
-
 
 /**
  * Removes and frees an element in a list by comparing the content.
@@ -339,11 +323,10 @@ int ListDetachItem(List* aList, void* content, int(*callback)(void*, void*))
  * @param callback pointer to a function which compares each element
  * @return 1=item removed, 0=item not removed
  */
-int ListRemoveItem(List* aList, void* content, int(*callback)(void*, void*))
+int ListRemoveItem(List* aList, void* content, int (*callback)(void*, void*))
 { /* remove from list and free the content */
-	return ListUnlink(aList, content, callback, 1);
+    return ListUnlink(aList, content, callback, 1);
 }
-
 
 /**
  * Removes and frees all items in a list, leaving the list ready for new items.
@@ -351,16 +334,16 @@ int ListRemoveItem(List* aList, void* content, int(*callback)(void*, void*))
  */
 void ListEmpty(List* aList)
 {
-	while (aList->first != NULL)
-	{
-		ListElement* first = aList->first;
-		if (first->content != NULL)
-			free(first->content);
-		aList->first = first->next;
-		free(first);
-	}
-	aList->count = aList->size = 0;
-	aList->current = aList->first = aList->last = NULL;
+    while (aList->first != NULL)
+    {
+        ListElement* first = aList->first;
+        if (first->content != NULL)
+            free(first->content);
+        aList->first = first->next;
+        free(first);
+    }
+    aList->count = aList->size = 0;
+    aList->current = aList->first = aList->last = NULL;
 }
 
 /**
@@ -369,10 +352,9 @@ void ListEmpty(List* aList)
  */
 void ListFree(List* aList)
 {
-	ListEmpty(aList);
-	free(aList);
+    ListEmpty(aList);
+    free(aList);
 }
-
 
 /**
  * Removes and but does not free all items in a list, and frees the list itself
@@ -380,15 +362,14 @@ void ListFree(List* aList)
  */
 void ListFreeNoContent(List* aList)
 {
-	while (aList->first != NULL)
-	{
-		ListElement* first = aList->first;
-		aList->first = first->next;
-		free(first);
-	}
-	free(aList);
+    while (aList->first != NULL)
+    {
+        ListElement* first = aList->first;
+        aList->first = first->next;
+        free(first);
+    }
+    free(aList);
 }
-
 
 /**
  * Forward iteration through a list
@@ -399,9 +380,8 @@ void ListFreeNoContent(List* aList)
  */
 ListElement* ListNextElement(List* aList, ListElement** pos)
 {
-	return *pos = (*pos == NULL) ? aList->first : (*pos)->next;
+    return *pos = (*pos == NULL) ? aList->first : (*pos)->next;
 }
-
 
 /**
  * Backward iteration through a list
@@ -412,9 +392,8 @@ ListElement* ListNextElement(List* aList, ListElement** pos)
  */
 ListElement* ListPrevElement(List* aList, ListElement** pos)
 {
-	return *pos = (*pos == NULL) ? aList->last : (*pos)->prev;
+    return *pos = (*pos == NULL) ? aList->last : (*pos)->prev;
 }
-
 
 /**
  * List callback function for comparing integers
@@ -424,9 +403,8 @@ ListElement* ListPrevElement(List* aList, ListElement** pos)
  */
 int intcompare(void* a, void* b)
 {
-	return *((int*)a) == *((int*)b);
+    return *((int*)a) == *((int*)b);
 }
-
 
 /**
  * List callback function for comparing C strings
@@ -436,62 +414,55 @@ int intcompare(void* a, void* b)
  */
 int stringcompare(void* a, void* b)
 {
-	return strcmp((char*)a, (char*)b) == 0;
+    return strcmp((char*)a, (char*)b) == 0;
 }
-
 
 #if defined(UNIT_TESTS)
 
-
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
-	int i, *ip, *todelete;
-	ListElement* current = NULL;
-	List* l = ListInitialize();
-	printf("List initialized\n");
+    int i, *ip, *todelete;
+    ListElement* current = NULL;
+    List* l = ListInitialize();
+    printf("List initialized\n");
 
-	for (i = 0; i < 10; i++)
-	{
-		ip = malloc(sizeof(int));
-		*ip = i;
-		ListAppend(l, (void*)ip, sizeof(int));
-		if (i==5)
-			todelete = ip;
-		printf("List element appended %d\n",  *((int*)(l->last->content)));
-	}
+    for (i = 0; i < 10; i++)
+    {
+        ip = malloc(sizeof(int));
+        *ip = i;
+        ListAppend(l, (void*)ip, sizeof(int));
+        if (i == 5)
+            todelete = ip;
+        printf("List element appended %d\n", *((int*)(l->last->content)));
+    }
 
-	printf("List contents:\n");
-	current = NULL;
-	while (ListNextElement(l, &current) != NULL)
-		printf("List element: %d\n", *((int*)(current->content)));
+    printf("List contents:\n");
+    current = NULL;
+    while (ListNextElement(l, &current) != NULL)
+        printf("List element: %d\n", *((int*)(current->content)));
 
-	printf("List contents in reverse order:\n");
-	current = NULL;
-	while (ListPrevElement(l, &current) != NULL)
-		printf("List element: %d\n", *((int*)(current->content)));
+    printf("List contents in reverse order:\n");
+    current = NULL;
+    while (ListPrevElement(l, &current) != NULL)
+        printf("List element: %d\n", *((int*)(current->content)));
 
-	//if ListFindItem(l, *ip, intcompare)->content
+    //if ListFindItem(l, *ip, intcompare)->content
 
-	printf("List contents having deleted element %d:\n", *todelete);
-	ListRemove(l, todelete);
-	current = NULL;
-	while (ListNextElement(l, &current) != NULL)
-		printf("List element: %d\n", *((int*)(current->content)));
+    printf("List contents having deleted element %d:\n", *todelete);
+    ListRemove(l, todelete);
+    current = NULL;
+    while (ListNextElement(l, &current) != NULL)
+        printf("List element: %d\n", *((int*)(current->content)));
 
-	i = 9;
-	ListRemoveItem(l, &i, intcompare);
-	printf("List contents having deleted another element, %d, size now %d:\n", i, l->size);
-	current = NULL;
-	while (ListNextElement(l, &current) != NULL)
-		printf("List element: %d\n", *((int*)(current->content)));
+    i = 9;
+    ListRemoveItem(l, &i, intcompare);
+    printf("List contents having deleted another element, %d, size now %d:\n", i, l->size);
+    current = NULL;
+    while (ListNextElement(l, &current) != NULL)
+        printf("List element: %d\n", *((int*)(current->content)));
 
-	ListFree(l);
-	printf("List freed\n");
+    ListFree(l);
+    printf("List freed\n");
 }
 
 #endif
-
-
-
-
-

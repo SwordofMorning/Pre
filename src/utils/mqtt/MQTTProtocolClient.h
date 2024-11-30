@@ -48,6 +48,6 @@ void MQTTProtocol_freeClient(Clients* client);
 void MQTTProtocol_emptyMessageList(List* msgList);
 void MQTTProtocol_freeMessageList(List* msgList);
 
-char* MQTTStrncpy(char *dest, const char* src, size_t num);
+char* MQTTStrncpy(char* dest, const char* src, size_t num);
 char* MQTTStrdup(const char* src);
 #endif

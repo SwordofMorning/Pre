@@ -52,22 +52,21 @@ BE*/
  */
 typedef struct ListElementStruct
 {
-	struct ListElementStruct *prev, /**< pointer to previous list element */
-							*next;	/**< pointer to next list element */
-	void* content;					/**< pointer to element content */
+    struct ListElementStruct *prev, /**< pointer to previous list element */
+        *next;                      /**< pointer to next list element */
+    void* content;                  /**< pointer to element content */
 } ListElement;
-
 
 /**
  * Structure to hold all data for one list
  */
 typedef struct
 {
-	ListElement *first,	/**< first element in the list */
-				*last,	/**< last element in the list */
-				*current;	/**< current element in the list, for iteration */
-	int count,  /**< no of items */
-	    size;  /**< heap storage used */
+    ListElement *first, /**< first element in the list */
+        *last,          /**< last element in the list */
+        *current;       /**< current element in the list, for iteration */
+    int count,          /**< no of items */
+        size;           /**< heap storage used */
 } List;
 
 void ListZero(List*);
@@ -78,13 +77,13 @@ void ListAppendNoMalloc(List* aList, void* content, ListElement* newel, int size
 void ListInsert(List* aList, void* content, int size, ListElement* index);
 
 int ListRemove(List* aList, void* content);
-int ListRemoveItem(List* aList, void* content, int(*callback)(void*, void*));
+int ListRemoveItem(List* aList, void* content, int (*callback)(void*, void*));
 void* ListDetachHead(List* aList);
 int ListRemoveHead(List* aList);
 void* ListPopTail(List* aList);
 
 int ListDetach(List* aList, void* content);
-int ListDetachItem(List* aList, void* content, int(*callback)(void*, void*));
+int ListDetachItem(List* aList, void* content, int (*callback)(void*, void*));
 
 void ListFree(List* aList);
 void ListEmpty(List* aList);
@@ -94,7 +93,7 @@ ListElement* ListNextElement(List* aList, ListElement** pos);
 ListElement* ListPrevElement(List* aList, ListElement** pos);
 
 ListElement* ListFind(List* aList, void* content);
-ListElement* ListFindItem(List* aList, void* content, int(*callback)(void*, void*));
+ListElement* ListFindItem(List* aList, void* content, int (*callback)(void*, void*));
 
 int intcompare(void* a, void* b);
 int stringcompare(void* a, void* b);

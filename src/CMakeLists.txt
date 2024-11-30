@@ -12,4 +12,5 @@ ADD_EXECUTABLE(${APP_NAME} ${SRC_LIST})
 # Link lib and so
 TARGET_LINK_LIBRARIES(
     ${APP_NAME}
+    libcjson.so
 )

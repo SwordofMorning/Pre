@@ -1,10 +1,12 @@
 #include "listen.h"
 
 Listen::Listen()
+    : m_topic("pre")
+    , m_target("host")
 {
-    m_mqtt_handle = mqtt_new(const_cast<char*>("127.0.0.1"), 1883, const_cast<char*>("pre"));
+    m_mqtt_handle = mqtt_new(const_cast<char*>("127.0.0.1"), 1883, const_cast<char*>(m_topic.c_str()));
 
-    if(m_mqtt_handle == NULL)
+    if (m_mqtt_handle == NULL)
     {
         litelog.log.fatal("MQTT new fail.");
         exit(EXIT_FAILURE);
@@ -16,16 +18,59 @@ Listen::Listen()
         exit(EXIT_FAILURE);
     }
 
-    int ret = mqtt_subscribe(m_mqtt_handle, const_cast<char*>("ui"), QOS_EXACTLY_ONCE);
+    int ret = mqtt_subscribe(m_mqtt_handle, const_cast<char*>(m_target.c_str()), QOS_EXACTLY_ONCE);
 
-    litelog.log.debug("MQTT subscribe ui: %d", ret);
+    litelog.log.debug("MQTT subscribe %s: %d", m_target.c_str(), ret);
+}
+
+int Listen::Set_Pseudo()
+{
+    return 0;
+}
+
+int Listen::Set_Gas_Enhancement()
+{
+    return 0;
+}
+
+int Listen::Set_IR_Focus()
+{
+    return 0;
 }
 
 void Listen::operator()()
 {
     while (1)
     {
-        std::cout << "Hello World" << mqtt_publish(m_mqtt_handle, const_cast<char*>("pre"), const_cast<char*>("Hello World"), QOS_EXACTLY_ONCE) << std::endl;
-        sleep(1);
+        if (mqtt_receive(m_mqtt_handle, 200) == MQTT_SUCCESS)
+        {
+            // std::cout << std::string(m_mqtt_handle->received_message, m_mqtt_handle->received_message_len) << std::endl;
+            // std::cout << std::string(m_mqtt_handle->received_topic, m_mqtt_handle->received_topic_len) << std::endl;
+
+            if (m_mqtt_handle->received_message_len < 0)
+                continue;
+
+            JWrap jw(std::string{m_mqtt_handle->received_message, static_cast<size_t>(m_mqtt_handle->received_message_len)});
+            std::cout << "Code: " << jw.GetCodeEnum() << ", Name: " << jw.GetCodeName() << std::endl;
+            
+            int retval = 0;
+            switch (jw.GetCodeEnum())
+            {
+            case JWrap::CODE_ENUM::PSEUDO:
+                retval = Set_Pseudo();
+                break;
+            case JWrap::CODE_ENUM::GAS_ENHANCE:
+                retval = Set_Gas_Enhancement();
+                break;
+            case JWrap::CODE_ENUM::IR_AUTOFOCUS:
+                retval = Set_IR_Focus();
+                break;
+            default:
+                retval = -1;
+                break;
+            }
+
+            mqtt_publish(m_mqtt_handle, const_cast<char*>(m_topic.c_str()), const_cast<char*>(jw.CreateReturnJson(std::to_string(retval)).c_str()), QOS_EXACTLY_ONCE);
+        }
     }
 }

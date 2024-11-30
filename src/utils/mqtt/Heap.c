@@ -59,13 +59,13 @@ static int eyecatcher = 0x88888888;
  */
 typedef struct
 {
-	char* file;		/**< the name of the source file where the storage was allocated */
-	int line;		/**< the line no in the source file where it was allocated */
-	void* ptr;		/**< pointer to the allocated storage */
-	int size;       /**< size of the allocated storage */
+    char* file; /**< the name of the source file where the storage was allocated */
+    int line;   /**< the line no in the source file where it was allocated */
+    void* ptr;  /**< pointer to the allocated storage */
+    int size;   /**< size of the allocated storage */
 } storageElement;
 
-static Tree heap;	/**< Tree that holds the allocation records */
+static Tree heap; /**< Tree that holds the allocation records */
 static char* errmsg = "Memory allocation error";
 
 /**
@@ -77,13 +77,12 @@ static char* errmsg = "Memory allocation error";
  */
 int Heap_roundup(int size)
 {
-	static int multsize = 4*sizeof(int);
+    static int multsize = 4 * sizeof(int);
 
-	if (size % multsize != 0)
-		size += multsize - (size % multsize);
-	return size;
+    if (size % multsize != 0)
+        size += multsize - (size % multsize);
+    return size;
 }
-
 
 /**
  * List callback function for comparing storage elements
@@ -93,18 +92,17 @@ int Heap_roundup(int size)
  */
 int ptrCompare(void* a, void* b, int value)
 {
-	a = ((storageElement*)a)->ptr;
-	if (value)
-		b = ((storageElement*)b)->ptr;
+    a = ((storageElement*)a)->ptr;
+    if (value)
+        b = ((storageElement*)b)->ptr;
 
-	return (a > b) ? -1 : (a == b) ? 0 : 1;
+    return (a > b) ? -1 : (a == b) ? 0 : 1;
 }
-
 
 void Heap_check(char* string, void* ptr)
 {
-	return;
-	/*Node* curnode = NULL;
+    return;
+    /*Node* curnode = NULL;
 	storageElement* prev, *s = NULL;
 
 	printf("Heap_check start %p\n", ptr);
@@ -126,7 +124,6 @@ void Heap_check(char* string, void* ptr)
 	}*/
 }
 
-
 /**
  * Allocates a block of memory.  A direct replacement for malloc, but keeps track of items
  * allocated in a list, so that free can check that a item is being freed correctly and that
@@ -138,63 +135,61 @@ void Heap_check(char* string, void* ptr)
  */
 void* mymalloc(char* file, int line, size_t size)
 {
-	storageElement* s = NULL;
-	int space = sizeof(storageElement);
-	int filenamelen = strlen(file)+1;
+    storageElement* s = NULL;
+    int space = sizeof(storageElement);
+    int filenamelen = strlen(file) + 1;
 
-	Thread_lock_mutex(heap_mutex);
-	size = Heap_roundup(size);
-	if ((s = malloc(sizeof(storageElement))) == NULL)
-	{
-		Log(LOG_ERROR, 13, errmsg);
-		return NULL;
-	}
-	s->size = size; /* size without eyecatchers */
-	if ((s->file = malloc(filenamelen)) == NULL)
-	{
-		Log(LOG_ERROR, 13, errmsg);
-		free(s);
-		return NULL;
-	}
-	space += filenamelen;
-	strcpy(s->file, file);
-	s->line = line;
-	/* Add space for eyecatcher at each end */
-	if ((s->ptr = malloc(size + 2*sizeof(int))) == NULL)
-	{
-		Log(LOG_ERROR, 13, errmsg);
-		free(s->file);
-		free(s);
-		return NULL;
-	}
-	space += size + 2*sizeof(int);
-	*(int*)(s->ptr) = eyecatcher; /* start eyecatcher */
-	*(int*)(((char*)(s->ptr)) + (sizeof(int) + size)) = eyecatcher; /* end eyecatcher */
-	Log(TRACE_MAX, -1, "Allocating %d bytes in heap at file %s line %d ptr %p\n", size, file, line, s->ptr);
-	TreeAdd(&heap, s, space);
-	state.current_size += size;
-	if (state.current_size > state.max_size)
-		state.max_size = state.current_size;
-	Thread_unlock_mutex(heap_mutex);		
-	return ((int*)(s->ptr)) + 1;	/* skip start eyecatcher */
+    Thread_lock_mutex(heap_mutex);
+    size = Heap_roundup(size);
+    if ((s = malloc(sizeof(storageElement))) == NULL)
+    {
+        Log(LOG_ERROR, 13, errmsg);
+        return NULL;
+    }
+    s->size = size; /* size without eyecatchers */
+    if ((s->file = malloc(filenamelen)) == NULL)
+    {
+        Log(LOG_ERROR, 13, errmsg);
+        free(s);
+        return NULL;
+    }
+    space += filenamelen;
+    strcpy(s->file, file);
+    s->line = line;
+    /* Add space for eyecatcher at each end */
+    if ((s->ptr = malloc(size + 2 * sizeof(int))) == NULL)
+    {
+        Log(LOG_ERROR, 13, errmsg);
+        free(s->file);
+        free(s);
+        return NULL;
+    }
+    space += size + 2 * sizeof(int);
+    *(int*)(s->ptr) = eyecatcher;                                   /* start eyecatcher */
+    *(int*)(((char*)(s->ptr)) + (sizeof(int) + size)) = eyecatcher; /* end eyecatcher */
+    Log(TRACE_MAX, -1, "Allocating %d bytes in heap at file %s line %d ptr %p\n", size, file, line, s->ptr);
+    TreeAdd(&heap, s, space);
+    state.current_size += size;
+    if (state.current_size > state.max_size)
+        state.max_size = state.current_size;
+    Thread_unlock_mutex(heap_mutex);
+    return ((int*)(s->ptr)) + 1; /* skip start eyecatcher */
 }
-
 
 void checkEyecatchers(char* file, int line, void* p, int size)
 {
-	int *sp = (int*)p;
-	char *cp = (char*)p;
-	int us;
-	static char* msg = "Invalid %s eyecatcher %d in heap item at file %s line %d";
+    int* sp = (int*)p;
+    char* cp = (char*)p;
+    int us;
+    static char* msg = "Invalid %s eyecatcher %d in heap item at file %s line %d";
 
-	if ((us = *--sp) != eyecatcher)
-		Log(LOG_ERROR, 13, msg, "start", us, file, line);
+    if ((us = *--sp) != eyecatcher)
+        Log(LOG_ERROR, 13, msg, "start", us, file, line);
 
-	cp += size;
-	if ((us = *(int*)cp) != eyecatcher)
-		Log(LOG_ERROR, 13, msg, "end", us, file, line);
+    cp += size;
+    if ((us = *(int*)cp) != eyecatcher)
+        Log(LOG_ERROR, 13, msg, "end", us, file, line);
 }
-
 
 /**
  * Remove an item from the recorded heap without actually freeing it.
@@ -205,28 +200,26 @@ void checkEyecatchers(char* file, int line, void* p, int size)
  */
 int Internal_heap_unlink(char* file, int line, void* p)
 {
-	Node* e = NULL;
-	int rc = 0;
+    Node* e = NULL;
+    int rc = 0;
 
-	e = TreeFind(&heap, ((int*)p)-1);
-	if (e == NULL)
-		Log(LOG_ERROR, 13, "Failed to remove heap item at file %s line %d", file, line);
-	else
-	{
-		storageElement* s = (storageElement*)(e->content);
-		Log(TRACE_MAX, -1, "Freeing %d bytes in heap at file %s line %d, heap use now %d bytes\n",
-											 s->size, file, line, state.current_size);
-		checkEyecatchers(file, line, p, s->size);
-		//free(s->ptr);
-		free(s->file);
-		state.current_size -= s->size;
-		TreeRemoveNodeIndex(&heap, e, 0);
-		free(s);
-		rc = 1;
-	}
-	return rc;
+    e = TreeFind(&heap, ((int*)p) - 1);
+    if (e == NULL)
+        Log(LOG_ERROR, 13, "Failed to remove heap item at file %s line %d", file, line);
+    else
+    {
+        storageElement* s = (storageElement*)(e->content);
+        Log(TRACE_MAX, -1, "Freeing %d bytes in heap at file %s line %d, heap use now %d bytes\n", s->size, file, line, state.current_size);
+        checkEyecatchers(file, line, p, s->size);
+        //free(s->ptr);
+        free(s->file);
+        state.current_size -= s->size;
+        TreeRemoveNodeIndex(&heap, e, 0);
+        free(s);
+        rc = 1;
+    }
+    return rc;
 }
-
 
 /**
  * Frees a block of memory.  A direct replacement for free, but checks that a item is in
@@ -237,12 +230,11 @@ int Internal_heap_unlink(char* file, int line, void* p)
  */
 void myfree(char* file, int line, void* p)
 {
-	Thread_lock_mutex(heap_mutex);
-	if (Internal_heap_unlink(file, line, p))
-		free(((int*)p)-1);
-	Thread_unlock_mutex(heap_mutex);
+    Thread_lock_mutex(heap_mutex);
+    if (Internal_heap_unlink(file, line, p))
+        free(((int*)p) - 1);
+    Thread_unlock_mutex(heap_mutex);
 }
-
 
 /**
  * Remove an item from the recorded heap without actually freeing it.
@@ -253,11 +245,10 @@ void myfree(char* file, int line, void* p)
  */
 void Heap_unlink(char* file, int line, void* p)
 {
-	Thread_lock_mutex(heap_mutex);
-	Internal_heap_unlink(file, line, p);
-	Thread_unlock_mutex(heap_mutex);
+    Thread_lock_mutex(heap_mutex);
+    Internal_heap_unlink(file, line, p);
+    Thread_unlock_mutex(heap_mutex);
 }
-
 
 /**
  * Reallocates a block of memory.  A direct replacement for realloc, but keeps track of items
@@ -271,46 +262,45 @@ void Heap_unlink(char* file, int line, void* p)
  * @param size the new size of the item
  * @return pointer to the allocated item, or NULL if there was an error
  */
-void *myrealloc(char* file, int line, void* p, size_t size)
+void* myrealloc(char* file, int line, void* p, size_t size)
 {
-	void* rc = NULL;
-	storageElement* s = NULL;
-	
-	Thread_lock_mutex(heap_mutex);
-	s = TreeRemoveKey(&heap, ((int*)p)-1);
-	if (s == NULL)
-		Log(LOG_ERROR, 13, "Failed to reallocate heap item at file %s line %d", file, line);
-	else
-	{
-		int space = sizeof(storageElement);
-		int filenamelen = strlen(file)+1;
+    void* rc = NULL;
+    storageElement* s = NULL;
 
-		checkEyecatchers(file, line, p, s->size);
-		size = Heap_roundup(size);
-		state.current_size += size - s->size;
-		if (state.current_size > state.max_size)
-			state.max_size = state.current_size;
-		if ((s->ptr = realloc(s->ptr, size + 2*sizeof(int))) == NULL)
-		{
-			Log(LOG_ERROR, 13, errmsg);
-			return NULL;
-		}
-		space += size + 2*sizeof(int) - s->size;
-		*(int*)(s->ptr) = eyecatcher; /* start eyecatcher */
-		*(int*)(((char*)(s->ptr)) + (sizeof(int) + size)) = eyecatcher; /* end eyecatcher */
-		s->size = size;
-		space -= strlen(s->file);
-		s->file = realloc(s->file, filenamelen);
-		space += filenamelen;
-		strcpy(s->file, file);
-		s->line = line;
-		rc = s->ptr;
-		TreeAdd(&heap, s, space);
-	}
-	Thread_unlock_mutex(heap_mutex);
-	return (rc == NULL) ? NULL : ((int*)(rc)) + 1;	/* skip start eyecatcher */
+    Thread_lock_mutex(heap_mutex);
+    s = TreeRemoveKey(&heap, ((int*)p) - 1);
+    if (s == NULL)
+        Log(LOG_ERROR, 13, "Failed to reallocate heap item at file %s line %d", file, line);
+    else
+    {
+        int space = sizeof(storageElement);
+        int filenamelen = strlen(file) + 1;
+
+        checkEyecatchers(file, line, p, s->size);
+        size = Heap_roundup(size);
+        state.current_size += size - s->size;
+        if (state.current_size > state.max_size)
+            state.max_size = state.current_size;
+        if ((s->ptr = realloc(s->ptr, size + 2 * sizeof(int))) == NULL)
+        {
+            Log(LOG_ERROR, 13, errmsg);
+            return NULL;
+        }
+        space += size + 2 * sizeof(int) - s->size;
+        *(int*)(s->ptr) = eyecatcher;                                   /* start eyecatcher */
+        *(int*)(((char*)(s->ptr)) + (sizeof(int) + size)) = eyecatcher; /* end eyecatcher */
+        s->size = size;
+        space -= strlen(s->file);
+        s->file = realloc(s->file, filenamelen);
+        space += filenamelen;
+        strcpy(s->file, file);
+        s->line = line;
+        rc = s->ptr;
+        TreeAdd(&heap, s, space);
+    }
+    Thread_unlock_mutex(heap_mutex);
+    return (rc == NULL) ? NULL : ((int*)(rc)) + 1; /* skip start eyecatcher */
 }
-
 
 /**
  * Utility to find an item in the heap.  Lets you know if the heap already contains
@@ -320,14 +310,13 @@ void *myrealloc(char* file, int line, void* p, size_t size)
  */
 void* Heap_findItem(void* p)
 {
-	Node* e = NULL;
+    Node* e = NULL;
 
-	Thread_lock_mutex(heap_mutex);
-	e = TreeFind(&heap, ((int*)p)-1);
-	Thread_unlock_mutex(heap_mutex);
-	return (e == NULL) ? NULL : e->content;
+    Thread_lock_mutex(heap_mutex);
+    e = TreeFind(&heap, ((int*)p) - 1);
+    Thread_unlock_mutex(heap_mutex);
+    return (e == NULL) ? NULL : e->content;
 }
-
 
 /**
  * Scans the heap and reports any items currently allocated.
@@ -335,45 +324,42 @@ void* Heap_findItem(void* p)
  */
 void HeapScan(int log_level)
 {
-	Node* current = NULL;
-	
-	Thread_lock_mutex(heap_mutex);
-	Log(log_level, -1, "Heap scan start, total %d bytes", state.current_size);
-	while ((current = TreeNextElement(&heap, current)) != NULL)
-	{
-		storageElement* s = (storageElement*)(current->content);
-		Log(log_level, -1, "Heap element size %d, line %d, file %s, ptr %p", s->size, s->line, s->file, s->ptr);
-		Log(log_level, -1, "  Content %*.s", (10 > current->size) ? s->size : 10, (char*)(((int*)s->ptr) + 1));
-	}
-	Log(log_level, -1, "Heap scan end");
-	Thread_unlock_mutex(heap_mutex);
-}
+    Node* current = NULL;
 
+    Thread_lock_mutex(heap_mutex);
+    Log(log_level, -1, "Heap scan start, total %d bytes", state.current_size);
+    while ((current = TreeNextElement(&heap, current)) != NULL)
+    {
+        storageElement* s = (storageElement*)(current->content);
+        Log(log_level, -1, "Heap element size %d, line %d, file %s, ptr %p", s->size, s->line, s->file, s->ptr);
+        Log(log_level, -1, "  Content %*.s", (10 > current->size) ? s->size : 10, (char*)(((int*)s->ptr) + 1));
+    }
+    Log(log_level, -1, "Heap scan end");
+    Thread_unlock_mutex(heap_mutex);
+}
 
 /**
  * Heap initialization.
  */
 int Heap_initialize()
 {
-	TreeInitializeNoMalloc(&heap, ptrCompare);
-	heap.heap_tracking = 0; /* no recursive heap tracking! */
-	return 0;
+    TreeInitializeNoMalloc(&heap, ptrCompare);
+    heap.heap_tracking = 0; /* no recursive heap tracking! */
+    return 0;
 }
-
 
 /**
  * Heap termination.
  */
 void Heap_terminate()
 {
-	Log(TRACE_MIN, -1, "Maximum heap use was %d bytes", state.max_size);
-	if (state.current_size > 20) /* One log list is freed after this function is called */
-	{
-		Log(LOG_ERROR, -1, "Some memory not freed at shutdown, possible memory leak");
-		HeapScan(LOG_ERROR);
-	}
+    Log(TRACE_MIN, -1, "Maximum heap use was %d bytes", state.max_size);
+    if (state.current_size > 20) /* One log list is freed after this function is called */
+    {
+        Log(LOG_ERROR, -1, "Some memory not freed at shutdown, possible memory leak");
+        HeapScan(LOG_ERROR);
+    }
 }
-
 
 /**
  * Access to heap state
@@ -381,9 +367,8 @@ void Heap_terminate()
  */
 heap_info* Heap_get_info()
 {
-	return &state;
+    return &state;
 }
-
 
 /**
  * Dump a string from the heap so that it can be displayed conveniently
@@ -392,18 +377,17 @@ heap_info* Heap_get_info()
  */
 int HeapDumpString(FILE* file, char* str)
 {
-	int rc = 0;
-	int len = str ? strlen(str) + 1 : 0; /* include the trailing null */
+    int rc = 0;
+    int len = str ? strlen(str) + 1 : 0; /* include the trailing null */
 
-	if (fwrite(&(str), sizeof(char*), 1, file) != 1)
-		rc = -1;
-	else if (fwrite(&(len), sizeof(int), 1 ,file) != 1)
-		rc = -1;
-	else if (len > 0 && fwrite(str, len, 1, file) != 1)
-		rc = -1;
-	return rc;
+    if (fwrite(&(str), sizeof(char*), 1, file) != 1)
+        rc = -1;
+    else if (fwrite(&(len), sizeof(int), 1, file) != 1)
+        rc = -1;
+    else if (len > 0 && fwrite(str, len, 1, file) != 1)
+        rc = -1;
+    return rc;
 }
-
 
 /**
  * Dump the state of the heap
@@ -411,61 +395,60 @@ int HeapDumpString(FILE* file, char* str)
  */
 int HeapDump(FILE* file)
 {
-	int rc = 0;
-	Node* current = NULL;
+    int rc = 0;
+    Node* current = NULL;
 
-	while (rc == 0 && (current = TreeNextElement(&heap, current)))
-	{
-		storageElement* s = (storageElement*)(current->content);
+    while (rc == 0 && (current = TreeNextElement(&heap, current)))
+    {
+        storageElement* s = (storageElement*)(current->content);
 
-		if (fwrite(&(s->ptr), sizeof(s->ptr), 1, file) != 1)
-			rc = -1;
-		else if (fwrite(&(current->size), sizeof(current->size), 1, file) != 1)
-			rc = -1;
-		else if (fwrite(s->ptr, current->size, 1, file) != 1)
-			rc = -1;
-	}
-	return rc;
+        if (fwrite(&(s->ptr), sizeof(s->ptr), 1, file) != 1)
+            rc = -1;
+        else if (fwrite(&(current->size), sizeof(current->size), 1, file) != 1)
+            rc = -1;
+        else if (fwrite(s->ptr, current->size, 1, file) != 1)
+            rc = -1;
+    }
+    return rc;
 }
-
 
 #if defined(HEAP_UNIT_TESTS)
 
 void Log(int log_level, int msgno, char* format, ...)
 {
-	printf("Log %s", format);
+    printf("Log %s", format);
 }
 
 char* Broker_recordFFDC(char* symptoms)
 {
-	printf("recordFFDC");
-	return "";
+    printf("recordFFDC");
+    return "";
 }
 
 #define malloc(x) mymalloc(__FILE__, __LINE__, x)
 #define realloc(a, b) myrealloc(__FILE__, __LINE__, a, b)
 #define free(x) myfree(__FILE__, __LINE__, x)
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
-	char* h = NULL;
-	Heap_initialize();
+    char* h = NULL;
+    Heap_initialize();
 
-	h = malloc(12);
-	free(h);
-	printf("freed h\n");
+    h = malloc(12);
+    free(h);
+    printf("freed h\n");
 
-	h = malloc(12);
-	h = realloc(h, 14);
-	h = realloc(h, 25);
-	h = realloc(h, 255);
-	h = realloc(h, 2225);
-	h = realloc(h, 22225);
+    h = malloc(12);
+    h = realloc(h, 14);
+    h = realloc(h, 25);
+    h = realloc(h, 255);
+    h = realloc(h, 2225);
+    h = realloc(h, 22225);
     printf("freeing h\n");
-	free(h);
-	Heap_terminate();
-	printf("Finishing\n");
-	return 0;
+    free(h);
+    Heap_terminate();
+    printf("Finishing\n");
+    return 0;
 }
 
 #endif

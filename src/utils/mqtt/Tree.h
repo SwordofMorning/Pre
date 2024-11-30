@@ -14,7 +14,6 @@
  *    Ian Craggs - initial implementation and documentation
  *******************************************************************************/
 
-
 #if !defined(TREE_H)
 #define TREE_H
 
@@ -60,35 +59,33 @@ BE*/
  */
 typedef struct NodeStruct
 {
-	struct NodeStruct *parent,   /**< pointer to parent tree node, in case we need it */
-					  *child[2]; /**< pointers to child tree nodes 0 = left, 1 = right */
-	void* content;				 /**< pointer to element content */
-	int size;					 /**< size of content */
-	unsigned int red : 1;
+    struct NodeStruct *parent, /**< pointer to parent tree node, in case we need it */
+        *child[2];             /**< pointers to child tree nodes 0 = left, 1 = right */
+    void* content;             /**< pointer to element content */
+    int size;                  /**< size of content */
+    unsigned int red : 1;
 } Node;
-
 
 /**
  * Structure to hold all data for one tree
  */
 typedef struct
 {
-	struct
-	{
-		Node *root;	/**< root node pointer */
-		int (*compare)(void*, void*, int); /**< comparison function */
-	} index[2];
-	int indexes, /**< no of indexes into tree */
-		count,  /**< no of items */
-		size;  /**< heap storage used */
-	unsigned int heap_tracking : 1; /**< switch on heap tracking for this tree? */
-	unsigned int allow_duplicates : 1; /**< switch to allow duplicate entries */
+    struct
+    {
+        Node* root;                        /**< root node pointer */
+        int (*compare)(void*, void*, int); /**< comparison function */
+    } index[2];
+    int indexes,                       /**< no of indexes into tree */
+        count,                         /**< no of items */
+        size;                          /**< heap storage used */
+    unsigned int heap_tracking : 1;    /**< switch on heap tracking for this tree? */
+    unsigned int allow_duplicates : 1; /**< switch to allow duplicate entries */
 } Tree;
 
-
-Tree* TreeInitialize(int(*compare)(void*, void*, int));
-void TreeInitializeNoMalloc(Tree* aTree, int(*compare)(void*, void*, int));
-void TreeAddIndex(Tree* aTree, int(*compare)(void*, void*, int));
+Tree* TreeInitialize(int (*compare)(void*, void*, int));
+void TreeInitializeNoMalloc(Tree* aTree, int (*compare)(void*, void*, int));
+void TreeAddIndex(Tree* aTree, int (*compare)(void*, void*, int));
 
 void* TreeAdd(Tree* aTree, void* content, int size);
 

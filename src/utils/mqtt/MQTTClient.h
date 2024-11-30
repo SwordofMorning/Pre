@@ -98,17 +98,17 @@
 
 /// @cond EXCLUDE
 #if defined(__cplusplus)
- extern "C" {
+extern "C" {
 #endif
 #if !defined(MQTTCLIENT_H)
 #define MQTTCLIENT_H
 
 #if defined(WIN32) || defined(WIN64)
-  #define DLLImport __declspec(dllimport)
-  #define DLLExport __declspec(dllexport)
+#define DLLImport __declspec(dllimport)
+#define DLLExport __declspec(dllexport)
 #else
-  #define DLLImport extern
-  #define DLLExport __attribute__ ((visibility ("default")))
+#define DLLImport extern
+#define DLLExport __attribute__((visibility("default")))
 #endif
 
 #include <stdio.h>
@@ -207,15 +207,15 @@ typedef int MQTTClient_token;
  */
 typedef struct
 {
-	/** The eyecatcher for this structure.  must be MQTM. */
-	char struct_id[4];
-	/** The version number of this structure.  Must be 0 */
-	int struct_version;
-	/** The length of the MQTT message payload in bytes. */
-	int payloadlen;
-	/** A pointer to the payload of the MQTT message. */
-	void* payload;
-	/** 
+    /** The eyecatcher for this structure.  must be MQTM. */
+    char struct_id[4];
+    /** The version number of this structure.  Must be 0 */
+    int struct_version;
+    /** The length of the MQTT message payload in bytes. */
+    int payloadlen;
+    /** A pointer to the payload of the MQTT message. */
+    void* payload;
+    /** 
      * The quality of service (QoS) assigned to the message. 
      * There are three levels of QoS:
      * <DL>
@@ -228,8 +228,8 @@ typedef struct
      * <DD>Once and one only - the message will be delivered exactly once.</DD>
      * </DL>
      */
-	int qos;
-	/** 
+    int qos;
+    /** 
      * The retained flag serves two purposes depending on whether the message
      * it is associated with is being published or received. 
      * 
@@ -247,21 +247,24 @@ typedef struct
      * a normal message, received as a result of it being published to the 
      * server.
      */
-	int retained;
-	/** 
+    int retained;
+    /** 
       * The dup flag indicates whether or not this message is a duplicate. 
       * It is only meaningful when receiving QoS1 messages. When true, the
       * client application should take appropriate action to deal with the
       * duplicate message.
       */
-	int dup;
-	/** The message identifier is normally reserved for internal use by the
+    int dup;
+    /** The message identifier is normally reserved for internal use by the
       * MQTT client and server. 
       */
-	int msgid;
+    int msgid;
 } MQTTClient_message;
 
-#define MQTTClient_message_initializer { {'M', 'Q', 'T', 'M'}, 0, 0, NULL, 0, 0, 0, 0 }
+#define MQTTClient_message_initializer                                                                                                                                             \
+    {                                                                                                                                                                              \
+        {'M', 'Q', 'T', 'M'}, 0, 0, NULL, 0, 0, 0, 0                                                                                                                               \
+    }
 
 /**
  * This is a callback function. The client application
@@ -357,9 +360,7 @@ typedef void MQTTClient_connectionLost(void* context, char* cause);
  * @return ::MQTTCLIENT_SUCCESS if the callbacks were correctly set,
  * ::MQTTCLIENT_FAILURE if an error occurred.
  */
-DLLExport int MQTTClient_setCallbacks(MQTTClient handle, void* context, MQTTClient_connectionLost* cl,
-									MQTTClient_messageArrived* ma, MQTTClient_deliveryComplete* dc);
-		
+DLLExport int MQTTClient_setCallbacks(MQTTClient handle, void* context, MQTTClient_connectionLost* cl, MQTTClient_messageArrived* ma, MQTTClient_deliveryComplete* dc);
 
 /**
  * This function creates an MQTT client ready for connection to the 
@@ -405,8 +406,7 @@ DLLExport int MQTTClient_setCallbacks(MQTTClient handle, void* context, MQTTClie
  * @return ::MQTTCLIENT_SUCCESS if the client is successfully created, otherwise
  * an error code is returned.
  */
-DLLExport int MQTTClient_create(MQTTClient* handle, const char* serverURI, const char* clientId,
-		int persistence_type, void* persistence_context);
+DLLExport int MQTTClient_create(MQTTClient* handle, const char* serverURI, const char* clientId, int persistence_type, void* persistence_context);
 
 /**
  * MQTTClient_willOptions defines the MQTT "Last Will and Testament" (LWT) settings for
@@ -422,26 +422,29 @@ DLLExport int MQTTClient_create(MQTTClient* handle, const char* serverURI, const
  */
 typedef struct
 {
-	/** The eyecatcher for this structure.  must be MQTW. */
-	const char struct_id[4];
-	/** The version number of this structure.  Must be 0 */
-	int struct_version;
-	/** The LWT topic to which the LWT message will be published. */
-	const char* topicName;
-	/** The LWT payload. */
-	const char* message;
-	/**
+    /** The eyecatcher for this structure.  must be MQTW. */
+    const char struct_id[4];
+    /** The version number of this structure.  Must be 0 */
+    int struct_version;
+    /** The LWT topic to which the LWT message will be published. */
+    const char* topicName;
+    /** The LWT payload. */
+    const char* message;
+    /**
       * The retained flag for the LWT message (see MQTTClient_message.retained).
       */
-	int retained;
-	/** 
+    int retained;
+    /** 
       * The quality of service setting for the LWT message (see 
       * MQTTClient_message.qos and @ref qos).
       */
-	int qos;
+    int qos;
 } MQTTClient_willOptions;
 
-#define MQTTClient_willOptions_initializer { {'M', 'Q', 'T', 'W'}, 0, NULL, NULL, 0, 0 }
+#define MQTTClient_willOptions_initializer                                                                                                                                         \
+    {                                                                                                                                                                              \
+        {'M', 'Q', 'T', 'W'}, 0, NULL, NULL, 0, 0                                                                                                                                  \
+    }
 
 /**
 * MQTTClient_sslProperties defines the settings to establish an SSL/TLS connection using the 
@@ -455,29 +458,29 @@ typedef struct
 *   to establish an SSL connection. Note that this scenario is not fully secure since it is subject to
 *   man-in-the-middle attacks.
 */
-typedef struct 
+typedef struct
 {
-	/** The eyecatcher for this structure.  Must be MQTS */
-	const char struct_id[4];
-	/** The version number of this structure.  Must be 0 */
-	int struct_version;	
-	
-	/** The file in PEM format containing the public digital certificates trusted by the client. */
-	const char* trustStore;
+    /** The eyecatcher for this structure.  Must be MQTS */
+    const char struct_id[4];
+    /** The version number of this structure.  Must be 0 */
+    int struct_version;
 
-	/** The file in PEM format containing the public certificate chain of the client. It may also include
+    /** The file in PEM format containing the public digital certificates trusted by the client. */
+    const char* trustStore;
+
+    /** The file in PEM format containing the public certificate chain of the client. It may also include
 	* the client's private key. 
 	*/
-	const char* keyStore;
-	
-	/** If not included in the sslKeyStore, this setting points to the file in PEM format containing
+    const char* keyStore;
+
+    /** If not included in the sslKeyStore, this setting points to the file in PEM format containing
 	* the client's private key.
 	*/
-	const char* privateKey;
-	/** The password to load the client's privateKey if encrypted. */
-	const char* privateKeyPassword;
- 
-	/**
+    const char* privateKey;
+    /** The password to load the client's privateKey if encrypted. */
+    const char* privateKeyPassword;
+
+    /**
 	* The list of cipher suites that the client will present to the server during the SSL handshake. For a 
 	* full explanation of the cipher list format, please see the OpenSSL on-line documentation:
 	* http://www.openssl.org/docs/apps/ciphers.html#CIPHER_LIST_FORMAT
@@ -485,14 +488,17 @@ typedef struct
 	* those offering no encryption- will be considered.
 	* This setting can be used to set an SSL anonymous connection ("aNULL" string value, for instance).
 	*/
-	const char* enabledCipherSuites;
+    const char* enabledCipherSuites;
 
     /** True/False option to enable verification of the server certificate **/
     int enableServerCertAuth;
-  
+
 } MQTTClient_SSLOptions;
 
-#define MQTTClient_SSLOptions_initializer { {'M', 'Q', 'T', 'S'}, 0, NULL, NULL, NULL, NULL, NULL, 1 }
+#define MQTTClient_SSLOptions_initializer                                                                                                                                          \
+    {                                                                                                                                                                              \
+        {'M', 'Q', 'T', 'S'}, 0, NULL, NULL, NULL, NULL, NULL, 1                                                                                                                   \
+    }
 
 /**
  * MQTTClient_connectOptions defines several settings that control the way the
@@ -510,16 +516,16 @@ typedef struct
  */
 typedef struct
 {
-	/** The eyecatcher for this structure.  must be MQTC. */
-	const char struct_id[4];
-	/** The version number of this structure.  Must be 0, 1, 2, 3 or 4.  
+    /** The eyecatcher for this structure.  must be MQTC. */
+    const char struct_id[4];
+    /** The version number of this structure.  Must be 0, 1, 2, 3 or 4.  
 	 * 0 signifies no SSL options and no serverURIs
 	 * 1 signifies no serverURIs 
 	 * 2 signifies no MQTTVersion
 	 * 3 signifies no returned values
 	 */
-	int struct_version;
-	/** The "keep alive" interval, measured in seconds, defines the maximum time
+    int struct_version;
+    /** The "keep alive" interval, measured in seconds, defines the maximum time
    * that should pass without communication between the client and the server
    * The client will ensure that at least one message travels across the
    * network within each keep alive period.  In the absence of a data-related 
@@ -528,8 +534,8 @@ typedef struct
    * interval enables the client to detect when the server is no longer 
 	 * available without having to wait for the long TCP/IP timeout.
 	 */
-	int keepAliveInterval;
-	/** 
+    int keepAliveInterval;
+    /** 
    * This is a boolean value. The cleansession setting controls the behaviour
    * of both the client and the server at connection and disconnection time.
    * The client and server both maintain session state information. This
@@ -550,8 +556,8 @@ typedef struct
    * the previous session is resumed. If no previous session exists, a new
    * session is started.
 	 */
-	int cleansession;
-	/** 
+    int cleansession;
+    /** 
    * This is a boolean value that controls how many messages can be in-flight
    * simultaneously. Setting <i>reliable</i> to true means that a published 
    * message must be completed (acknowledgements received) before another
@@ -560,43 +566,43 @@ typedef struct
 	 * false allows up to 10 messages to be in-flight. This can increase 
    * overall throughput in some circumstances.
 	 */
-	int reliable;		
-	/** 
+    int reliable;
+    /** 
    * This is a pointer to an MQTTClient_willOptions structure. If your 
    * application does not make use of the Last Will and Testament feature, 
    * set this pointer to NULL.
    */
-	MQTTClient_willOptions* will;
-	/** 
+    MQTTClient_willOptions* will;
+    /** 
    * MQTT servers that support the MQTT v3.1.1 protocol provide authentication
    * and authorisation by user name and password. This is the user name 
    * parameter. 
    */
-	const char* username;	
-	/** 
+    const char* username;
+    /** 
    * MQTT servers that support the MQTT v3.1.1 protocol provide authentication
    * and authorisation by user name and password. This is the password 
    * parameter.
    */
-	const char* password;
-	/**
+    const char* password;
+    /**
    * The time interval in seconds to allow a connect to complete.
    */
-	int connectTimeout;
-	/**
+    int connectTimeout;
+    /**
 	 * The time interval in seconds
 	 */
-	int retryInterval;
-	/** 
+    int retryInterval;
+    /** 
    * This is a pointer to an MQTTClient_SSLOptions structure. If your 
    * application does not make use of SSL, set this pointer to NULL.
    */
-	MQTTClient_SSLOptions* ssl;
-	/**
+    MQTTClient_SSLOptions* ssl;
+    /**
 	 * The number of entries in the optional serverURIs array. Defaults to 0.
 	 */
-	int serverURIcount;
-	/**
+    int serverURIcount;
+    /**
    * An optional array of null-terminated strings specifying the servers to
    * which the client will connect. Each string takes the form <i>protocol://host:port</i>.
    * <i>protocol</i> must be <i>tcp</i> or <i>ssl</i>. For <i>host</i>, you can 
@@ -605,27 +611,30 @@ typedef struct
    * <i>tcp://localhost:1883</i>.
    * If this list is empty (the default), the server URI specified on MQTTClient_create()
    * is used.
-   */    
-	char* const* serverURIs;
-	/**
+   */
+    char* const* serverURIs;
+    /**
 	 * Sets the version of MQTT to be used on the connect.
 	 * MQTTVERSION_DEFAULT (0) = default: start with 3.1.1, and if that fails, fall back to 3.1
 	 * MQTTVERSION_3_1 (3) = only try version 3.1
 	 * MQTTVERSION_3_1_1 (4) = only try version 3.1.1
 	 */
-	int MQTTVersion;
-	/**
+    int MQTTVersion;
+    /**
 	 * Returned from the connect when the MQTT version used to connect is 3.1.1
 	 */
-	struct 
-	{
-		const char* serverURI;     /**< the serverURI connected to */
-		int MQTTVersion;     /**< the MQTT version used to connect with */
-		int sessionPresent;  /**< if the MQTT version is 3.1.1, the value of sessionPresent returned in the connack */
-	} returned;
+    struct
+    {
+        const char* serverURI; /**< the serverURI connected to */
+        int MQTTVersion;       /**< the MQTT version used to connect with */
+        int sessionPresent;    /**< if the MQTT version is 3.1.1, the value of sessionPresent returned in the connack */
+    } returned;
 } MQTTClient_connectOptions;
 
-#define MQTTClient_connectOptions_initializer { {'M', 'Q', 'T', 'C'}, 4, 60, 1, 1, NULL, NULL, NULL, 30, 20, NULL, 0, NULL, 0}
+#define MQTTClient_connectOptions_initializer                                                                                                                                      \
+    {                                                                                                                                                                              \
+        {'M', 'Q', 'T', 'C'}, 4, 60, 1, 1, NULL, NULL, NULL, 30, 20, NULL, 0, NULL, 0                                                                                              \
+    }
 
 /**
   * MQTTClient_libraryInfo is used to store details relating to the currently used
@@ -636,8 +645,8 @@ typedef struct
 
 typedef struct
 {
-	const char* name;
-	const char* value;
+    const char* name;
+    const char* value;
 } MQTTClient_nameValue;
 
 /**
@@ -697,7 +706,6 @@ DLLExport int MQTTClient_disconnect(MQTTClient handle, int timeout);
   * @return Boolean true if the client is connected, otherwise false.
   */
 DLLExport int MQTTClient_isConnected(MQTTClient handle);
-
 
 /* Subscribe is synchronous.  QoS list parameter is changed on return to granted QoSs.
    Returns return code, MQTTCLIENT_SUCCESS == success, non-zero some sort of error (TBD) */
@@ -782,8 +790,7 @@ DLLExport int MQTTClient_unsubscribeMany(MQTTClient handle, int count, char* con
   * @return ::MQTTCLIENT_SUCCESS if the message is accepted for publication. 
   * An error code is returned if there was a problem accepting the message.
   */
-DLLExport int MQTTClient_publish(MQTTClient handle, const char* topicName, int payloadlen, void* payload, int qos, int retained,
-																 MQTTClient_deliveryToken* dt);
+DLLExport int MQTTClient_publish(MQTTClient handle, const char* topicName, int payloadlen, void* payload, int qos, int retained, MQTTClient_deliveryToken* dt);
 /** 
   * This function attempts to publish a message to a given topic (see also
   * MQTTClient_publish()). An ::MQTTClient_deliveryToken is issued when 
@@ -805,7 +812,6 @@ DLLExport int MQTTClient_publish(MQTTClient handle, const char* topicName, int p
   */
 DLLExport int MQTTClient_publishMessage(MQTTClient handle, const char* topicName, MQTTClient_message* msg, MQTTClient_deliveryToken* dt);
 
-
 /**
   * This function is called by the client application to synchronize execution
   * of the main thread with completed publication of a message. When called,
@@ -822,7 +828,6 @@ DLLExport int MQTTClient_publishMessage(MQTTClient handle, const char* topicName
   * checking the token.
   */
 DLLExport int MQTTClient_waitForCompletion(MQTTClient handle, MQTTClient_deliveryToken dt, unsigned long timeout);
-
 
 /**
   * This function sets a pointer to an array of delivery tokens for 
@@ -842,7 +847,7 @@ DLLExport int MQTTClient_waitForCompletion(MQTTClient handle, MQTTClient_deliver
   * An error code is returned if there was a problem obtaining the list of
   * pending tokens.
   */
-DLLExport int MQTTClient_getPendingDeliveryTokens(MQTTClient handle, MQTTClient_deliveryToken **tokens);
+DLLExport int MQTTClient_getPendingDeliveryTokens(MQTTClient handle, MQTTClient_deliveryToken** tokens);
 
 /**
   * When implementing a single-threaded client, call this function periodically
@@ -883,8 +888,7 @@ DLLExport void MQTTClient_yield(void);
   * timeout expired, in which case <i>message</i> is NULL. An error code is 
   * returned if there was a problem trying to receive a message.
   */
-DLLExport int MQTTClient_receive(MQTTClient handle, char** topicName, int* topicLen, MQTTClient_message** message,
-		unsigned long timeout);
+DLLExport int MQTTClient_receive(MQTTClient handle, char** topicName, int* topicLen, MQTTClient_message** message, unsigned long timeout);
 
 /* Function Added: sleep  */
 DLLExport void MQTTClient_sleep(long milliseconds);
@@ -922,7 +926,7 @@ DLLExport void MQTTClient_destroy(MQTTClient* handle);
 
 #endif
 #ifdef __cplusplus
-     }
+}
 #endif
 
 /**

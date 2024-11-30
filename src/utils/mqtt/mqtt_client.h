@@ -14,17 +14,15 @@
 extern "C" {
 #endif
 
-
-
 /**
  * Return code: No error. Indicates successful completion of an MQTT client operation
  */
-#define MQTT_SUCCESS   0
+#define MQTT_SUCCESS 0
 
 /**
  * Return code:  A generic error code indicating the failure of an MQTT client operation
  */
-#define MQTT_FAILURE  -1
+#define MQTT_FAILURE -1
 
 /**
  * Return code: The client is disconnected.
@@ -65,12 +63,10 @@ extern "C" {
  */
 #define MQTT_BAD_QOS -9
 
-
-
 /**
  * Quality of service : At most once
  */
-#define QOS_AT_MOST_ONCE  0
+#define QOS_AT_MOST_ONCE 0
 
 /**
  * Quality of service : At least once
@@ -80,18 +76,17 @@ extern "C" {
 /**
  * Quality of service : Exactly once
  */
-#define QOS_EXACTLY_ONCE  2
+#define QOS_EXACTLY_ONCE 2
 
 /**
  * Default port of MQTT server
  */
-#define MQTT_PORT  1883
+#define MQTT_PORT 1883
 
 /**
  * Default time out of MQTT client
  */
-#define MQTT_DEFAULT_TIME_OUT  3000
-
+#define MQTT_DEFAULT_TIME_OUT 3000
 
 /* MQTT client object*/
 typedef struct _mqtt_client mqtt_client;
@@ -99,24 +94,24 @@ typedef struct _mqtt_client mqtt_client;
 /**
  * prototype of callback function when message arrived
  */
-typedef int CALLBACK_MESSAGE_ARRIVED(mqtt_client *m, char *topic, char *data, int length);
+typedef int CALLBACK_MESSAGE_ARRIVED(mqtt_client* m, char* topic, char* data, int length);
 
 /* structure of MQTT client object*/
-struct _mqtt_client {
-	MQTTClient client;
-	//int Qos;     //Quality of service
-	int timeout; //time out (milliseconds)
-	CALLBACK_MESSAGE_ARRIVED *on_message_arrived;
+struct _mqtt_client
+{
+    MQTTClient client;
+    //int Qos;     //Quality of service
+    int timeout; //time out (milliseconds)
+    CALLBACK_MESSAGE_ARRIVED* on_message_arrived;
 
-	int    received_message_id;
-	char * received_topic;
-	char * received_message;
-	int    received_message_len;
-	int    received_topic_len;
+    int received_message_id;
+    char* received_topic;
+    char* received_message;
+    int received_message_len;
+    int received_topic_len;
 
-	MQTTClient_message * received_msg;
+    MQTTClient_message* received_msg;
 };
-
 
 /**
  * Create a new MQTT client object
@@ -127,13 +122,12 @@ struct _mqtt_client {
  * @return pointer to MQTT client object if success. return NULL if fail;
  *
  */
-mqtt_client * mqtt_new(char * host, int port, char *client_id);
+mqtt_client* mqtt_new(char* host, int port, char* client_id);
 
 /**
  * Delete MQTT client object
  */
-int mqtt_delete(mqtt_client *m);
-
+int mqtt_delete(mqtt_client* m);
 
 /**
  * Connect to server
@@ -144,7 +138,7 @@ int mqtt_delete(mqtt_client *m);
  *
  * @return 0 if success, else return error code
  */
-int mqtt_connect(mqtt_client * m, char *username, char *password);
+int mqtt_connect(mqtt_client* m, char* username, char* password);
 
 /**
  * Disconnect
@@ -153,7 +147,7 @@ int mqtt_connect(mqtt_client * m, char *username, char *password);
  *
  * @return 0 if success, else return error code
  */
-int mqtt_disconnect(mqtt_client * m);
+int mqtt_disconnect(mqtt_client* m);
 
 /**
  * Return 1 if MQTT client is connected
@@ -162,8 +156,7 @@ int mqtt_disconnect(mqtt_client * m);
  *
  * @return 1 if MQTT client is connected, else return 0
  */
-int mqtt_is_connected(mqtt_client *m);
-
+int mqtt_is_connected(mqtt_client* m);
 
 /**
  * When implementing a single-threaded client, call this function periodically to allow
@@ -172,7 +165,6 @@ int mqtt_is_connected(mqtt_client *m);
  */
 void mqtt_yield(void);
 
-
 /**
  * Set timeout
  *
@@ -180,12 +172,12 @@ void mqtt_yield(void);
  *
  * @return 0 if success, else return error code
  */
-int mqtt_set_timeout(mqtt_client *m, int timeout);
+int mqtt_set_timeout(mqtt_client* m, int timeout);
 
 /**
  * set callback function when message arrived
  */
-int mqtt_set_callback_message_arrived(mqtt_client *m, CALLBACK_MESSAGE_ARRIVED * function);
+int mqtt_set_callback_message_arrived(mqtt_client* m, CALLBACK_MESSAGE_ARRIVED* function);
 
 /**
  * Subscribe a topic
@@ -195,8 +187,7 @@ int mqtt_set_callback_message_arrived(mqtt_client *m, CALLBACK_MESSAGE_ARRIVED *
  *
  * @return 0 if success, else return error code
  */
-int mqtt_subscribe(mqtt_client *m, char *topic, int Qos);
-
+int mqtt_subscribe(mqtt_client* m, char* topic, int Qos);
 
 /**
  * Unsubscribe a topic
@@ -205,10 +196,7 @@ int mqtt_subscribe(mqtt_client *m, char *topic, int Qos);
  *
  * @return 0 if success, else return error code
  */
-int mqtt_unsubscribe(mqtt_client *m, char *topic);
-
-
-
+int mqtt_unsubscribe(mqtt_client* m, char* topic);
 
 /**
  * Publish a data
@@ -222,8 +210,7 @@ int mqtt_unsubscribe(mqtt_client *m, char *topic);
  * @return positive integer of message token if success. return negative integer of error code if fail
  *    Token is a value representing an MQTT message
  */
-int mqtt_publish_data(mqtt_client * m, char *topic, void *data, int length, int Qos);
-
+int mqtt_publish_data(mqtt_client* m, char* topic, void* data, int length, int Qos);
 
 /**
  * Publish a text message
@@ -236,9 +223,7 @@ int mqtt_publish_data(mqtt_client * m, char *topic, void *data, int length, int 
  * @return positive integer of message token if success. return negative integer of error code if fail
  *    Token is a value representing an MQTT message
  */
-int mqtt_publish(mqtt_client * m, char *topic, char *message, int Qos);
-
-
+int mqtt_publish(mqtt_client* m, char* topic, char* message, int Qos);
 
 /**
  * Receive message
@@ -247,8 +232,7 @@ int mqtt_publish(mqtt_client * m, char *topic, char *message, int Qos);
  *
  * @return 0 if message is recieved.
  */
-int mqtt_receive(mqtt_client *m, unsigned long timeout);
-
+int mqtt_receive(mqtt_client* m, unsigned long timeout);
 
 /**
  * Sleep a while
@@ -258,7 +242,6 @@ int mqtt_receive(mqtt_client *m, unsigned long timeout);
  * @return none
  */
 void mqtt_sleep(int milliseconds);
-
 
 #ifdef __cplusplus
 }

@@ -17,7 +17,7 @@
  *******************************************************************************/
 
 #if defined(__cplusplus)
- extern "C" {
+extern "C" {
 #endif
 
 #include "Clients.h"
@@ -41,34 +41,33 @@ int MQTTPersistence_clear(Clients* c);
 int MQTTPersistence_restore(Clients* c);
 void* MQTTPersistence_restorePacket(char* buffer, size_t buflen);
 void MQTTPersistence_insertInOrder(List* list, void* content, size_t size);
-int MQTTPersistence_put(int socket, char* buf0, size_t buf0len, int count, 
-								 char** buffers, size_t* buflens, int htype, int msgId, int scr);
+int MQTTPersistence_put(int socket, char* buf0, size_t buf0len, int count, char** buffers, size_t* buflens, int htype, int msgId, int scr);
 int MQTTPersistence_remove(Clients* c, char* type, int qos, int msgId);
-void MQTTPersistence_wrapMsgID(Clients *c);
+void MQTTPersistence_wrapMsgID(Clients* c);
 
 typedef struct
 {
-	char struct_id[4];
-	int struct_version;
-	int payloadlen;
-	void* payload;
-	int qos;
-	int retained;
-	int dup;
-	int msgid;
+    char struct_id[4];
+    int struct_version;
+    int payloadlen;
+    void* payload;
+    int qos;
+    int retained;
+    int dup;
+    int msgid;
 } MQTTPersistence_message;
 
 typedef struct
 {
-	MQTTPersistence_message* msg;
-	char* topicName;
-	int topicLen;
-	unsigned int seqno; /* only used on restore */
+    MQTTPersistence_message* msg;
+    char* topicName;
+    int topicLen;
+    unsigned int seqno; /* only used on restore */
 } MQTTPersistence_qEntry;
 
 int MQTTPersistence_unpersistQueueEntry(Clients* client, MQTTPersistence_qEntry* qe);
 int MQTTPersistence_persistQueueEntry(Clients* aclient, MQTTPersistence_qEntry* qe);
 int MQTTPersistence_restoreMessageQueue(Clients* c);
 #ifdef __cplusplus
-     }
+}
 #endif

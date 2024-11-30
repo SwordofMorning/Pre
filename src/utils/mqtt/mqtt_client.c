@@ -21,29 +21,32 @@
  * @return client handle if success. return NULL if fail;
  *
  */
-mqtt_client * mqtt_new(char * host, int port, char *client_id)
+mqtt_client* mqtt_new(char* host, int port, char* client_id)
 {
-	mqtt_client * m;
-	int rc;
+    mqtt_client* m;
+    int rc;
 
-	m = malloc(sizeof(mqtt_client));
-	if ( m != NULL) {
-		memset(m , 0, sizeof(mqtt_client));
-		rc = MQTTClient_create(&(m->client), host, client_id, MQTTCLIENT_PERSISTENCE_NONE, NULL);
-		if ( rc == MQTTCLIENT_SUCCESS ) {
-			m->timeout = MQTT_DEFAULT_TIME_OUT;
-			m->received_msg = NULL;
-			//mqtt_set_callback_message_arrived(m, m->on_message_arrived);
-		} else {
-			free(m);
-			errno = rc;
-			m = NULL;
-			return NULL;
-		}
-	}
-	return m;
+    m = malloc(sizeof(mqtt_client));
+    if (m != NULL)
+    {
+        memset(m, 0, sizeof(mqtt_client));
+        rc = MQTTClient_create(&(m->client), host, client_id, MQTTCLIENT_PERSISTENCE_NONE, NULL);
+        if (rc == MQTTCLIENT_SUCCESS)
+        {
+            m->timeout = MQTT_DEFAULT_TIME_OUT;
+            m->received_msg = NULL;
+            //mqtt_set_callback_message_arrived(m, m->on_message_arrived);
+        }
+        else
+        {
+            free(m);
+            errno = rc;
+            m = NULL;
+            return NULL;
+        }
+    }
+    return m;
 }
-
 
 /**
  * Connect to server
@@ -52,22 +55,22 @@ mqtt_client * mqtt_new(char * host, int port, char *client_id)
  *
  * @return 0 if success, else return error code
  */
-int mqtt_connect(mqtt_client * m, char *username, char *password)
+int mqtt_connect(mqtt_client* m, char* username, char* password)
 {
-	int rc;
-	MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
+    int rc;
+    MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
 
-	if (!m) return -1;
+    if (!m)
+        return -1;
 
-	conn_opts.keepAliveInterval = 20;
-	conn_opts.cleansession = 1;
-	conn_opts.username = username;
-	conn_opts.password = password;
+    conn_opts.keepAliveInterval = 20;
+    conn_opts.cleansession = 1;
+    conn_opts.username = username;
+    conn_opts.password = password;
 
-	rc = MQTTClient_connect(m->client, &conn_opts);
-	return rc;
+    rc = MQTTClient_connect(m->client, &conn_opts);
+    return rc;
 }
-
 
 /**
  * Disconnect
@@ -76,10 +79,11 @@ int mqtt_connect(mqtt_client * m, char *username, char *password)
  *
  * @return 0 if success, else return error code
  */
-int mqtt_disconnect(mqtt_client * m)
+int mqtt_disconnect(mqtt_client* m)
 {
-	if (!m) return -1;
-	return MQTTClient_disconnect(m->client, 10000);
+    if (!m)
+        return -1;
+    return MQTTClient_disconnect(m->client, 10000);
 }
 
 /**
@@ -89,12 +93,12 @@ int mqtt_disconnect(mqtt_client * m)
  *
  * @return 1 if MQTT client is connected, else return 0
  */
-int mqtt_is_connected(mqtt_client *m)
+int mqtt_is_connected(mqtt_client* m)
 {
-	if (!m) return 0;
-	return MQTTClient_isConnected(m->client);
+    if (!m)
+        return 0;
+    return MQTTClient_isConnected(m->client);
 }
-
 
 /**
  * When implementing a single-threaded client, call this function periodically to allow
@@ -103,62 +107,65 @@ int mqtt_is_connected(mqtt_client *m)
  */
 void mqtt_yield(void)
 {
-	MQTTClient_yield();
+    MQTTClient_yield();
 }
 
 /**
  * Set timeout
  */
-int mqtt_set_timeout(mqtt_client *m, int timeout)
+int mqtt_set_timeout(mqtt_client* m, int timeout)
 {
-	if (!m) return -1;
-	m->timeout = timeout;
-	return MQTT_SUCCESS;
+    if (!m)
+        return -1;
+    m->timeout = timeout;
+    return MQTT_SUCCESS;
 }
 
 //internal callback function
-static int internal_callback_message_arrived(void *context, char *topicName, int topicLen, MQTTClient_message *message)
+static int internal_callback_message_arrived(void* context, char* topicName, int topicLen, MQTTClient_message* message)
 {
-	mqtt_client *m;
+    mqtt_client* m;
 
-	m = (mqtt_client *)context;
-	if (!m) return -1;
-	if (m->on_message_arrived == NULL) return -1;
+    m = (mqtt_client*)context;
+    if (!m)
+        return -1;
+    if (m->on_message_arrived == NULL)
+        return -1;
 
-	if ( topicName[topicLen] != 0 )
-		topicName[topicLen] = 0;
+    if (topicName[topicLen] != 0)
+        topicName[topicLen] = 0;
 
-	return m->on_message_arrived(m, topicName, message->payload, message->payloadlen);
+    return m->on_message_arrived(m, topicName, message->payload, message->payloadlen);
 }
 
 //internal callback function
-static void internal_callback_connectionLost(void *context, char *cause)
+static void internal_callback_connectionLost(void* context, char* cause)
 {
-	return;
+    return;
 }
 
 //internal callback function
-void internal_callback_delivery_complete(void *context, MQTTClient_deliveryToken dt)
+void internal_callback_delivery_complete(void* context, MQTTClient_deliveryToken dt)
 {
-	return;
+    return;
 }
-
 
 /**
  * set callback function when message arrived
  */
-int mqtt_set_callback_message_arrived(mqtt_client *m, CALLBACK_MESSAGE_ARRIVED * function)
+int mqtt_set_callback_message_arrived(mqtt_client* m, CALLBACK_MESSAGE_ARRIVED* function)
 {
-	int ret;
+    int ret;
 
-	if (!m) return -1;
-	m->on_message_arrived = function;
-	ret = MQTTClient_setCallbacks(m->client, m,
-		internal_callback_connectionLost,    //MQTTClient_connectionLost * 	cl,
-		internal_callback_message_arrived,   //MQTTClient_messageArrived * 	ma,
-		internal_callback_delivery_complete  //MQTTClient_deliveryComplete * 	dc
-		);
-	return ret;
+    if (!m)
+        return -1;
+    m->on_message_arrived = function;
+    ret = MQTTClient_setCallbacks(m->client, m,
+                                  internal_callback_connectionLost,   //MQTTClient_connectionLost * 	cl,
+                                  internal_callback_message_arrived,  //MQTTClient_messageArrived * 	ma,
+                                  internal_callback_delivery_complete //MQTTClient_deliveryComplete * 	dc
+    );
+    return ret;
 }
 
 /**
@@ -169,10 +176,11 @@ int mqtt_set_callback_message_arrived(mqtt_client *m, CALLBACK_MESSAGE_ARRIVED *
  *
  * @return 0 if success, else return error code
  */
-int mqtt_subscribe(mqtt_client *m, char *topic, int Qos)
+int mqtt_subscribe(mqtt_client* m, char* topic, int Qos)
 {
-	if (!m) return -1;
-	return MQTTClient_subscribe	(m->client, topic, Qos);
+    if (!m)
+        return -1;
+    return MQTTClient_subscribe(m->client, topic, Qos);
 }
 
 /**
@@ -182,23 +190,23 @@ int mqtt_subscribe(mqtt_client *m, char *topic, int Qos)
  *
  * @return 0 if success, else return error code
  */
-int mqtt_unsubscribe(mqtt_client *m, char *topic)
+int mqtt_unsubscribe(mqtt_client* m, char* topic)
 {
-	if (!m) return -1;
-	return MQTTClient_unsubscribe	(m->client, topic);
+    if (!m)
+        return -1;
+    return MQTTClient_unsubscribe(m->client, topic);
 }
-
 
 /**
  * Delete MQTT client object
  */
-int mqtt_delete(mqtt_client *m)
+int mqtt_delete(mqtt_client* m)
 {
-	if (!m) return -1;
-	MQTTClient_destroy(&(m->client));
-	return 0;
+    if (!m)
+        return -1;
+    MQTTClient_destroy(&(m->client));
+    return 0;
 }
-
 
 /**
  * Publish a data
@@ -212,34 +220,35 @@ int mqtt_delete(mqtt_client *m)
  * @return positive integer of message token if success. return negative integer of error code if fail
  *    Token is a value representing an MQTT message
  */
-int mqtt_publish_data(mqtt_client * m, char *topic, void *data, int length, int Qos)
+int mqtt_publish_data(mqtt_client* m, char* topic, void* data, int length, int Qos)
 {
-	MQTTClient_message pubmsg = MQTTClient_message_initializer;
-	MQTTClient_deliveryToken token = -1;
-	int rc;
+    MQTTClient_message pubmsg = MQTTClient_message_initializer;
+    MQTTClient_deliveryToken token = -1;
+    int rc;
 
-	if (!m) return -1;
+    if (!m)
+        return -1;
 
-	pubmsg.payload = data;
-	pubmsg.payloadlen = length;
-	pubmsg.qos = Qos;
-	pubmsg.retained = 0;
+    pubmsg.payload = data;
+    pubmsg.payloadlen = length;
+    pubmsg.qos = Qos;
+    pubmsg.retained = 0;
 
-	rc = MQTTClient_publishMessage(m->client, topic, &pubmsg, &token);
-	if ( rc != MQTTCLIENT_SUCCESS )
-		return rc;
+    rc = MQTTClient_publishMessage(m->client, topic, &pubmsg, &token);
+    if (rc != MQTTCLIENT_SUCCESS)
+        return rc;
 
-	if ( m->timeout > 0 ) {
-		rc = MQTTClient_waitForCompletion(m->client, token, m->timeout);
-		if ( rc != MQTTCLIENT_SUCCESS )
-			return rc;
-		else
-			return token;
-	}
+    if (m->timeout > 0)
+    {
+        rc = MQTTClient_waitForCompletion(m->client, token, m->timeout);
+        if (rc != MQTTCLIENT_SUCCESS)
+            return rc;
+        else
+            return token;
+    }
 
-	return token;
+    return token;
 }
-
 
 /**
  * Publish a text message
@@ -252,35 +261,35 @@ int mqtt_publish_data(mqtt_client * m, char *topic, void *data, int length, int 
  * @return positive integer of message token if success. return negative integer of error code if fail
  *    Token is a value representing an MQTT message
  */
-int mqtt_publish(mqtt_client * m, char *topic, char *message, int Qos)
+int mqtt_publish(mqtt_client* m, char* topic, char* message, int Qos)
 {
-	return mqtt_publish_data(m, topic, message, strlen(message), Qos);
+    return mqtt_publish_data(m, topic, message, strlen(message), Qos);
 }
 
-
-static void mqtt_clear_received(mqtt_client *m)
+static void mqtt_clear_received(mqtt_client* m)
 {
-	if (!m) return;
+    if (!m)
+        return;
 
-	//MQTTClient_freeMessage();
+    //MQTTClient_freeMessage();
 
-	if ( m->received_msg != NULL ) {
-		//free(m->received_msg->payload);
-		//free(m->received_msg);
-		m->received_msg = NULL;
-		m->received_message = NULL;
-		m->received_message_len = 0;
-		m->received_message_id = 0;
-	}
+    if (m->received_msg != NULL)
+    {
+        //free(m->received_msg->payload);
+        //free(m->received_msg);
+        m->received_msg = NULL;
+        m->received_message = NULL;
+        m->received_message_len = 0;
+        m->received_message_id = 0;
+    }
 
-	/*
+    /*
 	if ( m->received_topic != NULL) {
 		free(m->received_topic);
 		m->received_topic = NULL;
 		m->received_topic_len = 0;
 	}
 	*/
-
 }
 
 /**
@@ -292,33 +301,36 @@ static void mqtt_clear_received(mqtt_client *m)
  *
  * @return 0 if message is recieved.
  */
-int mqtt_receive(mqtt_client *m, unsigned long timeout)
+int mqtt_receive(mqtt_client* m, unsigned long timeout)
 {
-	int rc;
+    int rc;
 
-	if (!m) return -1;
+    if (!m)
+        return -1;
 
-	mqtt_clear_received(m);
+    mqtt_clear_received(m);
 
-	rc = MQTTClient_receive(m->client, &(m->received_topic),
-			&(m->received_topic_len), &(m->received_msg), timeout);
+    rc = MQTTClient_receive(m->client, &(m->received_topic), &(m->received_topic_len), &(m->received_msg), timeout);
 
-	if ( rc == MQTTCLIENT_SUCCESS || rc == MQTTCLIENT_TOPICNAME_TRUNCATED ) {
-		if ( m->received_msg == NULL) {
-			rc = -1;
-		} else {
-			rc = MQTTCLIENT_SUCCESS;
-			if ( m->received_topic[m->received_topic_len] != 0 )
-				m->received_topic[m->received_topic_len] = 0;
-			m->received_message = m->received_msg->payload;
-			m->received_message_len = m->received_msg->payloadlen;
-			m->received_message_id = m->received_msg->msgid;
-		}
-	}
+    if (rc == MQTTCLIENT_SUCCESS || rc == MQTTCLIENT_TOPICNAME_TRUNCATED)
+    {
+        if (m->received_msg == NULL)
+        {
+            rc = -1;
+        }
+        else
+        {
+            rc = MQTTCLIENT_SUCCESS;
+            if (m->received_topic[m->received_topic_len] != 0)
+                m->received_topic[m->received_topic_len] = 0;
+            m->received_message = m->received_msg->payload;
+            m->received_message_len = m->received_msg->payloadlen;
+            m->received_message_id = m->received_msg->msgid;
+        }
+    }
 
-	return rc;
+    return rc;
 }
-
 
 /**
  * Sleep a while
@@ -329,6 +341,5 @@ int mqtt_receive(mqtt_client *m, unsigned long timeout)
  */
 void mqtt_sleep(int milliseconds)
 {
-	MQTTClient_sleep(milliseconds);
+    MQTTClient_sleep(milliseconds);
 }
-

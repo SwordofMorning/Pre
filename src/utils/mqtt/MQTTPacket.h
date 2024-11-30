@@ -39,175 +39,177 @@ typedef void* (*pf)(unsigned char, char*, size_t);
 
 enum msgTypes
 {
-	CONNECT = 1, CONNACK, PUBLISH, PUBACK, PUBREC, PUBREL,
-	PUBCOMP, SUBSCRIBE, SUBACK, UNSUBSCRIBE, UNSUBACK,
-	PINGREQ, PINGRESP, DISCONNECT
+    CONNECT = 1,
+    CONNACK,
+    PUBLISH,
+    PUBACK,
+    PUBREC,
+    PUBREL,
+    PUBCOMP,
+    SUBSCRIBE,
+    SUBACK,
+    UNSUBSCRIBE,
+    UNSUBACK,
+    PINGREQ,
+    PINGRESP,
+    DISCONNECT
 };
-
 
 /**
  * Bitfields for the MQTT header byte.
  */
 typedef union
 {
-	/*unsigned*/ char byte;	/**< the whole byte */
+    /*unsigned*/ char byte; /**< the whole byte */
 #if defined(REVERSED)
-	struct
-	{
-		unsigned int type : 4;	/**< message type nibble */
-		bool dup : 1;			/**< DUP flag bit */
-		unsigned int qos : 2;	/**< QoS value, 0, 1 or 2 */
-		bool retain : 1;		/**< retained flag bit */
-	} bits;
+    struct
+    {
+        unsigned int type : 4; /**< message type nibble */
+        bool dup : 1;          /**< DUP flag bit */
+        unsigned int qos : 2;  /**< QoS value, 0, 1 or 2 */
+        bool retain : 1;       /**< retained flag bit */
+    } bits;
 #else
-	struct
-	{
-		bool retain : 1;		/**< retained flag bit */
-		unsigned int qos : 2;	/**< QoS value, 0, 1 or 2 */
-		bool dup : 1;			/**< DUP flag bit */
-		unsigned int type : 4;	/**< message type nibble */
-	} bits;
+    struct
+    {
+        bool retain : 1;       /**< retained flag bit */
+        unsigned int qos : 2;  /**< QoS value, 0, 1 or 2 */
+        bool dup : 1;          /**< DUP flag bit */
+        unsigned int type : 4; /**< message type nibble */
+    } bits;
 #endif
 } Header;
-
 
 /**
  * Data for a connect packet.
  */
 typedef struct
 {
-	Header header;	/**< MQTT header byte */
-	union
-	{
-		unsigned char all;	/**< all connect flags */
+    Header header; /**< MQTT header byte */
+    union
+    {
+        unsigned char all; /**< all connect flags */
 #if defined(REVERSED)
-		struct
-		{
-			bool username : 1;			/**< 3.1 user name */
-			bool password : 1; 			/**< 3.1 password */
-			bool willRetain : 1;		/**< will retain setting */
-			unsigned int willQoS : 2;	/**< will QoS value */
-			bool will : 1;			/**< will flag */
-			bool cleanstart : 1;	/**< cleansession flag */
-			int : 1;	/**< unused */
-		} bits;
+        struct
+        {
+            bool username : 1;        /**< 3.1 user name */
+            bool password : 1;        /**< 3.1 password */
+            bool willRetain : 1;      /**< will retain setting */
+            unsigned int willQoS : 2; /**< will QoS value */
+            bool will : 1;            /**< will flag */
+            bool cleanstart : 1;      /**< cleansession flag */
+            int : 1;                  /**< unused */
+        } bits;
 #else
-		struct
-		{
-			int : 1;	/**< unused */
-			bool cleanstart : 1;	/**< cleansession flag */
-			bool will : 1;			/**< will flag */
-			unsigned int willQoS : 2;	/**< will QoS value */
-			bool willRetain : 1;		/**< will retain setting */
-			bool password : 1; 			/**< 3.1 password */
-			bool username : 1;			/**< 3.1 user name */
-		} bits;
+        struct
+        {
+            int : 1;                  /**< unused */
+            bool cleanstart : 1;      /**< cleansession flag */
+            bool will : 1;            /**< will flag */
+            unsigned int willQoS : 2; /**< will QoS value */
+            bool willRetain : 1;      /**< will retain setting */
+            bool password : 1;        /**< 3.1 password */
+            bool username : 1;        /**< 3.1 user name */
+        } bits;
 #endif
-	} flags;	/**< connect flags byte */
+    } flags; /**< connect flags byte */
 
-	char *Protocol, /**< MQTT protocol name */
-		*clientID,	/**< string client id */
-        *willTopic,	/**< will topic */
-        *willMsg;	/**< will payload */
+    char *Protocol, /**< MQTT protocol name */
+        *clientID,  /**< string client id */
+        *willTopic, /**< will topic */
+        *willMsg;   /**< will payload */
 
-	int keepAliveTimer;		/**< keepalive timeout value in seconds */
-	unsigned char version;	/**< MQTT version number */
+    int keepAliveTimer;    /**< keepalive timeout value in seconds */
+    unsigned char version; /**< MQTT version number */
 } Connect;
-
 
 /**
  * Data for a connack packet.
  */
 typedef struct
 {
-	Header header; /**< MQTT header byte */
-	union
-	{
-		unsigned char all;	/**< all connack flags */
+    Header header; /**< MQTT header byte */
+    union
+    {
+        unsigned char all; /**< all connack flags */
 #if defined(REVERSED)
-		struct
-		{
-			unsigned int reserved : 7;	/**< message type nibble */
-			bool sessionPresent : 1;    /**< was a session found on the server? */
-		} bits;
+        struct
+        {
+            unsigned int reserved : 7; /**< message type nibble */
+            bool sessionPresent : 1;   /**< was a session found on the server? */
+        } bits;
 #else
-		struct
-		{
-			bool sessionPresent : 1;    /**< was a session found on the server? */
-			unsigned int reserved : 7;	/**< message type nibble */
-		} bits;
+        struct
+        {
+            bool sessionPresent : 1;   /**< was a session found on the server? */
+            unsigned int reserved : 7; /**< message type nibble */
+        } bits;
 #endif
-	} flags;	 /**< connack flags byte */
-	char rc; /**< connack return code */
+    } flags; /**< connack flags byte */
+    char rc; /**< connack return code */
 } Connack;
-
 
 /**
  * Data for a packet with header only.
  */
 typedef struct
 {
-	Header header;	/**< MQTT header byte */
+    Header header; /**< MQTT header byte */
 } MQTTPacket;
-
 
 /**
  * Data for a subscribe packet.
  */
 typedef struct
 {
-	Header header;	/**< MQTT header byte */
-	int msgId;		/**< MQTT message id */
-	List* topics;	/**< list of topic strings */
-	List* qoss;		/**< list of corresponding QoSs */
-	int noTopics;	/**< topic and qos count */
+    Header header; /**< MQTT header byte */
+    int msgId;     /**< MQTT message id */
+    List* topics;  /**< list of topic strings */
+    List* qoss;    /**< list of corresponding QoSs */
+    int noTopics;  /**< topic and qos count */
 } Subscribe;
-
 
 /**
  * Data for a suback packet.
  */
 typedef struct
 {
-	Header header;	/**< MQTT header byte */
-	int msgId;		/**< MQTT message id */
-	List* qoss;		/**< list of granted QoSs */
+    Header header; /**< MQTT header byte */
+    int msgId;     /**< MQTT message id */
+    List* qoss;    /**< list of granted QoSs */
 } Suback;
-
 
 /**
  * Data for an unsubscribe packet.
  */
 typedef struct
 {
-	Header header;	/**< MQTT header byte */
-	int msgId;		/**< MQTT message id */
-	List* topics;	/**< list of topic strings */
-	int noTopics;	/**< topic count */
+    Header header; /**< MQTT header byte */
+    int msgId;     /**< MQTT message id */
+    List* topics;  /**< list of topic strings */
+    int noTopics;  /**< topic count */
 } Unsubscribe;
-
 
 /**
  * Data for a publish packet.
  */
 typedef struct
 {
-	Header header;	/**< MQTT header byte */
-	char* topic;	/**< topic string */
-	int topiclen;
-	int msgId;		/**< MQTT message id */
-	char* payload;	/**< binary payload, length delimited */
-	int payloadlen;	/**< payload length */
+    Header header; /**< MQTT header byte */
+    char* topic;   /**< topic string */
+    int topiclen;
+    int msgId;      /**< MQTT message id */
+    char* payload;  /**< binary payload, length delimited */
+    int payloadlen; /**< payload length */
 } Publish;
-
 
 /**
  * Data for one of the ack packets.
  */
 typedef struct
 {
-	Header header;	/**< MQTT header byte */
-	int msgId;		/**< MQTT message id */
+    Header header; /**< MQTT header byte */
+    int msgId;     /**< MQTT message id */
 } Ack;
 
 typedef Ack Puback;
@@ -248,7 +250,7 @@ int MQTTPacket_send_pubcomp(int msgid, networkHandles* net, const char* clientID
 void MQTTPacket_free_packet(MQTTPacket* pack);
 
 #if !defined(NO_BRIDGE)
-	#include "MQTTPacketOut.h"
+#include "MQTTPacketOut.h"
 #endif
 
 #endif /* MQTTPACKET_H */

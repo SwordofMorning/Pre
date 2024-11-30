@@ -47,11 +47,11 @@ BE*/
  */
 typedef struct
 {
-	char *topic;
-	int topiclen;
-	char* payload;
-	int payloadlen;
-	int refcount;
+    char* topic;
+    int topiclen;
+    char* payload;
+    int payloadlen;
+    int refcount;
 } Publications;
 
 /*BE
@@ -81,15 +81,14 @@ BE*/
  */
 typedef struct
 {
-	int qos;
-	int retain;
-	int msgid;
-	Publications *publish;
-	time_t lastTouch;		/**> used for retry and expiry */
-	char nextMessageType;	/**> PUBREC, PUBREL, PUBCOMP */
-	int len;				/**> length of the whole structure+data */
+    int qos;
+    int retain;
+    int msgid;
+    Publications* publish;
+    time_t lastTouch;     /**> used for retry and expiry */
+    char nextMessageType; /**> PUBREC, PUBREL, PUBCOMP */
+    int len;              /**> length of the whole structure+data */
 } Messages;
-
 
 /*BE
 def WILLMESSAGES
@@ -106,10 +105,10 @@ BE*/
  */
 typedef struct
 {
-	char *topic;
-	char *msg;
-	int retained;
-	int qos;
+    char* topic;
+    char* msg;
+    int retained;
+    int qos;
 } willMessages;
 
 /*BE
@@ -148,12 +147,12 @@ BE*/
 
 typedef struct
 {
-	int socket;
-	time_t lastSent;
-	time_t lastReceived;
+    int socket;
+    time_t lastSent;
+    time_t lastReceived;
 #if defined(OPENSSL)
-	SSL* ssl;
-	SSL_CTX* ctx;
+    SSL* ssl;
+    SSL_CTX* ctx;
 #endif
 } networkHandles;
 
@@ -162,31 +161,31 @@ typedef struct
  */
 typedef struct
 {
-	char* clientID;					/**< the string id of the client */
-	const char* username;					/**< MQTT v3.1 user name */
-	const char* password;					/**< MQTT v3.1 password */
-	unsigned int cleansession : 1;	/**< MQTT clean session flag */
-	unsigned int connected : 1;		/**< whether it is currently connected */
-	unsigned int good : 1; 			/**< if we have an error on the socket we turn this off */
-	unsigned int ping_outstanding : 1;
-	int connect_state : 4;
-	networkHandles net;
-	int msgID;
-	int keepAliveInterval;
-	int retryInterval;
-	int maxInflightMessages;
-	willMessages* will;
-	List* inboundMsgs;
-	List* outboundMsgs;				/**< in flight */
-	List* messageQueue;
-	unsigned int qentry_seqno;
-	void* phandle;  /* the persistence handle */
-	MQTTClient_persistence* persistence; /* a persistence implementation */
-	void* context; /* calling context - used when calling disconnect_internal */
-	int MQTTVersion;
+    char* clientID;                /**< the string id of the client */
+    const char* username;          /**< MQTT v3.1 user name */
+    const char* password;          /**< MQTT v3.1 password */
+    unsigned int cleansession : 1; /**< MQTT clean session flag */
+    unsigned int connected : 1;    /**< whether it is currently connected */
+    unsigned int good : 1;         /**< if we have an error on the socket we turn this off */
+    unsigned int ping_outstanding : 1;
+    int connect_state : 4;
+    networkHandles net;
+    int msgID;
+    int keepAliveInterval;
+    int retryInterval;
+    int maxInflightMessages;
+    willMessages* will;
+    List* inboundMsgs;
+    List* outboundMsgs; /**< in flight */
+    List* messageQueue;
+    unsigned int qentry_seqno;
+    void* phandle;                       /* the persistence handle */
+    MQTTClient_persistence* persistence; /* a persistence implementation */
+    void* context;                       /* calling context - used when calling disconnect_internal */
+    int MQTTVersion;
 #if defined(OPENSSL)
-	MQTTClient_SSLOptions *sslopts;
-	SSL_SESSION* session;    /***< SSL session pointer for fast handhake */
+    MQTTClient_SSLOptions* sslopts;
+    SSL_SESSION* session; /***< SSL session pointer for fast handhake */
 #endif
 } Clients;
 
@@ -198,8 +197,8 @@ int clientSocketCompare(void* a, void* b);
  */
 typedef struct
 {
-	const char* version;
-	List* clients;
+    const char* version;
+    List* clients;
 } ClientStates;
 
 #endif

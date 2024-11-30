@@ -116,7 +116,7 @@ typedef int (*Persistence_open)(void** handle, const char* clientID, const char*
   * @return Return 0 if the function completes successfully, otherwise return
   * ::MQTTCLIENT_PERSISTENCE_ERROR.
   */
-typedef int (*Persistence_close)(void* handle); 
+typedef int (*Persistence_close)(void* handle);
 
 /**
   * @brief Put the specified data into the persistent store.
@@ -208,43 +208,44 @@ typedef int (*Persistence_containskey)(void* handle, char* key);
   * implementation and the context or state that will be shared across all 
   * the persistence functions.
   */
-typedef struct {
-  /** 
+typedef struct
+{
+    /** 
     * A pointer to any data required to initialize the persistent store.
     */
-	void* context;
-  /** 
+    void* context;
+    /** 
     * A function pointer to an implementation of Persistence_open().
     */
-	Persistence_open popen;
-  /** 
+    Persistence_open popen;
+    /** 
     * A function pointer to an implementation of Persistence_close().
     */
-	Persistence_close pclose;
-  /**
+    Persistence_close pclose;
+    /**
     * A function pointer to an implementation of Persistence_put().
     */
-	Persistence_put pput;
-  /** 
+    Persistence_put pput;
+    /** 
     * A function pointer to an implementation of Persistence_get().
     */
-	Persistence_get pget;
-  /** 
+    Persistence_get pget;
+    /** 
     * A function pointer to an implementation of Persistence_remove().
     */
-	Persistence_remove premove;
-  /** 
+    Persistence_remove premove;
+    /** 
     * A function pointer to an implementation of Persistence_keys().
     */
-	Persistence_keys pkeys;
-  /** 
+    Persistence_keys pkeys;
+    /** 
     * A function pointer to an implementation of Persistence_clear().
     */
-	Persistence_clear pclear;
-  /** 
+    Persistence_clear pclear;
+    /** 
     * A function pointer to an implementation of Persistence_containskey().
     */
-	Persistence_containskey pcontainskey;
+    Persistence_containskey pcontainskey;
 } MQTTClient_persistence;
 
 #endif
