@@ -76,35 +76,35 @@ static void Init_User_Config()
 
 static int Init_LUTs()
 {
-    if (Init_LUT(LUT_IRONBOW_FORWARD, "/root/pseudo/ironbow_forward.bin") < 0)
+    if (Init_LUT(LUT_IRONBOW_FORWARD, "/root/app/pseudo/ironbow_forward.bin") < 0)
     {
         return -1;
     }
-    if (Init_LUT(LUT_IRONBOW_REVERSE, "/root/pseudo/ironbow_reverse.bin") < 0)
+    if (Init_LUT(LUT_IRONBOW_REVERSE, "/root/app/pseudo/ironbow_reverse.bin") < 0)
     {
         return -1;
     }
-    if (Init_LUT(LUT_LAVA_FORWARD, "/root/pseudo/lava_forward.bin") < 0)
+    if (Init_LUT(LUT_LAVA_FORWARD, "/root/app/pseudo/lava_forward.bin") < 0)
     {
         return -1;
     }
-    if (Init_LUT(LUT_LAVA_REVERSE, "/root/pseudo/lava_reverse.bin") < 0)
+    if (Init_LUT(LUT_LAVA_REVERSE, "/root/app/pseudo/lava_reverse.bin") < 0)
     {
         return -1;
     }
-    if (Init_LUT(LUT_RAINBOW_FORWARD, "/root/pseudo/rainbow_forward.bin") < 0)
+    if (Init_LUT(LUT_RAINBOW_FORWARD, "/root/app/pseudo/rainbow_forward.bin") < 0)
     {
         return -1;
     }
-    if (Init_LUT(LUT_RAINBOW_REVERSE, "/root/pseudo/rainbow_reverse.bin") < 0)
+    if (Init_LUT(LUT_RAINBOW_REVERSE, "/root/app/pseudo/rainbow_reverse.bin") < 0)
     {
         return -1;
     }
-    if (Init_LUT(LUT_RAINBOWHC_FORWARD, "/root/pseudo/rainbowhc_forward.bin") < 0)
+    if (Init_LUT(LUT_RAINBOWHC_FORWARD, "/root/app/pseudo/rainbowhc_forward.bin") < 0)
     {
         return -1;
     }
-    if (Init_LUT(LUT_RAINBOWHC_REVERSE, "/root/pseudo/rainbowhc_reverse.bin") < 0)
+    if (Init_LUT(LUT_RAINBOWHC_REVERSE, "/root/app/pseudo/rainbowhc_reverse.bin") < 0)
     {
         return -1;
     }

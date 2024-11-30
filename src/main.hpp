@@ -6,6 +6,7 @@
 #include "./utils/log/litelog.h"
 #include "./media/vi/v4l2_dvp.h"
 #include "./media/vo/vo_shm.h"
+#include "./utils/listen/listen.h"
 
 std::thread dvp_thread;
 bool dvp_running = true;
