@@ -22,14 +22,14 @@ public:
         std::string type;
         std::string enable;
     };
-    
+
 private:
     static const std::map<int, std::string> m_code_map;
 
     int m_code_enum;
     std::string m_code_name;
     std::string m_method;
-    std::variant<std::string, int, IrAutoFocusData> m_value;
+    std::variant<std::string, IrAutoFocusData> m_value;
 
 private:
     int Parse(std::string p_json);
@@ -38,10 +38,10 @@ private:
 public:
     JWrap(std::string p_json);
 
-    int GetCodeEnum() const { return m_code_enum; }
-    std::string GetCodeName() const { return m_code_name; }
-    std::string GetMethod() const { return m_method; }
-    std::variant<std::string, int, IrAutoFocusData> GetValue() const { return m_value; }
+    int GetCodeEnum() const;
+    std::string GetCodeName() const;
+    std::string GetMethod() const;
+    std::variant<std::string, IrAutoFocusData> GetValue() const;
 
     std::string CreateReturnJson(std::string p_status);
 };

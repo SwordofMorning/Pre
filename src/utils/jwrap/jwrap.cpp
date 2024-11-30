@@ -1,11 +1,13 @@
 #include "jwrap.h"
 
+// clang-format off
 const std::map<int, std::string> JWrap::m_code_map = 
 {
     {CODE_ENUM::PSEUDO, "pseudo"},
     {CODE_ENUM::GAS_ENHANCE, "gas_enhance"},
     {CODE_ENUM::IR_AUTOFOCUS, "ir_autofocus"}
 };
+// clang-format on
 
 JWrap::JWrap(std::string p_json)
 {
@@ -51,31 +53,26 @@ int JWrap::Parse(std::string p_json)
     {
         switch (m_code_enum)
         {
-            case PSEUDO:
-            case GAS_ENHANCE:
+        case PSEUDO:
+        case GAS_ENHANCE: {
+            cJSON* value = cJSON_GetObjectItem(data, "value");
+            if (value)
             {
-                cJSON* value = cJSON_GetObjectItem(data, "value");
-                if (value)
-                {
-                    if (cJSON_IsString(value))
-                        m_value = std::string(value->valuestring);
-                    else if (cJSON_IsNumber(value))
-                        m_value = value->valueint;
-                }
-            break;
+                m_value = std::string(value->valuestring);
             }
-            case IR_AUTOFOCUS:
-            {
-                IrAutoFocusData af_data;
-                cJSON* type = cJSON_GetObjectItem(data, "type");
-                cJSON* enable = cJSON_GetObjectItem(data, "enable");
-                if (type)
-                    af_data.type = type->valuestring;
-                if (enable)
-                    af_data.enable = enable->valuestring;
-                m_value = af_data;
             break;
-            }
+        }
+        case IR_AUTOFOCUS: {
+            IrAutoFocusData af_data;
+            cJSON* type = cJSON_GetObjectItem(data, "type");
+            cJSON* enable = cJSON_GetObjectItem(data, "enable");
+            if (type)
+                af_data.type = type->valuestring;
+            if (enable)
+                af_data.enable = enable->valuestring;
+            m_value = af_data;
+            break;
+        }
         }
     }
 
@@ -108,7 +105,7 @@ int JWrap::Validate() const
 std::string JWrap::CreateReturnJson(std::string p_status)
 {
     cJSON* root = cJSON_CreateObject();
-    
+
     // Add code object
     cJSON* code = cJSON_CreateObject();
     cJSON_AddNumberToObject(code, "enum", m_code_enum);
@@ -128,4 +125,24 @@ std::string JWrap::CreateReturnJson(std::string p_status)
     cJSON_Delete(root);
 
     return result;
+}
+
+int JWrap::GetCodeEnum() const
+{
+    return m_code_enum;
+}
+
+std::string JWrap::GetCodeName() const
+{
+    return m_code_name;
+}
+
+std::string JWrap::GetMethod() const
+{
+    return m_method;
+}
+
+std::variant<std::string, JWrap::IrAutoFocusData> JWrap::GetValue() const
+{
+    return m_value;
 }

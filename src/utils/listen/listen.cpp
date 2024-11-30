@@ -23,21 +23,6 @@ Listen::Listen()
     litelog.log.debug("MQTT subscribe %s: %d", m_target.c_str(), ret);
 }
 
-int Listen::Set_Pseudo()
-{
-    return 0;
-}
-
-int Listen::Set_Gas_Enhancement()
-{
-    return 0;
-}
-
-int Listen::Set_IR_Focus()
-{
-    return 0;
-}
-
 void Listen::operator()()
 {
     while (1)
@@ -48,22 +33,24 @@ void Listen::operator()()
             // std::cout << std::string(m_mqtt_handle->received_topic, m_mqtt_handle->received_topic_len) << std::endl;
 
             if (m_mqtt_handle->received_message_len < 0)
+            {
+                litelog.log.warning("Listen received message length < 0");
                 continue;
+            }
 
             JWrap jw(std::string{m_mqtt_handle->received_message, static_cast<size_t>(m_mqtt_handle->received_message_len)});
-            std::cout << "Code: " << jw.GetCodeEnum() << ", Name: " << jw.GetCodeName() << std::endl;
-            
+
             int retval = 0;
             switch (jw.GetCodeEnum())
             {
             case JWrap::CODE_ENUM::PSEUDO:
-                retval = Set_Pseudo();
+                retval = Set_Pseudo(jw.GetValue());
                 break;
             case JWrap::CODE_ENUM::GAS_ENHANCE:
-                retval = Set_Gas_Enhancement();
+                retval = Set_Gas_Enhancement(jw.GetValue());
                 break;
             case JWrap::CODE_ENUM::IR_AUTOFOCUS:
-                retval = Set_IR_Focus();
+                retval = Set_IR_Focus(jw.GetValue());
                 break;
             default:
                 retval = -1;
