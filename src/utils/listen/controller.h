@@ -40,7 +40,8 @@ protected:
         SUCCESS = 0,
         OUT_OF_BOUNDS = -1,
         OBJ_NOT_FOUND = -2,
-        INVALID_PARAMETER = -3
+        INVALID_PARAMETER = -3,
+        INVALID_CODE = -4
     };
 
 protected:

@@ -20,7 +20,7 @@ Listen::Listen()
 
     int ret = mqtt_subscribe(m_mqtt_handle, const_cast<char*>(m_target.c_str()), QOS_EXACTLY_ONCE);
 
-    litelog.log.debug("MQTT subscribe %s: %d", m_target.c_str(), ret);
+    litelog.log.info("MQTT subscribe %s: %d", m_target.c_str(), ret);
 }
 
 void Listen::operator()()
@@ -29,8 +29,8 @@ void Listen::operator()()
     {
         if (mqtt_receive(m_mqtt_handle, 200) == MQTT_SUCCESS)
         {
-            // std::cout << std::string(m_mqtt_handle->received_message, m_mqtt_handle->received_message_len) << std::endl;
-            // std::cout << std::string(m_mqtt_handle->received_topic, m_mqtt_handle->received_topic_len) << std::endl;
+            litelog.log.debug("MQTT receive:\n%s", std::string(m_mqtt_handle->received_message, m_mqtt_handle->received_message_len).c_str());
+            litelog.log.debug("MQTT receive from:%s", std::string(m_mqtt_handle->received_topic, m_mqtt_handle->received_topic_len).c_str());
 
             if (m_mqtt_handle->received_message_len < 0)
             {
@@ -53,7 +53,8 @@ void Listen::operator()()
                 retval = Set_IR_Focus(jw.GetValue());
                 break;
             default:
-                retval = -1;
+                litelog.log.warning("Unknown code in json.");
+                retval = Controller::ErrorCode::INVALID_CODE;
                 break;
             }
 

@@ -42,9 +42,11 @@ int Controller::Set_Pseudo(PseudoMode mode) const
 
 int Controller::Set_Pseudo(const std::variant<std::string, JWrap::IrAutoFocusData>& value)
 {
-    return std::visit([this](const auto& val) -> int {
+    return std::visit([this](const auto& val) -> int
+    {
         using T = std::decay_t<decltype(val)>;
-        if constexpr (std::is_same_v<T, std::string>) {
+        if constexpr (std::is_same_v<T, std::string>)
+        {
             auto it = string_to_mode.find(val);
             if (it != string_to_mode.end())
             {
@@ -61,9 +63,11 @@ int Controller::Set_Pseudo(const std::variant<std::string, JWrap::IrAutoFocusDat
 
 int Controller::Set_Gas_Enhancement(const std::variant<std::string, JWrap::IrAutoFocusData>& value)
 {
-    return std::visit([this](const auto& val) -> int {
+    return std::visit([this](const auto& val) -> int
+    {
         using T = std::decay_t<decltype(val)>;
-        if constexpr (std::is_same_v<T, std::string>) {
+        if constexpr (std::is_same_v<T, std::string>)
+        {
             if (GAS_ENHANCEMENT_MIN < atoi(val.c_str()) && atoi(val.c_str()) < GAS_ENHANCEMENT_MAX)
             {
                 usr.gas_enhancement = atoi(val.c_str());
@@ -80,6 +84,36 @@ int Controller::Set_Gas_Enhancement(const std::variant<std::string, JWrap::IrAut
 
 int Controller::Set_IR_Focus(const std::variant<std::string, JWrap::IrAutoFocusData>& value)
 {
-    return 0;
+    return std::visit([this](const auto& val) -> int
+    {
+        using T = std::decay_t<decltype(val)>;
+        if constexpr (std::is_same_v<T, JWrap::IrAutoFocusData>)
+        {
+            // Enable Autofocus
+            if (val.enable == "1")
+            {
+                // Oneshot
+                if (val.type == "single")
+                {
+                    // @todo
+                }
+                // Continue
+                else if (val.type == "continue")
+                {
+                    // @todo
+                }
+                return Controller::ErrorCode::INVALID_PARAMETER;
+            }
+            // Disable Autofocus
+            else if (val.enable == "0")
+            {
+                // @todo
+            }
+            return Controller::ErrorCode::INVALID_PARAMETER;
+        }
+        litelog.log.error("Invalid value type for autofocus mode");
+        return Controller::ErrorCode::INVALID_PARAMETER;
+    }, value);
 }
+
 // clang-format on

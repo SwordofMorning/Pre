@@ -12,6 +12,8 @@ std::thread dvp_thread;
 bool dvp_running = true;
 std::thread vo_thread;
 bool vo_running = true;
+std::thread listen_thread;
+bool listen_running = true;
 
 void dvp_thread_func()
 {
@@ -26,4 +28,10 @@ void vo_thread_func()
         SHM_Process();
     }
     SHM_Exit();
+}
+
+void listen_thread_func()
+{
+    Listen li;
+    li();
 }
