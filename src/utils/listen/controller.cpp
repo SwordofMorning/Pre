@@ -35,12 +35,14 @@ int Controller::Set_Pseudo(PseudoMode mode) const
     if (it != mode_to_pseudo.end())
     {
         usr.pseudo = it->second;
+        litelog.log.info("Set pseudo mode_int: {%x}.", it->second);
         return Controller::ErrorCode::SUCCESS;
     }
+    litelog.log.info("Set pseudo out of boundary.");
     return Controller::ErrorCode::OUT_OF_BOUNDS;
 }
 
-int Controller::Set_Pseudo(const std::variant<std::string, JWrap::IrAutoFocusData>& value)
+int Controller::Set_Pseudo(const std::variant<std::string, JWrap::AutoFocusDataIR>& value)
 {
     return std::visit([this](const auto& val) -> int
     {
@@ -50,7 +52,7 @@ int Controller::Set_Pseudo(const std::variant<std::string, JWrap::IrAutoFocusDat
             auto it = string_to_mode.find(val);
             if (it != string_to_mode.end())
             {
-                litelog.log.info("Set pseudo mode: {%s}.", val);
+                litelog.log.info("Set pseudo mode_str: {%s}.", it->first.c_str());
                 return Set_Pseudo(it->second);
             }
             litelog.log.error("Unknown pseudo mode: {%s}.", val);
@@ -61,20 +63,21 @@ int Controller::Set_Pseudo(const std::variant<std::string, JWrap::IrAutoFocusDat
     }, value);
 }
 
-int Controller::Set_Gas_Enhancement(const std::variant<std::string, JWrap::IrAutoFocusData>& value)
+int Controller::Set_Gas_Enhancement(const std::variant<std::string, JWrap::AutoFocusDataIR>& value)
 {
     return std::visit([this](const auto& val) -> int
     {
         using T = std::decay_t<decltype(val)>;
         if constexpr (std::is_same_v<T, std::string>)
         {
-            if (GAS_ENHANCEMENT_MIN < atoi(val.c_str()) && atoi(val.c_str()) < GAS_ENHANCEMENT_MAX)
+            int p_enhance = atoi(val.c_str());
+            if (GAS_ENHANCEMENT_MIN < p_enhance && p_enhance < GAS_ENHANCEMENT_MAX)
             {
-                usr.gas_enhancement = atoi(val.c_str());
-                litelog.log.info("Set gas enhancement: {%s}.", val);
+                usr.gas_enhancement = p_enhance;
+                litelog.log.info("Set gas enhancement: {%d}.", p_enhance);
                 return Controller::ErrorCode::SUCCESS;
             }
-            litelog.log.error("Gas enhancement parameter {%s}, out of boundary.", val);
+            litelog.log.error("Gas enhancement parameter {%d}, out of boundary.", p_enhance);
             return Controller::ErrorCode::OBJ_NOT_FOUND;
         }
         litelog.log.error("Invalid value type for gas enhancement mode");
@@ -82,12 +85,12 @@ int Controller::Set_Gas_Enhancement(const std::variant<std::string, JWrap::IrAut
     }, value);
 }
 
-int Controller::Set_IR_Focus(const std::variant<std::string, JWrap::IrAutoFocusData>& value)
+int Controller::Set_IR_Focus(const std::variant<std::string, JWrap::AutoFocusDataIR>& value)
 {
     return std::visit([this](const auto& val) -> int
     {
         using T = std::decay_t<decltype(val)>;
-        if constexpr (std::is_same_v<T, JWrap::IrAutoFocusData>)
+        if constexpr (std::is_same_v<T, JWrap::AutoFocusDataIR>)
         {
             // Enable Autofocus
             if (val.enable == "1")
@@ -96,11 +99,15 @@ int Controller::Set_IR_Focus(const std::variant<std::string, JWrap::IrAutoFocusD
                 if (val.type == "single")
                 {
                     // @todo
+                    litelog.log.info("Set IR autofocus: {%s}{%s}.", val.enable.c_str(), val.type.c_str());
+                    return Controller::ErrorCode::SUCCESS;
                 }
                 // Continue
                 else if (val.type == "continue")
                 {
                     // @todo
+                    litelog.log.info("Set IR autofocus: {%s}{%s}.", val.enable.c_str(), val.type.c_str());
+                    return Controller::ErrorCode::SUCCESS;
                 }
                 return Controller::ErrorCode::INVALID_PARAMETER;
             }
@@ -108,6 +115,8 @@ int Controller::Set_IR_Focus(const std::variant<std::string, JWrap::IrAutoFocusD
             else if (val.enable == "0")
             {
                 // @todo
+                litelog.log.info("Set IR autofocus: {%s}{%s}.", val.enable.c_str(), val.type.c_str());
+                return Controller::ErrorCode::SUCCESS;
             }
             return Controller::ErrorCode::INVALID_PARAMETER;
         }

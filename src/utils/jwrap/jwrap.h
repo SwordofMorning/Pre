@@ -17,7 +17,7 @@ public:
         IR_AUTOFOCUS = 523,
     };
 
-    struct IrAutoFocusData
+    struct AutoFocusDataIR
     {
         std::string type;
         std::string enable;
@@ -29,7 +29,7 @@ private:
     int m_code_enum;
     std::string m_code_name;
     std::string m_method;
-    std::variant<std::string, IrAutoFocusData> m_value;
+    std::variant<std::string, AutoFocusDataIR> m_value;
 
 private:
     int Parse(std::string p_json);
@@ -41,7 +41,7 @@ public:
     int GetCodeEnum() const;
     std::string GetCodeName() const;
     std::string GetMethod() const;
-    std::variant<std::string, IrAutoFocusData> GetValue() const;
+    std::variant<std::string, AutoFocusDataIR> GetValue() const;
 
     std::string CreateReturnJson(std::string p_status);
 };

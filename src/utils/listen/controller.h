@@ -49,7 +49,7 @@ protected:
     static const std::map<PseudoMode, int> mode_to_pseudo;
 
     int Set_Pseudo(PseudoMode mode) const;
-    int Set_Pseudo(const std::variant<std::string, JWrap::IrAutoFocusData>& value);
-    int Set_Gas_Enhancement(const std::variant<std::string, JWrap::IrAutoFocusData>& value);
-    int Set_IR_Focus(const std::variant<std::string, JWrap::IrAutoFocusData>& value);
+    int Set_Pseudo(const std::variant<std::string, JWrap::AutoFocusDataIR>& value);
+    int Set_Gas_Enhancement(const std::variant<std::string, JWrap::AutoFocusDataIR>& value);
+    int Set_IR_Focus(const std::variant<std::string, JWrap::AutoFocusDataIR>& value);
 };

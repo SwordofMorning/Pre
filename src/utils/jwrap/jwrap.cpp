@@ -63,7 +63,7 @@ int JWrap::Parse(std::string p_json)
             break;
         }
         case IR_AUTOFOCUS: {
-            IrAutoFocusData af_data;
+            AutoFocusDataIR af_data;
             cJSON* type = cJSON_GetObjectItem(data, "type");
             cJSON* enable = cJSON_GetObjectItem(data, "enable");
             if (type)
@@ -142,7 +142,7 @@ std::string JWrap::GetMethod() const
     return m_method;
 }
 
-std::variant<std::string, JWrap::IrAutoFocusData> JWrap::GetValue() const
+std::variant<std::string, JWrap::AutoFocusDataIR> JWrap::GetValue() const
 {
     return m_value;
 }

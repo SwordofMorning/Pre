@@ -29,8 +29,10 @@ void Listen::operator()()
     {
         if (mqtt_receive(m_mqtt_handle, 200) == MQTT_SUCCESS)
         {
-            litelog.log.debug("MQTT receive:\n%s", std::string(m_mqtt_handle->received_message, m_mqtt_handle->received_message_len).c_str());
-            litelog.log.debug("MQTT receive from:%s", std::string(m_mqtt_handle->received_topic, m_mqtt_handle->received_topic_len).c_str());
+            // litelog.log.debug("MQTT receive:\n%s", std::string(m_mqtt_handle->received_message, m_mqtt_handle->received_message_len).c_str());
+            // litelog.log.debug("MQTT receive from:%s", std::string(m_mqtt_handle->received_topic, m_mqtt_handle->received_topic_len).c_str());
+
+            std::cout << ("MQTT receive:\n%s", std::string(m_mqtt_handle->received_message, m_mqtt_handle->received_message_len).c_str()) << std::endl;
 
             if (m_mqtt_handle->received_message_len < 0)
             {
