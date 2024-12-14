@@ -10,6 +10,7 @@
 #include <string>
 #include <thread>
 #include <atomic>
+#include "../../config/config.h"
 
 class EventListener
 {

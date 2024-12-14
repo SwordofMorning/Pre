@@ -28,6 +28,34 @@ void EventListener::Stop() {
 void EventListener::PrintKeyEvent(const std::string& device, int code, int value) {
     printf("[%s] Key Event - Code: %d, Value: %d\n", 
            device.c_str(), code, value);
+
+    // 对焦，远离
+    if (code == KEY_F5 && value == 1)
+    {
+        std::cout << "KEY_F5 Down" << std::endl;
+    }
+    // 对焦，拉近
+    else if (code == KEY_F4 && value == 1)
+    {
+        std::cout << "KEY_F4 Down" << std::endl;
+    }
+    else if ((code == KEY_F5 || code == KEY_F4) && value == 0)
+    {
+        std::cout << "KEY_F4_F5 Up" << std::endl;
+    }
+    else if ((code == KEY_F5 || code == KEY_F4) && value == 0)
+    {
+        std::cout << "KEY_F4_F5 Up" << std::endl;
+    }
+    else if (code == KEY_F3 && value == 1)
+    {
+        usr.pseudo++;
+        usr.pseudo %= PSEUDO_NUMS;
+    }
+    else
+    {
+        std::cout << "Others" << std::endl;
+    }
 }
 
 void EventListener::ProcessDevice(const std::string& device) {
