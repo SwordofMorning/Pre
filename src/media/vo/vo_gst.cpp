@@ -35,7 +35,7 @@ void GST_Deinit(void)
 }
 
 // 创建GStreamer Pipeline
-int GST_Create_Pipeline(int width, int height)
+int GST_Create_Pipeline(int in_width, int in_height, int out_width, int out_height)
 {
     // 创建pipeline
     pipeline = gst_pipeline_new("pipeline");
@@ -46,34 +46,58 @@ int GST_Create_Pipeline(int width, int height)
 
     // 创建元素
     appsrc = gst_element_factory_make("appsrc", "source");
+    GstElement *videoscale = gst_element_factory_make("videoscale", "scale");
+    GstElement *capsfilter = gst_element_factory_make("capsfilter", "filter");
     videoconvert = gst_element_factory_make("videoconvert", "convert");
     waylandsink = gst_element_factory_make("waylandsink", "sink");
 
-    if (!appsrc || !videoconvert || !waylandsink) {
+    if (!appsrc || !videoscale || !capsfilter || !videoconvert || !waylandsink) {
         g_print("Failed to create elements\n");
         return -1;
     }
 
-    // 设置appsrc属性
-    GstCaps *caps = gst_caps_new_simple("video/x-raw",
+    // 设置appsrc输入格式
+    GstCaps *src_caps = gst_caps_new_simple("video/x-raw",
         "format", G_TYPE_STRING, "I420",
-        "width", G_TYPE_INT, width,
-        "height", G_TYPE_INT, height,
+        "width", G_TYPE_INT, in_width,
+        "height", G_TYPE_INT, in_height,
         "framerate", GST_TYPE_FRACTION, 30, 1,
         NULL);
     g_object_set(G_OBJECT(appsrc),
-        "caps", caps,
+        "caps", src_caps,
         "format", GST_FORMAT_TIME,
-        "stream-type", 0, // GST_APP_STREAM_TYPE_STREAM
+        "stream-type", 0,
         "is-live", TRUE,
         NULL);
-    gst_caps_unref(caps);
+    gst_caps_unref(src_caps);
+
+    // 设置输出分辨率
+    GstCaps *scale_caps = gst_caps_new_simple("video/x-raw",
+        "width", G_TYPE_INT, out_width,
+        "height", G_TYPE_INT, out_height,
+        NULL);
+    g_object_set(G_OBJECT(capsfilter), "caps", scale_caps, NULL);
+    gst_caps_unref(scale_caps);
+
+    // 设置缩放方法（可选）
+    g_object_set(G_OBJECT(videoscale), "method", 1, NULL);  // 0=nearest, 1=linear, 2=cubic
 
     // 添加元素到pipeline
-    gst_bin_add_many(GST_BIN(pipeline), appsrc, videoconvert, waylandsink, NULL);
+    gst_bin_add_many(GST_BIN(pipeline), 
+                     appsrc, 
+                     videoscale, 
+                     capsfilter,
+                     videoconvert, 
+                     waylandsink, 
+                     NULL);
     
     // 连接元素
-    if (!gst_element_link_many(appsrc, videoconvert, waylandsink, NULL)) {
+    if (!gst_element_link_many(appsrc, 
+                              videoscale, 
+                              capsfilter,
+                              videoconvert, 
+                              waylandsink, 
+                              NULL)) {
         g_print("Failed to link elements\n");
         return -1;
     }
@@ -137,8 +161,8 @@ void* VO_GST_Streaming()
         return NULL;
     }
 
-    // 创建pipeline
-    if (GST_Create_Pipeline(640, 512) < 0) {
+    // 创建pipeline，指定输入和输出分辨率
+    if (GST_Create_Pipeline(640, 512, 1920, 1080) < 0) {
         g_print("Failed to create pipeline\n");
         GST_Deinit();
         return NULL;
