@@ -35,6 +35,9 @@ void execute()
     sleep(1);
     vo_thread = std::thread(vo_thread_func);
 
+    EventListener el;
+    el.Start();
+
     Listen li;
     li();
 }

@@ -8,6 +8,7 @@
 #include "./media/vo/vo_shm.h"
 #include "./media/vo/vo_gst.h"
 #include "./utils/listen/listen.h"
+#include "./utils/event/event.h"
 
 std::thread dvp_thread;
 bool dvp_running = true;

@@ -232,7 +232,7 @@ void Pseudo(uint16_t* input, uint8_t* y_out, uint8_t* u_out, uint8_t* v_out, int
                     int color_idx = ((uint32_t)(val - min_val) * (lut->size - 1)) / (max_val - min_val);
 
                     if (color_idx > lut->size)
-                        color_idx = lut->size;
+                        color_idx = lut->size / 2;
 
                     y_out[i * width + j] = lut->y[color_idx];
                 }
@@ -256,7 +256,7 @@ void Pseudo(uint16_t* input, uint8_t* y_out, uint8_t* u_out, uint8_t* v_out, int
                     
                     int color_idx = ((uint32_t)(avg_val - min_val) * (lut->size - 1)) / (max_val - min_val);
                     if (color_idx > lut->size)
-                        color_idx = lut->size;
+                        color_idx = lut->size / 2;
                     u_out[i * (width/2) + j] = lut->u[color_idx];
                     v_out[i * (width/2) + j] = lut->v[color_idx];
                 }
