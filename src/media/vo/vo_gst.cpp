@@ -46,15 +46,19 @@ int GST_Create_Pipeline(int in_width, int in_height, int out_width, int out_heig
 
     // 创建元素
     appsrc = gst_element_factory_make("appsrc", "source");
+    GstElement *videoflip = gst_element_factory_make("videoflip", "flip");    // 新增
     GstElement *videoscale = gst_element_factory_make("videoscale", "scale");
     GstElement *capsfilter = gst_element_factory_make("capsfilter", "filter");
     videoconvert = gst_element_factory_make("videoconvert", "convert");
     waylandsink = gst_element_factory_make("waylandsink", "sink");
 
-    if (!appsrc || !videoscale || !capsfilter || !videoconvert || !waylandsink) {
+    if (!appsrc || !videoflip || !videoscale || !capsfilter || !videoconvert || !waylandsink) {
         g_print("Failed to create elements\n");
         return -1;
     }
+
+    // 设置videoflip属性 (-90度旋转)
+    g_object_set(G_OBJECT(videoflip), "method", 3, NULL);  // 3 = counterclockwise
 
     // 设置appsrc输入格式
     GstCaps *src_caps = gst_caps_new_simple("video/x-raw",
@@ -71,7 +75,7 @@ int GST_Create_Pipeline(int in_width, int in_height, int out_width, int out_heig
         NULL);
     gst_caps_unref(src_caps);
 
-    // 设置输出分辨率，添加更多参数以确保正确的颜色和拉伸
+    // 设置输出分辨率，注意交换宽高
     GstCaps *scale_caps = gst_caps_new_simple("video/x-raw",
         "format", G_TYPE_STRING, "I420",
         "width", G_TYPE_INT, out_width,
@@ -84,19 +88,20 @@ int GST_Create_Pipeline(int in_width, int in_height, int out_width, int out_heig
 
     // 设置videoscale属性
     g_object_set(G_OBJECT(videoscale),
-        "method", 1,           // 线性插值
-        "add-borders", FALSE,  // 不添加边框
+        "method", 1,
+        "add-borders", FALSE,
         NULL);
 
     // 设置waylandsink属性
     g_object_set(G_OBJECT(waylandsink),
-        "fullscreen", TRUE,    // 全屏显示
-        "sync", FALSE,         // 禁用同步以减少延迟
+        "fullscreen", TRUE,
+        "sync", FALSE,
         NULL);
 
     // 添加元素到pipeline
     gst_bin_add_many(GST_BIN(pipeline), 
-                     appsrc, 
+                     appsrc,
+                     videoflip,      // 新增
                      videoscale, 
                      capsfilter,
                      videoconvert, 
@@ -104,7 +109,8 @@ int GST_Create_Pipeline(int in_width, int in_height, int out_width, int out_heig
                      NULL);
     
     // 连接元素
-    if (!gst_element_link_many(appsrc, 
+    if (!gst_element_link_many(appsrc,
+                              videoflip,    // 新增
                               videoscale, 
                               capsfilter,
                               videoconvert, 

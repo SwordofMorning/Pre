@@ -69,10 +69,10 @@ static int SHM_Send()
     // 验证数据是否有更新
     if (current_frame_sum == last_frame_sum)
     {
-        printf("Duplicate frame detected in SHM_Send\n");
+        // printf("Duplicate frame detected in SHM_Send\n");
         return 0;
     }
-    printf("current sum: %d\n", current_frame_sum);
+    // printf("current sum: %d\n", current_frame_sum);
     last_frame_sum = current_frame_sum;
 
     struct sembuf sem_op;
