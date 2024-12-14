@@ -13,8 +13,8 @@ public:
     enum CODE_ENUM
     {
         PSEUDO = 510,
-        GAS_ENHANCE = 514,
-        IR_AUTOFOCUS = 523,
+        GAS_ENHANCEMENT = 514,
+        AUTOFOCUS_IR = 523,
     };
 
     struct AutoFocusDataIR

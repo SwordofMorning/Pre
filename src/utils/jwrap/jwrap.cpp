@@ -4,8 +4,8 @@
 const std::map<int, std::string> JWrap::m_code_map = 
 {
     {CODE_ENUM::PSEUDO, "pseudo"},
-    {CODE_ENUM::GAS_ENHANCE, "gas_enhance"},
-    {CODE_ENUM::IR_AUTOFOCUS, "ir_autofocus"}
+    {CODE_ENUM::GAS_ENHANCEMENT, "gas_enhancement"},
+    {CODE_ENUM::AUTOFOCUS_IR, "autofocus_ir"}
 };
 // clang-format on
 
@@ -54,7 +54,7 @@ int JWrap::Parse(std::string p_json)
         switch (m_code_enum)
         {
         case PSEUDO:
-        case GAS_ENHANCE: {
+        case GAS_ENHANCEMENT: {
             cJSON* value = cJSON_GetObjectItem(data, "value");
             if (value)
             {
@@ -62,7 +62,7 @@ int JWrap::Parse(std::string p_json)
             }
             break;
         }
-        case IR_AUTOFOCUS: {
+        case AUTOFOCUS_IR: {
             AutoFocusDataIR af_data;
             cJSON* type = cJSON_GetObjectItem(data, "type");
             cJSON* enable = cJSON_GetObjectItem(data, "enable");

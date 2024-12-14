@@ -48,10 +48,10 @@ void Listen::operator()()
             case JWrap::CODE_ENUM::PSEUDO:
                 retval = Set_Pseudo(jw.GetValue());
                 break;
-            case JWrap::CODE_ENUM::GAS_ENHANCE:
+            case JWrap::CODE_ENUM::GAS_ENHANCEMENT:
                 retval = Set_Gas_Enhancement(jw.GetValue());
                 break;
-            case JWrap::CODE_ENUM::IR_AUTOFOCUS:
+            case JWrap::CODE_ENUM::AUTOFOCUS_IR:
                 retval = Set_IR_Focus(jw.GetValue());
                 break;
             default:

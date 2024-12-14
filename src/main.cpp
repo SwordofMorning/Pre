@@ -15,13 +15,13 @@ void exit()
 {
     Config_Exit();
 
-    // dvp_running = false;
-    // if (dvp_thread.joinable())
-    //     dvp_thread.join();
+    dvp_running = false;
+    if (dvp_thread.joinable())
+        dvp_thread.join();
 
-    // vo_running = false;
-    // if (vo_thread.joinable())
-    //     vo_thread.join();
+    vo_running = false;
+    if (vo_thread.joinable())
+        vo_thread.join();
 
     litelog.log.notice("End!");
     litelog.exit();
@@ -29,9 +29,9 @@ void exit()
 
 void execute()
 {
-    // dvp_thread = std::thread(dvp_thread_func);
-    // sleep(1);
-    // vo_thread = std::thread(vo_thread_func);
+    dvp_thread = std::thread(dvp_thread_func);
+    sleep(1);
+    vo_thread = std::thread(vo_thread_func);
 
     Listen li;
     li();
