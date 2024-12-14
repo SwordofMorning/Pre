@@ -36,6 +36,8 @@ int Process_One_Frame()
     // YUV420P
     Pseudo(algo_in, y, u, v, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height);
 
+    GST_Push_Frame(y, u, v, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height);
+
     return 0;
 }
 

@@ -12,6 +12,7 @@
 #include <sys/sem.h>
 #include "../../config/lut/lut.h"
 #include "../../config/config.h"
+#include "../vo/vo_gst.h"
 
 int Process_One_Frame();
 

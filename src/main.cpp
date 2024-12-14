@@ -29,6 +29,8 @@ void exit()
 
 void execute()
 {
+    gst_thread = std::thread(gst_thread_func);
+    sleep(1);
     dvp_thread = std::thread(dvp_thread_func);
     sleep(1);
     vo_thread = std::thread(vo_thread_func);

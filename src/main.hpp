@@ -6,12 +6,14 @@
 #include "./utils/log/litelog.h"
 #include "./media/vi/v4l2_dvp.h"
 #include "./media/vo/vo_shm.h"
+#include "./media/vo/vo_gst.h"
 #include "./utils/listen/listen.h"
 
 std::thread dvp_thread;
 bool dvp_running = true;
 std::thread vo_thread;
 bool vo_running = true;
+std::thread gst_thread;
 
 void dvp_thread_func()
 {
@@ -26,4 +28,9 @@ void vo_thread_func()
         SHM_Process();
     }
     SHM_Exit();
+}
+
+void gst_thread_func()
+{
+    VO_GST_Streaming();
 }

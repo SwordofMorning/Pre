@@ -13,4 +13,9 @@ ADD_EXECUTABLE(${APP_NAME} ${SRC_LIST})
 TARGET_LINK_LIBRARIES(
     ${APP_NAME}
     libcjson.so
+
+    libglib-2.0.so
+    libgstreamer-1.0.so
+    libgobject-2.0.so
+    libgstapp-1.0.so
 )
