@@ -71,16 +71,28 @@ int GST_Create_Pipeline(int in_width, int in_height, int out_width, int out_heig
         NULL);
     gst_caps_unref(src_caps);
 
-    // 设置输出分辨率
+    // 设置输出分辨率，添加更多参数以确保正确的颜色和拉伸
     GstCaps *scale_caps = gst_caps_new_simple("video/x-raw",
+        "format", G_TYPE_STRING, "I420",
         "width", G_TYPE_INT, out_width,
         "height", G_TYPE_INT, out_height,
+        "pixel-aspect-ratio", GST_TYPE_FRACTION, 1, 1,
+        "colorimetry", G_TYPE_STRING, "bt709",
         NULL);
     g_object_set(G_OBJECT(capsfilter), "caps", scale_caps, NULL);
     gst_caps_unref(scale_caps);
 
-    // 设置缩放方法（可选）
-    g_object_set(G_OBJECT(videoscale), "method", 1, NULL);  // 0=nearest, 1=linear, 2=cubic
+    // 设置videoscale属性
+    g_object_set(G_OBJECT(videoscale),
+        "method", 1,           // 线性插值
+        "add-borders", FALSE,  // 不添加边框
+        NULL);
+
+    // 设置waylandsink属性
+    g_object_set(G_OBJECT(waylandsink),
+        "fullscreen", TRUE,    // 全屏显示
+        "sync", FALSE,         // 禁用同步以减少延迟
+        NULL);
 
     // 添加元素到pipeline
     gst_bin_add_many(GST_BIN(pipeline), 
