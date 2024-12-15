@@ -41,7 +41,8 @@ int Process_One_Frame()
     return 0;
 }
 
-#if 0
+#define De_Bad_Pixel_Enable 1
+#if (!De_Bad_Pixel_Enable)
 
 void Pseudo(uint16_t* input, uint8_t* y_out, uint8_t* u_out, uint8_t* v_out, int width, int height)
 {

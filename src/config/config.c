@@ -80,6 +80,27 @@ static void Init_Frame_Sync_DVP()
     }
 }
 
+static void Init_DVP()
+{
+    /* Without any action  */
+    v4l2_ir_dvp_fd = 0;
+    v4l2_ir_dvp_nplanes = 0;
+    v4l2_ir_dvp_buffer_global_index = 0;
+    v4l2_ir_dvp_buffer_global_length = 0;
+
+    /* Default in 640 mode */
+    v4l2_ir_dvp_mode = V4L2_IR_DVP_MODE_640;
+    v4l2_ir_dvp_capture_width = V4L2_IR_DVP_CAPTURE_WIDTH_640;
+    v4l2_ir_dvp_capture_height = V4L2_IR_DVP_CAPTURE_HEIGHT_640;
+    v4l2_ir_dvp_valid_width = V4L2_IR_DVP_VALID_WIDTH_640;
+    v4l2_ir_dvp_valid_height = V4L2_IR_DVP_VALID_HEIGHT_640;
+
+    /* DVP shm */
+    v4l2_ir_dvp_share_buffer_updated = 0;
+
+    Init_Frame_Sync_DVP();
+}
+
 static void Init_Frame_Sync_CSI()
 {
     pthread_mutex_init(&frame_sync_csi.mutex, NULL);
@@ -95,6 +116,35 @@ static void Init_Frame_Sync_CSI()
     {
         frame_sync_csi.frame_buffer[i] = (uint8_t*)malloc(v4l2_vis_csi_width * v4l2_vis_csi_height * sizeof(uint8_t) * V4L2_VIS_CSI_PIX_FMT_SCALE);
     }
+}
+
+static void Init_CIS()
+{
+    /* Without any action  */
+    v4l2_vis_csi_fd = 0;
+    v4l2_vis_csi_nplanes = 0;
+    v4l2_vis_csi_buffer_global_index = 0;
+    v4l2_vis_csi_buffer_global_length = 0;
+
+    /* Set default mode */
+#if (VISIBLE_CAMERA_MODE == VISIBLE_CAMERA_MODE_HGD_IMX335)
+    v4l2_vis_csi_mode = V4L2_VIS_CSI_MODE_HGD_2592x1944at30;
+#elif (VISIBLE_CAMERA_MODE == VISIBLE_CAMERA_MODE_NGD)
+    v4l2_vis_csi_mode = V4L2_VIS_CSI_MODE_NGD_2688x1520at25;
+#endif
+
+    if (v4l2_vis_csi_mode == V4L2_VIS_CSI_MODE_HGD_2592x1944at30)
+    {
+        v4l2_vis_csi_width = V4L2_VIS_CSI_CAPTURE_WIDTH_2592;
+        v4l2_vis_csi_height = V4L2_VIS_CSI_CAPTURE_HEIGHT_1944;
+    }
+    else if (v4l2_vis_csi_mode == V4L2_VIS_CSI_MODE_NGD_2688x1520at25)
+    {
+        v4l2_vis_csi_width = V4L2_VIS_CSI_CAPTURE_WIDTH_2688;
+        v4l2_vis_csi_height = V4L2_VIS_CSI_CAPTURE_HEIGHT_1520;
+    }
+
+    Init_Frame_Sync_CSI();
 }
 
 static void Init_User_Config()
@@ -140,27 +190,15 @@ static int Init_LUTs()
     return 0;
 }
 
+/* ===================================================================================== */
+/* ======================================== API ======================================== */
+/* ===================================================================================== */
+
 void Config_Init()
 {
-    /* Init: Without any action  */
-    v4l2_ir_dvp_fd = 0;
-    v4l2_ir_dvp_nplanes = 0;
-    v4l2_ir_dvp_buffer_global_index = 0;
-    v4l2_ir_dvp_buffer_global_length = 0;
-
-    /* Init: Default in 640 mode */
-    v4l2_ir_dvp_mode = V4L2_IR_DVP_MODE_640;
-    v4l2_ir_dvp_capture_width = V4L2_IR_DVP_CAPTURE_WIDTH_640;
-    v4l2_ir_dvp_capture_height = V4L2_IR_DVP_CAPTURE_HEIGHT_640;
-    v4l2_ir_dvp_valid_width = V4L2_IR_DVP_VALID_WIDTH_640;
-    v4l2_ir_dvp_valid_height = V4L2_IR_DVP_VALID_HEIGHT_640;
-
-    /* Init: DVP shm */
-    v4l2_ir_dvp_share_buffer_updated = 0;
-
     Init_User_Config();
-    Init_Frame_Sync_DVP();
-    Init_Frame_Sync_CSI();
+    Init_DVP();
+    Init_CIS();
     Init_LUTs();
 }
 
