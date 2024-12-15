@@ -27,7 +27,7 @@ static int SHM_Copy()
         // Skip the intermediate frames and process only the latest ones
         while (frame_sync_dvp.frame_count > 1)
         {
-            frame_sync_dvp.read_pos = (frame_sync_dvp.read_pos + 1) % SHM_FRAME_BUFFER_SIZE;
+            frame_sync_dvp.read_pos = (frame_sync_dvp.read_pos + 1) % FRAME_SYNC_BUFFER_SIZE;
             frame_sync_dvp.frame_count--;
             litelog.log.warning("Dropping frame due to processing delay.");
         }
@@ -37,7 +37,7 @@ static int SHM_Copy()
     memcpy(algo_in, frame_sync_dvp.frame_buffer[frame_sync_dvp.read_pos], v4l2_ir_dvp_valid_width * v4l2_ir_dvp_valid_height * sizeof(uint16_t));
 
     // Update frame index
-    frame_sync_dvp.read_pos = (frame_sync_dvp.read_pos + 1) % SHM_FRAME_BUFFER_SIZE;
+    frame_sync_dvp.read_pos = (frame_sync_dvp.read_pos + 1) % FRAME_SYNC_BUFFER_SIZE;
     frame_sync_dvp.frame_count--;
     frame_sync_dvp.buffer_full = false;
 

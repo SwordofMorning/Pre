@@ -24,9 +24,22 @@ pthread_mutex_t v4l2_ir_dvp_share_buffer_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t v4l2_ir_dvp_share_buffer_cond = PTHREAD_COND_INITIALIZER;
 int v4l2_ir_dvp_share_buffer_updated;
 
+/* ----- V4L2 CSI ---- */
+
+int v4l2_vis_csi_fd;
+int v4l2_vis_csi_nplanes;
+int v4l2_vis_csi_buffer_global_index;
+int v4l2_vis_csi_buffer_global_length;
+struct V4L2_VIS_CSI_Buffer* v4l2_vis_csi_buffer_global;
+
+int v4l2_vis_csi_mode;
+int v4l2_vis_csi_width;
+int v4l2_vis_csi_height;
+
 /* ----- SHM ---- */
 
-struct FrameSync frame_sync_dvp;
+struct FrameSync16 frame_sync_dvp;
+struct FrameSync8 frame_sync_csi;
 
 // Buffer
 uint16_t* algo_in = NULL;
@@ -50,7 +63,7 @@ struct UserConfig usr;
 /* ======================================== Function ======================================== */
 /* ========================================================================================== */
 
-static void Init_Frame_Sync()
+static void Init_Frame_Sync_DVP()
 {
     pthread_mutex_init(&frame_sync_dvp.mutex, NULL);
     pthread_cond_init(&frame_sync_dvp.producer_cond, NULL);
@@ -61,10 +74,26 @@ static void Init_Frame_Sync()
     frame_sync_dvp.buffer_full = false;
     gettimeofday(&frame_sync_dvp.last_frame_time, NULL);
 
-    // 初始化帧缓冲区
-    for (int i = 0; i < SHM_FRAME_BUFFER_SIZE; i++)
+    for (int i = 0; i < FRAME_SYNC_BUFFER_SIZE; i++)
     {
         frame_sync_dvp.frame_buffer[i] = (uint16_t*)malloc(v4l2_ir_dvp_valid_width * v4l2_ir_dvp_valid_height * sizeof(uint16_t));
+    }
+}
+
+static void Init_Frame_Sync_CSI()
+{
+    pthread_mutex_init(&frame_sync_csi.mutex, NULL);
+    pthread_cond_init(&frame_sync_csi.producer_cond, NULL);
+    pthread_cond_init(&frame_sync_csi.consumer_cond, NULL);
+    frame_sync_csi.write_pos = 0;
+    frame_sync_csi.read_pos = 0;
+    frame_sync_csi.frame_count = 0;
+    frame_sync_csi.buffer_full = false;
+    gettimeofday(&frame_sync_csi.last_frame_time, NULL);
+
+    for (int i = 0; i < FRAME_SYNC_BUFFER_SIZE; i++)
+    {
+        frame_sync_csi.frame_buffer[i] = (uint8_t*)malloc(v4l2_vis_csi_width * v4l2_vis_csi_height * sizeof(uint8_t) * V4L2_VIS_CSI_PIX_FMT_SCALE);
     }
 }
 
@@ -130,7 +159,8 @@ void Config_Init()
     v4l2_ir_dvp_share_buffer_updated = 0;
 
     Init_User_Config();
-    Init_Frame_Sync();
+    Init_Frame_Sync_DVP();
+    Init_Frame_Sync_CSI();
     Init_LUTs();
 }
 

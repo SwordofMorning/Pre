@@ -469,7 +469,7 @@ static void DVP_Send()
     // clang-format on
 
     // Update write index
-    frame_sync_dvp.write_pos = (frame_sync_dvp.write_pos + 1) % SHM_FRAME_BUFFER_SIZE;
+    frame_sync_dvp.write_pos = (frame_sync_dvp.write_pos + 1) % FRAME_SYNC_BUFFER_SIZE;
     frame_sync_dvp.frame_count++;
 
     if (frame_sync_dvp.write_pos == frame_sync_dvp.read_pos)
