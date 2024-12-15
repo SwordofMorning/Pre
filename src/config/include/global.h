@@ -60,7 +60,7 @@ struct FrameSync
     // Loop Buffer
     uint16_t* frame_buffer[SHM_FRAME_BUFFER_SIZE];
 };
-extern struct FrameSync frame_sync;
+extern struct FrameSync frame_sync_dvp;
 
 /* ========== Config ========== */
 

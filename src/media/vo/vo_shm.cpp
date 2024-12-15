@@ -1,7 +1,7 @@
 #include "vo_shm.h"
 
 /**
- * @brief Copy data from frame_sync to algo_in;
+ * @brief Copy data from frame_sync_dvp to algo_in;
  * 
  * @return success or not.
  */
@@ -10,42 +10,42 @@ static int SHM_Copy()
     struct timeval current_time;
     gettimeofday(&current_time, NULL);
 
-    pthread_mutex_lock(&frame_sync.mutex);
+    pthread_mutex_lock(&frame_sync_dvp.mutex);
 
     // Wait new frame
-    while (frame_sync.frame_count == 0)
+    while (frame_sync_dvp.frame_count == 0)
     {
-        pthread_cond_wait(&frame_sync.consumer_cond, &frame_sync.mutex);
+        pthread_cond_wait(&frame_sync_dvp.consumer_cond, &frame_sync_dvp.mutex);
     }
 
     // Calculate time interval between frames
-    double frame_interval = (current_time.tv_sec - frame_sync.last_frame_time.tv_sec) + (current_time.tv_usec - frame_sync.last_frame_time.tv_usec) / 1000000.0;
+    double frame_interval = (current_time.tv_sec - frame_sync_dvp.last_frame_time.tv_sec) + (current_time.tv_usec - frame_sync_dvp.last_frame_time.tv_usec) / 1000000.0;
 
     // If processing is too slow, skip some frames
     if (frame_interval > 1.0 / IR_TARGET_FPS)
     {
         // Skip the intermediate frames and process only the latest ones
-        while (frame_sync.frame_count > 1)
+        while (frame_sync_dvp.frame_count > 1)
         {
-            frame_sync.read_pos = (frame_sync.read_pos + 1) % SHM_FRAME_BUFFER_SIZE;
-            frame_sync.frame_count--;
+            frame_sync_dvp.read_pos = (frame_sync_dvp.read_pos + 1) % SHM_FRAME_BUFFER_SIZE;
+            frame_sync_dvp.frame_count--;
             litelog.log.warning("Dropping frame due to processing delay.");
         }
     }
 
     // Copy Data
-    memcpy(algo_in, frame_sync.frame_buffer[frame_sync.read_pos], v4l2_ir_dvp_valid_width * v4l2_ir_dvp_valid_height * sizeof(uint16_t));
+    memcpy(algo_in, frame_sync_dvp.frame_buffer[frame_sync_dvp.read_pos], v4l2_ir_dvp_valid_width * v4l2_ir_dvp_valid_height * sizeof(uint16_t));
 
     // Update frame index
-    frame_sync.read_pos = (frame_sync.read_pos + 1) % SHM_FRAME_BUFFER_SIZE;
-    frame_sync.frame_count--;
-    frame_sync.buffer_full = false;
+    frame_sync_dvp.read_pos = (frame_sync_dvp.read_pos + 1) % SHM_FRAME_BUFFER_SIZE;
+    frame_sync_dvp.frame_count--;
+    frame_sync_dvp.buffer_full = false;
 
     // Update timestamp
-    frame_sync.last_frame_time = current_time;
+    frame_sync_dvp.last_frame_time = current_time;
 
-    pthread_cond_signal(&frame_sync.producer_cond);
-    pthread_mutex_unlock(&frame_sync.mutex);
+    pthread_cond_signal(&frame_sync_dvp.producer_cond);
+    pthread_mutex_unlock(&frame_sync_dvp.mutex);
 
     return 0;
 }

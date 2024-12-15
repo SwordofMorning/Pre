@@ -26,7 +26,7 @@ int v4l2_ir_dvp_share_buffer_updated;
 
 /* ----- SHM ---- */
 
-struct FrameSync frame_sync;
+struct FrameSync frame_sync_dvp;
 
 // Buffer
 uint16_t* algo_in = NULL;
@@ -52,19 +52,19 @@ struct UserConfig usr;
 
 static void Init_Frame_Sync()
 {
-    pthread_mutex_init(&frame_sync.mutex, NULL);
-    pthread_cond_init(&frame_sync.producer_cond, NULL);
-    pthread_cond_init(&frame_sync.consumer_cond, NULL);
-    frame_sync.write_pos = 0;
-    frame_sync.read_pos = 0;
-    frame_sync.frame_count = 0;
-    frame_sync.buffer_full = false;
-    gettimeofday(&frame_sync.last_frame_time, NULL);
+    pthread_mutex_init(&frame_sync_dvp.mutex, NULL);
+    pthread_cond_init(&frame_sync_dvp.producer_cond, NULL);
+    pthread_cond_init(&frame_sync_dvp.consumer_cond, NULL);
+    frame_sync_dvp.write_pos = 0;
+    frame_sync_dvp.read_pos = 0;
+    frame_sync_dvp.frame_count = 0;
+    frame_sync_dvp.buffer_full = false;
+    gettimeofday(&frame_sync_dvp.last_frame_time, NULL);
 
     // 初始化帧缓冲区
     for (int i = 0; i < SHM_FRAME_BUFFER_SIZE; i++)
     {
-        frame_sync.frame_buffer[i] = (uint16_t*)malloc(v4l2_ir_dvp_valid_width * v4l2_ir_dvp_valid_height * sizeof(uint16_t));
+        frame_sync_dvp.frame_buffer[i] = (uint16_t*)malloc(v4l2_ir_dvp_valid_width * v4l2_ir_dvp_valid_height * sizeof(uint16_t));
     }
 }
 
