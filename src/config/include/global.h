@@ -74,10 +74,15 @@ extern float* algo_out_float;
 
 extern int shmid_yuv;
 extern int shmid_float;
+extern int shmid_csi;
 extern int semid;
 
+// IR yuv data
 extern uint8_t* shm_yuv;
+// IR temperature data
 extern float* shm_float;
+// Visible yuv data
+extern uint8_t* shm_vis;
 
 /* ========== Config ========== */
 

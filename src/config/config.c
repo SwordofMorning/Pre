@@ -49,11 +49,13 @@ float* algo_out_float = NULL;
 // ID
 int shmid_yuv = -1;
 int shmid_float = -1;
+int shmid_csi = -1;
 int semid = -1;
 
 // Pointer
 uint8_t* shm_yuv = NULL;
 float* shm_float = NULL;
+uint8_t* shm_vis = NULL;
 
 /* ----- User Config ---- */
 

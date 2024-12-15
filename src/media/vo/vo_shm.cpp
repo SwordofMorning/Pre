@@ -92,6 +92,20 @@ static int SHM_Send()
     memcpy(shm_yuv, algo_out_yuv, SHM_OUT_YUV_SIZE);
     memcpy(shm_float, algo_out_float, SHM_OUT_FLOAT_SIZE);
 
+    // Copy CSI data
+    pthread_mutex_lock(&frame_sync_csi.mutex);
+    if (frame_sync_csi.frame_count > 0) {
+        memcpy(shm_vis, frame_sync_csi.frame_buffer[frame_sync_csi.read_pos], 
+               SHM_OUT_CSI_SIZE);
+
+        frame_sync_csi.read_pos = (frame_sync_csi.read_pos + 1) % FRAME_SYNC_BUFFER_SIZE;
+        frame_sync_csi.frame_count--;
+        frame_sync_csi.buffer_full = false;
+
+        pthread_cond_signal(&frame_sync_csi.producer_cond);
+    }
+    pthread_mutex_unlock(&frame_sync_csi.mutex);
+
     // Release signal
     sem_op.sem_num = 0;
     sem_op.sem_op = 1;
@@ -123,7 +137,8 @@ int SHM_Init()
     // Create SHM buffer
     shmid_yuv = shmget(ALGO_SHM_YUV_KEY, SHM_OUT_YUV_SIZE, IPC_CREAT | 0666);
     shmid_float = shmget(ALGO_SHM_FLOAT_KEY, SHM_OUT_FLOAT_SIZE, IPC_CREAT | 0666);
-    if (shmid_yuv < 0 || shmid_float < 0)
+    shmid_csi = shmget(ALGO_SHM_CSI_KEY, SHM_OUT_CSI_SIZE, IPC_CREAT | 0666);
+    if (shmid_yuv < 0 || shmid_float < 0 || shmid_csi < 0)
     {
         litelog.log.fatal("Create SHM error.");
         perror("shmget");
@@ -133,7 +148,8 @@ int SHM_Init()
     // Mapping shared memory
     shm_yuv = (uint8_t*)shmat(shmid_yuv, NULL, 0);
     shm_float = (float*)shmat(shmid_float, NULL, 0);
-    if (shm_yuv == (void*)-1 || shm_float == (void*)-1)
+    shm_vis = (uint8_t*)shmat(shmid_csi, NULL, 0);
+    if (shm_yuv == (void*)-1 || shm_float == (void*)-1 || shm_vis == (void*)-1)
     {
         litelog.log.fatal("shmat error.");
         perror("shmat");
