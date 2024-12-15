@@ -40,8 +40,9 @@ void execute()
     vo_thread = std::thread(vo_thread_func);
     sleep(1);
 
-
-    EventListener el;
+    Motor motor;
+    motor.Start();
+    EventListener el(motor);
     el.Start();
 
     system("/root/app/utils/ui.sh");

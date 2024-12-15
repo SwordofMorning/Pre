@@ -2,7 +2,12 @@
 
 static bool is_vis = true;
 
-EventListener::EventListener() : running_(false) {}
+EventListener::EventListener(Motor& p_motor) 
+    : running_(false)
+    , m_motor(p_motor)
+{
+    // do nothing
+}
 
 EventListener::~EventListener() {
     Stop();
@@ -34,20 +39,14 @@ void EventListener::PrintKeyEvent(const std::string& device, int code, int value
     // 对焦，远离
     if (code == KEY_F5 && value == 1)
     {
-        std::cout << "KEY_F5 Down" << std::endl;
+        std::vector<uint8_t> data = {0x24, 0x02, 0x04, 0x00, 0x0C, 0xFE, 0xFF, 0xFF, 0xD0};
+        m_motor.Send(data);
     }
     // 对焦，拉近
     else if (code == KEY_F4 && value == 1)
     {
-        std::cout << "KEY_F4 Down" << std::endl;
-    }
-    else if ((code == KEY_F5 || code == KEY_F4) && value == 0)
-    {
-        std::cout << "KEY_F4_F5 Up" << std::endl;
-    }
-    else if ((code == KEY_F5 || code == KEY_F4) && value == 0)
-    {
-        std::cout << "KEY_F4_F5 Up" << std::endl;
+        std::vector<uint8_t> data = {0x24, 0x02, 0x04, 0x00, 0xF4, 0x01, 0x00, 0x00, 0xD7};
+        m_motor.Send(data);
     }
     else if (code == KEY_F3 && value == 1)
     {

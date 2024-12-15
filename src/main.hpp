@@ -10,6 +10,7 @@
 #include "./media/vo/vo_gst.h"
 #include "./utils/listen/listen.h"
 #include "./utils/event/event.h"
+#include "./utils/uart/motor.h"
 
 std::thread dvp_thread;
 bool dvp_running = true;

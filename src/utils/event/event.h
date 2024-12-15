@@ -11,11 +11,12 @@
 #include <thread>
 #include <atomic>
 #include "../../config/config.h"
+#include "../uart/motor.h"
 
 class EventListener
 {
 public:
-    EventListener();
+    EventListener(Motor& p_motor);
     ~EventListener();
 
     // 启动监听
@@ -33,4 +34,6 @@ private:
 
     std::thread listen_thread_;
     std::atomic<bool> running_;
+
+    Motor& m_motor;
 };
