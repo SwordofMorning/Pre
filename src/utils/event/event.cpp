@@ -1,5 +1,7 @@
 #include "event.h"
 
+static bool is_vis = true;
+
 EventListener::EventListener() : running_(false) {}
 
 EventListener::~EventListener() {
@@ -51,6 +53,14 @@ void EventListener::PrintKeyEvent(const std::string& device, int code, int value
     {
         usr.pseudo++;
         usr.pseudo %= PSEUDO_NUMS;
+    }
+    else if (code == KEY_F2 && value == 1)
+    {
+        if (is_vis)
+            system("/root/app/utils/vis.sh");
+        else
+            system("killall gst-launch-1.0");
+        is_vis = !is_vis;
     }
     else
     {

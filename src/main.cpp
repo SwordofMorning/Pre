@@ -18,9 +18,9 @@ void exit()
     dvp_running = false;
     if (dvp_thread.joinable())
         dvp_thread.join();
-    csi_running = false;
-    if (csi_thread.joinable())
-        csi_thread.join();
+    // csi_running = false;
+    // if (csi_thread.joinable())
+    //     csi_thread.join();
 
     vo_running = false;
     if (vo_thread.joinable())
@@ -35,12 +35,16 @@ void execute()
     gst_thread = std::thread(gst_thread_func);
     sleep(1);
     dvp_thread = std::thread(dvp_thread_func);
-    csi_thread = std::thread(csi_thread_func);
+    // csi_thread = std::thread(csi_thread_func);
     sleep(1);
     vo_thread = std::thread(vo_thread_func);
+    sleep(1);
+
 
     EventListener el;
     el.Start();
+
+    system("/root/app/utils/ui.sh");
 
     Listen li;
     li();
