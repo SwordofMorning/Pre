@@ -41,19 +41,17 @@ int Process_One_Frame()
     return 0;
 }
 
-#define De_Bad_Pixel_Enable 1
+#define De_Bad_Pixel_Enable 0
 #if (!De_Bad_Pixel_Enable)
 
 void Pseudo(uint16_t* input, uint8_t* y_out, uint8_t* u_out, uint8_t* v_out, int width, int height)
 {
-    auto [min_it, max_it] = std::minmax_element(input, input + width * height);
-    uint16_t min_val = *min_it;
-    uint16_t max_val = *max_it;
-
-    if (max_val == min_val)
-        max_val = min_val + 1;
-
-    float scale = 255.0f / (max_val - min_val);
+    static AdaptiveMapper mapper;
+    
+    // 更新映射范围
+    mapper.updateRange(input, width, height);
+    float scale = mapper.getScale();
+    float min_val = mapper.getMin();
 
     // clang-format off
     switch(usr.pseudo)
@@ -66,7 +64,10 @@ void Pseudo(uint16_t* input, uint8_t* y_out, uint8_t* u_out, uint8_t* v_out, int
                 for (int j = 0; j < width; j++)
                 {
                     uint16_t val = input[i * width + j];
-                    y_out[i * width + j] = 255 - (uint8_t)((val - min_val) * scale);
+                    float mapped = (val - min_val) * scale;
+                    // 限制在0-255范围内
+                    mapped = std::clamp(mapped, 0.0f, 255.0f);
+                    y_out[i * width + j] = 255 - (uint8_t)mapped;
                 }
             }
 
@@ -85,7 +86,9 @@ void Pseudo(uint16_t* input, uint8_t* y_out, uint8_t* u_out, uint8_t* v_out, int
                 for (int j = 0; j < width; j++)
                 {
                     uint16_t val = input[i * width + j];
-                    y_out[i * width + j] = (uint8_t)((val - min_val) * scale);
+                    float mapped = (val - min_val) * scale;
+                    mapped = std::clamp(mapped, 0.0f, 255.0f);
+                    y_out[i * width + j] = (uint8_t)mapped;
                 }
             }
 
@@ -108,7 +111,9 @@ void Pseudo(uint16_t* input, uint8_t* y_out, uint8_t* u_out, uint8_t* v_out, int
                 for (int j = 0; j < width; j++)
                 {
                     uint16_t val = input[i * width + j];
-                    int color_idx = ((uint32_t)(val - min_val) * (lut->size - 1)) / (max_val - min_val);
+                    float mapped = (val - min_val) * scale;
+                    mapped = std::clamp(mapped, 0.0f, 255.0f);
+                    int color_idx = (int)(mapped * (lut->size - 1) / 255);
                     y_out[i * width + j] = lut->y[color_idx];
                 }
             }
@@ -118,7 +123,6 @@ void Pseudo(uint16_t* input, uint8_t* y_out, uint8_t* u_out, uint8_t* v_out, int
             {
                 for (int j = 0; j < width/2; j++)
                 {
-                    // mean of 2x2
                     uint32_t sum = 0;
                     for(int di = 0; di < 2; di++)
                     {
@@ -129,7 +133,9 @@ void Pseudo(uint16_t* input, uint8_t* y_out, uint8_t* u_out, uint8_t* v_out, int
                     }
                     uint32_t avg_val = sum / 4;
                     
-                    int color_idx = ((uint32_t)(avg_val - min_val) * (lut->size - 1)) / (max_val - min_val);
+                    float mapped = (avg_val - min_val) * scale;
+                    mapped = std::clamp(mapped, 0.0f, 255.0f);
+                    int color_idx = (int)(mapped * (lut->size - 1) / 255);
                     u_out[i * (width/2) + j] = lut->u[color_idx];
                     v_out[i * (width/2) + j] = lut->v[color_idx];
                 }
