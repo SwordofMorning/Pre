@@ -5,24 +5,19 @@ extern "C" {
 #endif
 
 // Pseudo color enum.
-enum
+enum PSEUDO
 {
-    // Iron bow i.e. iron red.
-    PSEUDO_COLOR_IRON_BOW = 0,
-    // White hot, white means high temperature.
-    PSEUDO_COLOR_WHITE_HOT,
-    // Black hot, black means high temperature.
-    PSEUDO_COLOR_BLACK_HOT,
-    // Rainbow.
-    PSEUDO_COLOR_RAINBOW,
-    // Rainbow High Contrast.
-    PSEUDO_COLOR_RAINBOW_HC,
-    // Fotric 8bits iron bow.
-    PSEUDO_COLOR_IRON_BOW_F8,
-    // Fotric 10bits iron bow.
-    PSEUDO_COLOR_IRON_BOW_F10,
-    // Nums of Pseudo color.
-    PSEUDO_COLOR_NUMS,
+    PSEUDO_IRONBOW_FORWARD = 0,
+    PSEUDO_IRONBOW_REVERSE,
+    PSEUDO_LAVA_FORWARD,
+    PSEUDO_LAVA_REVERSE,
+    PSEUDO_RAINBOW_FORWARD,
+    PSEUDO_RAINBOW_REVERSE,
+    PSEUDO_RAINBOWHC_FORWARD,
+    PSEUDO_RAINBOWHC_REVERSE,
+    PSEUDO_WHITE_HOT,
+    PSEUDO_BLACK_HOT,
+    PSEUDO_NUMS,
 };
 
 /**
@@ -30,7 +25,7 @@ enum
  * @attention Begin with 1, not 0!
  * @note use GAS_ENHANCEMENT_MIN < gas_enhancement < GAS_ENHANCEMENT_MAX to verify that it is valid.
  */
-enum
+enum GAS_ENHANCEMENT
 {
     GAS_ENHANCEMENT_MIN = 0,
     GAS_ENHANCEMENT_NONE,
@@ -50,18 +45,6 @@ enum
     GAS_ENHANCEMENT_15,
     GAS_ENHANCEMENT_16,
     GAS_ENHANCEMENT_MAX,
-};
-
-enum
-{
-    // Take a photo.
-    CAPTURE_STATE_PHOTO_ONCE = 0,
-    // Start record video.
-    CAPTURE_STATE_VIDEO_START,
-    // End record video.
-    CAPTURE_STATE_VIDEO_End,
-    // Nums of capture state.
-    CAPTURE_STATE_NUMS,
 };
 
 #ifdef __cplusplus

@@ -31,24 +31,67 @@
 extern "C" {
 #endif
 
-/* IR */
+/* ========== V4L2 ========== */
 
-// Share memory of dvp captured data.
-extern uint16_t v4l2_ir_dvp_share_buffer[V4L2_IR_DVP_VALID_WIDTH_640 * V4L2_IR_DVP_VALID_HEIGHT_640];
-// Mutex of dvp shm.
-extern pthread_mutex_t v4l2_ir_dvp_share_buffer_mutex;
-// Cond of dvp shm.
-extern pthread_cond_t v4l2_ir_dvp_share_buffer_cond;
-// Count of dvp shm.
-extern int v4l2_ir_dvp_share_buffer_updated;
+#define FRAME_SYNC_BUFFER_SIZE 8
+#define IR_TARGET_FPS 25
 
-/* Config */
+struct FrameSync16
+{
+    pthread_mutex_t mutex;
+    pthread_cond_t producer_cond;
+    pthread_cond_t consumer_cond;
+    int write_pos;
+    int read_pos;
+    int frame_count;
+    bool buffer_full;
+    struct timeval last_frame_time;
+    // Loop Buffer
+    uint16_t* frame_buffer[FRAME_SYNC_BUFFER_SIZE];
+};
+extern struct FrameSync16 frame_sync_dvp;
 
-// Gas Enhancement Param.
-extern int gas_enhancement;
+struct FrameSync8
+{
+    pthread_mutex_t mutex;
+    pthread_cond_t producer_cond;
+    pthread_cond_t consumer_cond;
+    int write_pos;
+    int read_pos;
+    int frame_count;
+    bool buffer_full;
+    struct timeval last_frame_time;
+    // Loop Buffer
+    uint8_t* frame_buffer[FRAME_SYNC_BUFFER_SIZE];
+};
+extern struct FrameSync8 frame_sync_csi;
 
-// To specific which pseudo color mode we use.
-extern int pseudo_color;
+/* ========== SHM ========== */
+
+extern uint16_t* algo_in;
+extern uint8_t* algo_out_yuv;
+extern float* algo_out_float;
+
+extern int shmid_yuv;
+extern int shmid_float;
+extern int shmid_csi;
+extern int semid;
+
+// IR yuv data
+extern uint8_t* shm_yuv;
+// IR temperature data
+extern float* shm_float;
+// Visible yuv data
+extern uint8_t* shm_vis;
+
+/* ========== Config ========== */
+
+struct UserConfig
+{
+    int pseudo;
+    int gas_enhancement;
+};
+extern struct UserConfig usr;
 
 #ifdef __cplusplus
 }

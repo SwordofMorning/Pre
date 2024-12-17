@@ -8,14 +8,14 @@ extern "C" {
 #define __DVP_SAVE__ 0
 
 // Statistics DVP FPS.
-#define __DVP_FPS__ 1
+#define __DVP_FPS__ 0
 
 /**
  * @brief DVP Continuous capture or not.
  * @note 1, capture data in while(1);
  * @note 0, capture a fixed number of frames, specified by `__DVP_CAPTURE_FRAMES__`.
  */
-#define __DVP_CONTINUOUS_CAPTURE__ 0
+#define __DVP_CONTINUOUS_CAPTURE__ 1
 
 // Captured number of frames on noncontinuous dvp mode.
 #define __DVP_CAPTURE_FRAMES__ 100
