@@ -1,7 +1,7 @@
 #include "vo_shm.h"
 
 /**
- * @brief Copy data from frame_sync to algo_in;
+ * @brief Copy data from frame_sync_dvp to algo_in;
  * 
  * @return success or not.
  */
@@ -10,42 +10,42 @@ static int SHM_Copy()
     struct timeval current_time;
     gettimeofday(&current_time, NULL);
 
-    pthread_mutex_lock(&frame_sync.mutex);
+    pthread_mutex_lock(&frame_sync_dvp.mutex);
 
     // Wait new frame
-    while (frame_sync.frame_count == 0)
+    while (frame_sync_dvp.frame_count == 0)
     {
-        pthread_cond_wait(&frame_sync.consumer_cond, &frame_sync.mutex);
+        pthread_cond_wait(&frame_sync_dvp.consumer_cond, &frame_sync_dvp.mutex);
     }
 
     // Calculate time interval between frames
-    double frame_interval = (current_time.tv_sec - frame_sync.last_frame_time.tv_sec) + (current_time.tv_usec - frame_sync.last_frame_time.tv_usec) / 1000000.0;
+    double frame_interval = (current_time.tv_sec - frame_sync_dvp.last_frame_time.tv_sec) + (current_time.tv_usec - frame_sync_dvp.last_frame_time.tv_usec) / 1000000.0;
 
     // If processing is too slow, skip some frames
     if (frame_interval > 1.0 / IR_TARGET_FPS)
     {
         // Skip the intermediate frames and process only the latest ones
-        while (frame_sync.frame_count > 1)
+        while (frame_sync_dvp.frame_count > 1)
         {
-            frame_sync.read_pos = (frame_sync.read_pos + 1) % SHM_FRAME_BUFFER_SIZE;
-            frame_sync.frame_count--;
+            frame_sync_dvp.read_pos = (frame_sync_dvp.read_pos + 1) % FRAME_SYNC_BUFFER_SIZE;
+            frame_sync_dvp.frame_count--;
             litelog.log.warning("Dropping frame due to processing delay.");
         }
     }
 
     // Copy Data
-    memcpy(algo_in, frame_sync.frame_buffer[frame_sync.read_pos], v4l2_ir_dvp_valid_width * v4l2_ir_dvp_valid_height * sizeof(uint16_t));
+    memcpy(algo_in, frame_sync_dvp.frame_buffer[frame_sync_dvp.read_pos], v4l2_ir_dvp_valid_width * v4l2_ir_dvp_valid_height * sizeof(uint16_t));
 
     // Update frame index
-    frame_sync.read_pos = (frame_sync.read_pos + 1) % SHM_FRAME_BUFFER_SIZE;
-    frame_sync.frame_count--;
-    frame_sync.buffer_full = false;
+    frame_sync_dvp.read_pos = (frame_sync_dvp.read_pos + 1) % FRAME_SYNC_BUFFER_SIZE;
+    frame_sync_dvp.frame_count--;
+    frame_sync_dvp.buffer_full = false;
 
     // Update timestamp
-    frame_sync.last_frame_time = current_time;
+    frame_sync_dvp.last_frame_time = current_time;
 
-    pthread_cond_signal(&frame_sync.producer_cond);
-    pthread_mutex_unlock(&frame_sync.mutex);
+    pthread_cond_signal(&frame_sync_dvp.producer_cond);
+    pthread_mutex_unlock(&frame_sync_dvp.mutex);
 
     return 0;
 }
@@ -69,10 +69,10 @@ static int SHM_Send()
     // 验证数据是否有更新
     if (current_frame_sum == last_frame_sum)
     {
-        printf("Duplicate frame detected in SHM_Send\n");
+        // printf("Duplicate frame detected in SHM_Send\n");
         return 0;
     }
-    printf("current sum: %d\n", current_frame_sum);
+    // printf("current sum: %d\n", current_frame_sum);
     last_frame_sum = current_frame_sum;
 
     struct sembuf sem_op;
@@ -91,6 +91,20 @@ static int SHM_Send()
     // Copy data to shm with verification
     memcpy(shm_yuv, algo_out_yuv, SHM_OUT_YUV_SIZE);
     memcpy(shm_float, algo_out_float, SHM_OUT_FLOAT_SIZE);
+
+    // Copy CSI data
+    pthread_mutex_lock(&frame_sync_csi.mutex);
+    if (frame_sync_csi.frame_count > 0) {
+        memcpy(shm_vis, frame_sync_csi.frame_buffer[frame_sync_csi.read_pos], 
+               SHM_OUT_CSI_SIZE);
+
+        frame_sync_csi.read_pos = (frame_sync_csi.read_pos + 1) % FRAME_SYNC_BUFFER_SIZE;
+        frame_sync_csi.frame_count--;
+        frame_sync_csi.buffer_full = false;
+
+        pthread_cond_signal(&frame_sync_csi.producer_cond);
+    }
+    pthread_mutex_unlock(&frame_sync_csi.mutex);
 
     // Release signal
     sem_op.sem_num = 0;
@@ -123,7 +137,8 @@ int SHM_Init()
     // Create SHM buffer
     shmid_yuv = shmget(ALGO_SHM_YUV_KEY, SHM_OUT_YUV_SIZE, IPC_CREAT | 0666);
     shmid_float = shmget(ALGO_SHM_FLOAT_KEY, SHM_OUT_FLOAT_SIZE, IPC_CREAT | 0666);
-    if (shmid_yuv < 0 || shmid_float < 0)
+    shmid_csi = shmget(ALGO_SHM_CSI_KEY, SHM_OUT_CSI_SIZE, IPC_CREAT | 0666);
+    if (shmid_yuv < 0 || shmid_float < 0 || shmid_csi < 0)
     {
         litelog.log.fatal("Create SHM error.");
         perror("shmget");
@@ -133,7 +148,8 @@ int SHM_Init()
     // Mapping shared memory
     shm_yuv = (uint8_t*)shmat(shmid_yuv, NULL, 0);
     shm_float = (float*)shmat(shmid_float, NULL, 0);
-    if (shm_yuv == (void*)-1 || shm_float == (void*)-1)
+    shm_vis = (uint8_t*)shmat(shmid_csi, NULL, 0);
+    if (shm_yuv == (void*)-1 || shm_float == (void*)-1 || shm_vis == (void*)-1)
     {
         litelog.log.fatal("shmat error.");
         perror("shmat");

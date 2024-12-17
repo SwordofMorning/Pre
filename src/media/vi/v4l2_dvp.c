@@ -455,30 +455,30 @@ static void DVP_Send()
     struct timeval current_time;
     gettimeofday(&current_time, NULL);
 
-    pthread_mutex_lock(&frame_sync.mutex);
+    pthread_mutex_lock(&frame_sync_dvp.mutex);
 
     // 检查缓冲区是否已满
-    while (frame_sync.buffer_full)
+    while (frame_sync_dvp.buffer_full)
     {
-        pthread_cond_wait(&frame_sync.producer_cond, &frame_sync.mutex);
+        pthread_cond_wait(&frame_sync_dvp.producer_cond, &frame_sync_dvp.mutex);
     }
 
     // 复制数据到缓冲区
-    memcpy(frame_sync.frame_buffer[frame_sync.write_pos], (uint16_t*)v4l2_ir_dvp_buffer_global[v4l2_ir_dvp_buffer_global_index].start,
+    memcpy(frame_sync_dvp.frame_buffer[frame_sync_dvp.write_pos], (uint16_t*)v4l2_ir_dvp_buffer_global[v4l2_ir_dvp_buffer_global_index].start,
            v4l2_ir_dvp_valid_width * v4l2_ir_dvp_valid_height * sizeof(uint16_t));
     // clang-format on
 
     // Update write index
-    frame_sync.write_pos = (frame_sync.write_pos + 1) % SHM_FRAME_BUFFER_SIZE;
-    frame_sync.frame_count++;
+    frame_sync_dvp.write_pos = (frame_sync_dvp.write_pos + 1) % FRAME_SYNC_BUFFER_SIZE;
+    frame_sync_dvp.frame_count++;
 
-    if (frame_sync.write_pos == frame_sync.read_pos)
+    if (frame_sync_dvp.write_pos == frame_sync_dvp.read_pos)
     {
-        frame_sync.buffer_full = true;
+        frame_sync_dvp.buffer_full = true;
     }
 
-    pthread_cond_signal(&frame_sync.consumer_cond);
-    pthread_mutex_unlock(&frame_sync.mutex);
+    pthread_cond_signal(&frame_sync_dvp.consumer_cond);
+    pthread_mutex_unlock(&frame_sync_dvp.mutex);
 }
 
 static int DVP_Capture()
