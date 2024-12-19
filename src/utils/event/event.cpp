@@ -40,19 +40,17 @@ void EventListener::Stop()
 
 void EventListener::PrintKeyEvent(const std::string& device, int code, int value)
 {
-    printf("[%s] Key Event - Code: %d, Value: %d\n", device.c_str(), code, value);
+    // printf("[%s] Key Event - Code: %d, Value: %d\n", device.c_str(), code, value);
 
     // 对焦，远离
     if (code == KEY_F5 && value == 1)
     {
-        std::vector<uint8_t> data = {0x24, 0x02, 0x04, 0x00, 0x0C, 0xFE, 0xFF, 0xFF, 0xD0};
-        m_motor.Send(data);
+        m_motor.Move_IR((int32_t)(100));
     }
     // 对焦，拉近
     else if (code == KEY_F4 && value == 1)
     {
-        std::vector<uint8_t> data = {0x24, 0x02, 0x04, 0x00, 0xF4, 0x01, 0x00, 0x00, 0xD7};
-        m_motor.Send(data);
+        m_motor.Move_IR((int32_t)(-100));
     }
     else if (code == KEY_F3 && value == 1)
     {
@@ -67,9 +65,21 @@ void EventListener::PrintKeyEvent(const std::string& device, int code, int value
             system("killall gst-launch-1.0");
         is_vis = !is_vis;
     }
-    else
+    else if (code == KEY_3 && value == 1)
     {
-        std::cout << "Others" << std::endl;
+        m_motor.Move_Vis_Zoom((int32_t)(100));
+    }
+    else if (code == KEY_4 && value == 1)
+    {
+        m_motor.Move_Vis_Zoom((int32_t)(-100));
+    }
+    else if (code == KEY_5 && value == 1)
+    {
+        m_motor.Move_Vis_Focus((int32_t)(100));
+    }
+    else if (code == KEY_6 && value == 1)
+    {
+        m_motor.Move_Vis_Focus((int32_t)(-100));
     }
 }
 
