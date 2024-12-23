@@ -25,6 +25,9 @@ void exit()
     vo_running = false;
     if (vo_thread.joinable())
         vo_thread.join();
+    ab_running = false;
+    if (ab_thread.joinable())
+        ab_thread.join();
 
     litelog.log.notice("End!");
     litelog.exit();
@@ -38,6 +41,7 @@ void execute()
     csi_thread = std::thread(csi_thread_func);
     sleep(1);
     vo_thread = std::thread(vo_thread_func);
+    // ab_thread = std::thread(ab_thread_func);
     sleep(1);
 
     Motor motor;

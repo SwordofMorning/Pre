@@ -52,7 +52,8 @@ int shmid_yuv = -1;
 int shmid_float = -1;
 int shmid_csi = -1;
 int shmid_algo = -1;
-int semid = -1;
+int semid_vo = -1;
+int semid_ab = -1;
 
 // Pointer
 uint8_t* shm_yuv = NULL;

@@ -1,4 +1,4 @@
-#include "vo_gst.h"
+#include "gst.h"
 
 // GStreamer全局变量
 static GstElement* pipeline = NULL;

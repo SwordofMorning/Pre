@@ -77,7 +77,8 @@ extern int shmid_yuv;
 extern int shmid_float;
 extern int shmid_csi;
 extern int shmid_algo;
-extern int semid;
+extern int semid_vo;
+extern int semid_ab;
 
 // IR yuv data
 extern uint8_t* shm_yuv;

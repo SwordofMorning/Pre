@@ -6,8 +6,9 @@
 #include "./utils/log/litelog.h"
 #include "./media/vi/v4l2_dvp.h"
 #include "./media/vi/v4l2_csi.h"
-#include "./media/vo/vo_shm.h"
-#include "./media/vo/vo_gst.h"
+#include "./media/vo/shm_vo.h"
+#include "./media/vo/shm_algo.h"
+#include "./media/vo/gst.h"
 #include "./utils/listen/listen.h"
 #include "./utils/event/event.h"
 #include "./utils/uart/motor.h"
@@ -19,6 +20,8 @@ bool csi_running = true;
 std::thread vo_thread;
 bool vo_running = true;
 std::thread gst_thread;
+bool ab_running = true;
+std::thread ab_thread;
 
 void dvp_thread_func()
 {
@@ -32,12 +35,23 @@ void csi_thread_func()
 
 void vo_thread_func()
 {
-    SHM_Init();
+    SHM_VO_Init();
     while (vo_running)
     {
-        SHM_Process();
+        SHM_VO_Process();
     }
-    SHM_Exit();
+    SHM_VO_Exit();
+}
+
+// i.e. algo backend
+void ab_thread_func()
+{
+    SHM_ALGO_Init();
+    while (vo_running)
+    {
+        SHM_ALGO_Process();
+    }
+    SHM_ALGO_Exit();
 }
 
 void gst_thread_func()
