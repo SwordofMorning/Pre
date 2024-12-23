@@ -32,10 +32,10 @@ void exit()
 
 void execute()
 {
-    gst_thread = std::thread(gst_thread_func);
+    // gst_thread = std::thread(gst_thread_func);
     sleep(1);
     dvp_thread = std::thread(dvp_thread_func);
-    // csi_thread = std::thread(csi_thread_func);
+    csi_thread = std::thread(csi_thread_func);
     sleep(1);
     vo_thread = std::thread(vo_thread_func);
     sleep(1);
@@ -45,7 +45,7 @@ void execute()
     EventListener el(motor);
     el.Start();
 
-    system("/root/app/utils/ui.sh");
+    // system("/root/app/utils/ui.sh");
 
     Listen li;
     li();

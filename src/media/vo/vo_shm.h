@@ -15,20 +15,24 @@
 #include "../../utils/log/litelog.h"
 
 // YUV Buffer, used for IR image data.
-#define ALGO_SHM_YUV_KEY 0x0010
+#define SHM_YUV_KEY 0x0010
 // Float Buffer, used for temperature data.
-#define ALGO_SHM_FLOAT_KEY 0x0011
-// YUV Buffer, used for Visible image data.
-#define ALGO_SHM_CSI_KEY 0x0012
+#define SHM_FLOAT_KEY 0x0011
+// YUV Buffer, used for visible image data.
+#define SHM_CSI_KEY 0x0012
+// RGB Buffer, used for algorithm backend.
+#define SHM_ALGO_KEY 0x0013
 // Signal Key
 #define ALGO_SEM_KEY 0x0020
 
-// YUV420P buffer size
+// YUV420SP | NV12, for IR data.
 #define SHM_OUT_YUV_SIZE (v4l2_ir_dvp_valid_width * v4l2_ir_dvp_valid_height * 3 / 2)
-// Float buffer size
+// Float, for Temp data.
 #define SHM_OUT_FLOAT_SIZE (v4l2_ir_dvp_valid_width * v4l2_ir_dvp_valid_height * sizeof(float))
-// UYVY buffer size
-#define SHM_OUT_CSI_SIZE (v4l2_vis_csi_width * v4l2_vis_csi_height * 2)
+// YUV420SP | NV12, for Vis data.
+#define SHM_OUT_CSI_SIZE (v4l2_vis_csi_width * v4l2_vis_csi_height * V4L2_VIS_CSI_PIX_FMT_SCALE)
+// YUV420SP while UV is 128, for algo backend.
+#define SHM_OUT_ALGO_SIZE SHM_OUT_YUV_SIZE
 
 /**
  * @brief Init SHM, create shm and allocate buffer.

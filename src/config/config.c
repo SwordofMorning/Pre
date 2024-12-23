@@ -43,19 +43,22 @@ struct FrameSync8 frame_sync_csi;
 
 // Buffer
 uint16_t* algo_in = NULL;
-uint8_t* algo_out_yuv = NULL;
-float* algo_out_float = NULL;
+uint8_t* shm_out_yuv = NULL;
+float* shm_out_float = NULL;
+uint8_t* shm_out_algo = NULL;
 
 // ID
 int shmid_yuv = -1;
 int shmid_float = -1;
 int shmid_csi = -1;
+int shmid_algo = -1;
 int semid = -1;
 
 // Pointer
 uint8_t* shm_yuv = NULL;
 float* shm_float = NULL;
 uint8_t* shm_vis = NULL;
+uint8_t* shm_algo = NULL;
 
 /* ----- User Config ---- */
 

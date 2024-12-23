@@ -69,12 +69,14 @@ extern struct FrameSync8 frame_sync_csi;
 /* ========== SHM ========== */
 
 extern uint16_t* algo_in;
-extern uint8_t* algo_out_yuv;
-extern float* algo_out_float;
+extern uint8_t* shm_out_yuv;
+extern float* shm_out_float;
+extern uint8_t* shm_out_algo;
 
 extern int shmid_yuv;
 extern int shmid_float;
 extern int shmid_csi;
+extern int shmid_algo;
 extern int semid;
 
 // IR yuv data
@@ -83,6 +85,8 @@ extern uint8_t* shm_yuv;
 extern float* shm_float;
 // Visible yuv data
 extern uint8_t* shm_vis;
+// IR algo data.
+extern uint8_t* shm_algo;
 
 /* ========== Config ========== */
 

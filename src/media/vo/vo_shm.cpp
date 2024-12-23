@@ -63,7 +63,7 @@ static int SHM_Send()
     // 计算当前帧的校验和
     for (int i = 0; i < 100; i++)
     {
-        current_frame_sum += algo_out_yuv[i];
+        current_frame_sum += shm_out_yuv[i];
     }
 
     // 验证数据是否有更新
@@ -89,8 +89,16 @@ static int SHM_Send()
     }
 
     // Copy data to shm with verification
-    memcpy(shm_yuv, algo_out_yuv, SHM_OUT_YUV_SIZE);
-    memcpy(shm_float, algo_out_float, SHM_OUT_FLOAT_SIZE);
+    memcpy(shm_yuv, shm_out_yuv, SHM_OUT_YUV_SIZE);
+    memcpy(shm_float, shm_out_float, SHM_OUT_FLOAT_SIZE);
+
+    {
+        size_t y_size = v4l2_ir_dvp_valid_width * v4l2_ir_dvp_valid_height;
+        memcpy(shm_algo, shm_out_yuv, y_size);
+
+        uint8_t* uv_plane = shm_algo + y_size;
+        memset(uv_plane, 128, y_size / 2);
+    }
 
     // Copy CSI data
     pthread_mutex_lock(&frame_sync_csi.mutex);
@@ -124,10 +132,11 @@ int SHM_Init()
 {
     // Allocate internal buffer
     algo_in = (uint16_t*)malloc(v4l2_ir_dvp_valid_width * v4l2_ir_dvp_valid_height * sizeof(uint16_t));
-    algo_out_yuv = (uint8_t*)malloc(SHM_OUT_YUV_SIZE);
-    algo_out_float = (float*)malloc(SHM_OUT_FLOAT_SIZE);
+    shm_out_yuv = (uint8_t*)malloc(SHM_OUT_YUV_SIZE);
+    shm_out_float = (float*)malloc(SHM_OUT_FLOAT_SIZE);
+    shm_out_algo = (uint8_t*)malloc(SHM_OUT_ALGO_SIZE);
 
-    if (!algo_in || !algo_out_yuv || !algo_out_float)
+    if (!algo_in || !shm_out_yuv || !shm_out_float || !shm_out_algo)
     {
         litelog.log.fatal("Init SHM error.");
         perror("malloc");
@@ -135,10 +144,11 @@ int SHM_Init()
     }
 
     // Create SHM buffer
-    shmid_yuv = shmget(ALGO_SHM_YUV_KEY, SHM_OUT_YUV_SIZE, IPC_CREAT | 0666);
-    shmid_float = shmget(ALGO_SHM_FLOAT_KEY, SHM_OUT_FLOAT_SIZE, IPC_CREAT | 0666);
-    shmid_csi = shmget(ALGO_SHM_CSI_KEY, SHM_OUT_CSI_SIZE, IPC_CREAT | 0666);
-    if (shmid_yuv < 0 || shmid_float < 0 || shmid_csi < 0)
+    shmid_yuv = shmget(SHM_YUV_KEY, SHM_OUT_YUV_SIZE, IPC_CREAT | 0666);
+    shmid_float = shmget(SHM_FLOAT_KEY, SHM_OUT_FLOAT_SIZE, IPC_CREAT | 0666);
+    shmid_csi = shmget(SHM_CSI_KEY, SHM_OUT_CSI_SIZE, IPC_CREAT | 0666);
+    shmid_algo = shmget(SHM_ALGO_KEY, SHM_OUT_ALGO_SIZE, IPC_CREAT | 0666);
+    if (shmid_yuv < 0 || shmid_float < 0 || shmid_csi < 0 || shmid_algo < 0)
     {
         litelog.log.fatal("Create SHM error.");
         perror("shmget");
@@ -149,7 +159,8 @@ int SHM_Init()
     shm_yuv = (uint8_t*)shmat(shmid_yuv, NULL, 0);
     shm_float = (float*)shmat(shmid_float, NULL, 0);
     shm_vis = (uint8_t*)shmat(shmid_csi, NULL, 0);
-    if (shm_yuv == (void*)-1 || shm_float == (void*)-1 || shm_vis == (void*)-1)
+    shm_algo = (uint8_t*)shmat(shmid_algo, NULL, 0);
+    if (shm_yuv == (void*)-1 || shm_float == (void*)-1 || shm_vis == (void*)-1 || shm_algo == (void*)-1)
     {
         litelog.log.fatal("shmat error.");
         perror("shmat");
@@ -217,22 +228,32 @@ void SHM_Exit()
     // Release internal buffer
     if (algo_in)
         free(algo_in);
-    if (algo_out_yuv)
-        free(algo_out_yuv);
-    if (algo_out_float)
-        free(algo_out_float);
+    if (shm_out_yuv)
+        free(shm_out_yuv);
+    if (shm_out_float)
+        free(shm_out_float);
+    if (shm_out_algo)
+        free(shm_out_algo);
 
     // Disconnect SHM
     if (shm_yuv != (void*)-1)
         shmdt(shm_yuv);
     if (shm_float != (void*)-1)
         shmdt(shm_float);
+    if (shm_vis != (void*)-1)
+        shmdt(shm_vis);
+    if (shm_algo != (void*)-1)
+        shmdt(shm_algo);
 
     // Delete SHM
     if (shmid_yuv >= 0)
         shmctl(shmid_yuv, IPC_RMID, NULL);
     if (shmid_float >= 0)
         shmctl(shmid_float, IPC_RMID, NULL);
+    if (shmid_csi >= 0)
+        shmctl(shmid_csi, IPC_RMID, NULL);
+    if (shmid_algo >= 0)
+        shmctl(shmid_algo, IPC_RMID, NULL);
 
     // Delete signal
     if (semid >= 0)
