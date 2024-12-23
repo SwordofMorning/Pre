@@ -57,6 +57,7 @@ static int SHM_VO_Copy()
  */
 static int SHM_VO_Send()
 {
+    /*
     static uint8_t last_frame_sum = 0;
     uint8_t current_frame_sum = 0;
 
@@ -74,6 +75,7 @@ static int SHM_VO_Send()
     }
     // printf("current sum: %d\n", current_frame_sum);
     last_frame_sum = current_frame_sum;
+    */
 
     struct sembuf sem_op;
 

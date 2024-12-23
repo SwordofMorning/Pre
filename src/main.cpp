@@ -41,7 +41,7 @@ void execute()
     csi_thread = std::thread(csi_thread_func);
     sleep(1);
     vo_thread = std::thread(vo_thread_func);
-    // ab_thread = std::thread(ab_thread_func);
+    ab_thread = std::thread(ab_thread_func);
     sleep(1);
 
     Motor motor;

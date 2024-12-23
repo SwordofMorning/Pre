@@ -7,24 +7,6 @@
  */
 static int SHM_ALGO_Send()
 {
-    static uint8_t last_frame_sum = 0;
-    uint8_t current_frame_sum = 0;
-
-    // 计算当前帧的校验和
-    for (int i = 0; i < 100; i++)
-    {
-        current_frame_sum += shm_out_yuv[i];
-    }
-
-    // 验证数据是否有更新
-    if (current_frame_sum == last_frame_sum)
-    {
-        // printf("Duplicate frame detected in SHM_Send\n");
-        return 0;
-    }
-    // printf("current sum: %d\n", current_frame_sum);
-    last_frame_sum = current_frame_sum;
-
     struct sembuf sem_op;
 
     // Wait signal
@@ -65,10 +47,10 @@ int SHM_ALGO_Init()
     // Allocate internal buffer
     shm_out_algo = (uint8_t*)malloc(SHM_OUT_ALGO_SIZE);
 
-    if (shm_out_algo)
+    if (!shm_out_algo)
     {
         litelog.log.fatal("Init SHM error.");
-        perror("malloc");
+        exit(EXIT_FAILURE);
         return -1;
     }
 

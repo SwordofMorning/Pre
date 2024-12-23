@@ -47,7 +47,7 @@ void vo_thread_func()
 void ab_thread_func()
 {
     SHM_ALGO_Init();
-    while (vo_running)
+    while (ab_running)
     {
         SHM_ALGO_Process();
     }
