@@ -94,9 +94,9 @@ static int SHM_Send()
 
     // Copy CSI data
     pthread_mutex_lock(&frame_sync_csi.mutex);
-    if (frame_sync_csi.frame_count > 0) {
-        memcpy(shm_vis, frame_sync_csi.frame_buffer[frame_sync_csi.read_pos], 
-               SHM_OUT_CSI_SIZE);
+    if (frame_sync_csi.frame_count > 0)
+    {
+        memcpy(shm_vis, frame_sync_csi.frame_buffer[frame_sync_csi.read_pos], SHM_OUT_CSI_SIZE);
 
         frame_sync_csi.read_pos = (frame_sync_csi.read_pos + 1) % FRAME_SYNC_BUFFER_SIZE;
         frame_sync_csi.frame_count--;
