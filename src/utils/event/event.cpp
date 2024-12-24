@@ -59,11 +59,11 @@ void EventListener::PrintKeyEvent(const std::string& device, int code, int value
     }
     else if (code == KEY_F2 && value == 1)
     {
-        if (is_vis)
-            system("/root/app/utils/vis.sh");
-        else
-            system("killall gst-launch-1.0");
-        is_vis = !is_vis;
+        m_motor.Shutter_Open();
+    }
+    else if (code == KEY_F1 && value == 1)
+    {
+        m_motor.Shutter_Close();
     }
     else if (code == KEY_3 && value == 1)
     {
