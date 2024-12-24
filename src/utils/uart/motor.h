@@ -42,7 +42,8 @@ public:
     Motor();
     virtual ~Motor();
 
-    enum class Direction {
+    enum class Direction
+    {
         FORWARD = 1,
         BACKWARD = -1,
         STOP = 0

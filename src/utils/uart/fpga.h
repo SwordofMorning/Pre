@@ -4,8 +4,6 @@
 
 class FPGA : public UART
 {
-private:
-
 public:
     FPGA();
 
