@@ -12,6 +12,7 @@
 #include "./utils/listen/listen.h"
 #include "./utils/event/event.h"
 #include "./utils/uart/motor.h"
+#include "./utils/uart/fpga.h"
 
 std::thread dvp_thread;
 bool dvp_running = true;

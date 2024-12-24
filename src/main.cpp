@@ -46,7 +46,9 @@ void execute()
 
     Motor motor;
     motor.Start();
-    EventListener el(motor);
+    FPGA fpga;
+    fpga.Start();
+    EventListener el(motor, fpga);
     el.Start();
 
     Listen li;

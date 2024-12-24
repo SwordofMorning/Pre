@@ -2,9 +2,10 @@
 
 static bool is_vis = true;
 
-EventListener::EventListener(Motor& p_motor)
+EventListener::EventListener(Motor& p_motor, FPGA& p_fpga)
     : running_(false)
     , m_motor(p_motor)
+    , m_fpga(p_fpga)
 {
     // do nothing
 }
@@ -88,6 +89,10 @@ void EventListener::PrintKeyEvent(const std::string& device, int code, int value
     else if (code == KEY_6 && value == 1)
     {
         m_motor.Move_Vis_Focus((int32_t)(-100));
+    }
+    else if (code == KEY_7 && value == 1)
+    {
+        m_fpga.NUC();
     }
 }
 

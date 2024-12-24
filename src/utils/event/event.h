@@ -12,11 +12,12 @@
 #include <atomic>
 #include "../../config/config.h"
 #include "../uart/motor.h"
+#include "../uart/fpga.h"
 
 class EventListener
 {
 public:
-    EventListener(Motor& p_motor);
+    EventListener(Motor& p_motor, FPGA& p_fpga);
     ~EventListener();
 
     // 启动监听
@@ -36,4 +37,5 @@ private:
     std::atomic<bool> running_;
 
     Motor& m_motor;
+    FPGA& m_fpga;
 };
