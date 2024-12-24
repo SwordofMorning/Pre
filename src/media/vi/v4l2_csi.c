@@ -216,6 +216,7 @@ static int CSI_Capture()
                 CSI_Error("CSI_Capture() VIDIOC_DQBUF EPIPE.");
         }
 
+        v4l2_vis_csi_buffer_global_index = buff.index;
         CSI_Send();
 
 #if (CSI_SAVE)

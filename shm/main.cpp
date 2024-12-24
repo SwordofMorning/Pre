@@ -10,24 +10,35 @@
 #include <stdint.h>
 #include <sys/time.h>
 
+#define SWITCH_VO_AB 0
 #define SAVE_FILE 1
 
-// 共享内存和信号量的key
-#define ALGO_SHM_YUV_KEY 0x0010
-#define ALGO_SHM_FLOAT_KEY 0x0011
-#define ALGO_SEM_KEY 0x0012
+#if SWITCH_VO_AB
+    #define ALGO_SEM_KEY 0x0010
+#else
+    #define ALGO_SEM_KEY 0x0020
+#endif
+
+#define ALGO_SHM_YUV_KEY 0x0011
+#define ALGO_SHM_FLOAT_KEY 0x0012
+#define ALGO_SHM_CSI_KEY 0x0013
+#define ALGO_SHM_ALGO_KEY 0x0021
 
 // 图像尺寸和缓冲区大小定义
 #define ALGO_WIDTH 640
 #define ALGO_HEIGHT 512
 #define ALGO_YUV_SIZE (ALGO_WIDTH * ALGO_HEIGHT * 3 / 2)
 #define ALGO_FLOAT_SIZE (ALGO_WIDTH * ALGO_HEIGHT * sizeof(float))
+#define ALGO_CSI_SIZE (2592 * 1944 * 2)
+#define ALGO_ALGO_SIZE ALGO_YUV_SIZE
 
 // FPS计算相关设置
 #define FPS_UPDATE_INTERVAL 1.0
 
 static FILE* fp_yuv = NULL;
 static FILE* fp_float = NULL;
+static FILE* fp_csi = NULL;
+static FILE* fp_algo = NULL;
 
 // 全局变量
 static int running = 1;
@@ -36,6 +47,10 @@ static int shmid_float = -1;
 static int semid = -1;
 static uint8_t* shm_yuv = NULL;
 static float* shm_float = NULL;
+static int shmid_csi = -1;
+static int shmid_algo = -1;
+static uint8_t* shm_csi = NULL;
+static uint8_t* shm_algo = NULL;
 
 // FPS统计相关变量
 static struct timeval last_fps_time;
@@ -53,7 +68,8 @@ void signal_handler(int signo)
 }
 
 // 生成带时间戳的文件名
-void generate_filename(char* yuv_filename, char* float_filename)
+void generate_filename(char* yuv_filename, char* float_filename, 
+                      char* csi_filename, char* algo_filename)
 {
     time_t now = time(NULL);
     struct tm *t = localtime(&now);
@@ -61,8 +77,16 @@ void generate_filename(char* yuv_filename, char* float_filename)
     sprintf(yuv_filename, "capture_%04d%02d%02d_%02d%02d.yuv",
             t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
             t->tm_hour, t->tm_min);
-            
+
     sprintf(float_filename, "capture_%04d%02d%02d_%02d%02d.float",
+            t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
+            t->tm_hour, t->tm_min);
+
+    sprintf(csi_filename, "capture_%04d%02d%02d_%02d%02d.csi",
+            t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
+            t->tm_hour, t->tm_min);
+
+    sprintf(algo_filename, "capture_%04d%02d%02d_%02d%02d.algo",
             t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
             t->tm_hour, t->tm_min);
 }
@@ -89,23 +113,43 @@ void update_fps()
 // 初始化函数
 int init_resources()
 {
-    // 获取共享内存
+#if SWITCH_VO_AB
+    // 模式A：获取YUV、FLOAT、CSI共享内存
     shmid_yuv = shmget(ALGO_SHM_YUV_KEY, ALGO_YUV_SIZE, 0666);
     shmid_float = shmget(ALGO_SHM_FLOAT_KEY, ALGO_FLOAT_SIZE, 0666);
-    if (shmid_yuv < 0 || shmid_float < 0)
+    shmid_csi = shmget(ALGO_SHM_CSI_KEY, ALGO_CSI_SIZE, 0666);
+    
+    if (shmid_yuv < 0 || shmid_float < 0 || shmid_csi < 0)
     {
         perror("shmget failed");
         return -1;
     }
 
-    // 附加到共享内存
     shm_yuv = (uint8_t*)shmat(shmid_yuv, NULL, 0);
     shm_float = (float*)shmat(shmid_float, NULL, 0);
-    if (shm_yuv == (void*)-1 || shm_float == (void*)-1)
+    shm_csi = (uint8_t*)shmat(shmid_csi, NULL, 0);
+    
+    if (shm_yuv == (void*)-1 || shm_float == (void*)-1 || shm_csi == (void*)-1)
     {
         perror("shmat failed");
         return -1;
     }
+#else
+    // 模式B：只获取ALGO共享内存
+    shmid_algo = shmget(ALGO_SHM_ALGO_KEY, ALGO_ALGO_SIZE, 0666);
+    if (shmid_algo < 0)
+    {
+        perror("shmget failed");
+        return -1;
+    }
+
+    shm_algo = (uint8_t*)shmat(shmid_algo, NULL, 0);
+    if (shm_algo == (void*)-1)
+    {
+        perror("shmat failed");
+        return -1;
+    }
+#endif
 
     // 获取信号量
     semid = semget(ALGO_SEM_KEY, 1, 0666);
@@ -116,52 +160,66 @@ int init_resources()
     }
 
 #if SAVE_FILE
-    // 生成文件名并打开文件
     char yuv_filename[100];
     char float_filename[100];
-    generate_filename(yuv_filename, float_filename);
+    char csi_filename[100];
+    char algo_filename[100];
+    
+    generate_filename(yuv_filename, float_filename, 
+                     csi_filename, algo_filename);
 
+#if SWITCH_VO_AB
+    // 模式A：打开YUV、FLOAT、CSI文件
     fp_yuv = fopen(yuv_filename, "wb");
-    if (!fp_yuv)
-    {
-        perror("Failed to open YUV file");
-        return -1;
-    }
-
     fp_float = fopen(float_filename, "wb");
-    if (!fp_float)
+    fp_csi = fopen(csi_filename, "wb");
+    
+    if (!fp_yuv || !fp_float || !fp_csi)
     {
-        perror("Failed to open float file");
-        fclose(fp_yuv);
+        perror("Failed to open files");
         return -1;
     }
 
     printf("Recording to files:\n");
     printf("YUV: %s\n", yuv_filename);
     printf("Float: %s\n", float_filename);
+    printf("CSI: %s\n", csi_filename);
+#else
+    // 模式B：只打开ALGO文件
+    fp_algo = fopen(algo_filename, "wb");
+    if (!fp_algo)
+    {
+        perror("Failed to open algo file");
+        return -1;
+    }
+
+    printf("Recording to file:\n");
+    printf("Algo: %s\n", algo_filename);
+#endif
 #endif
 
     return 0;
 }
 
 // 清理资源函数
-// 修改清理函数，添加文件关闭
 void cleanup_resources()
 {
+#if SWITCH_VO_AB
     if (shm_yuv != (void*)-1) shmdt(shm_yuv);
     if (shm_float != (void*)-1) shmdt(shm_float);
+    if (shm_csi != (void*)-1) shmdt(shm_csi);
+#else
+    if (shm_algo != (void*)-1) shmdt(shm_algo);
+#endif
 
 #if SAVE_FILE
-    if (fp_yuv)
-    {
-        fclose(fp_yuv);
-        fp_yuv = NULL;
-    }
-    if (fp_float)
-    {
-        fclose(fp_float);
-        fp_float = NULL;
-    }
+#if SWITCH_VO_AB
+    if (fp_yuv) fclose(fp_yuv);
+    if (fp_float) fclose(fp_float);
+    if (fp_csi) fclose(fp_csi);
+#else
+    if (fp_algo) fclose(fp_algo);
+#endif
 #endif
 }
 
@@ -171,64 +229,73 @@ int save_frame()
     static uint8_t last_frame_sum = 0;
     uint8_t current_frame_sum = 0;
     
-    // 计算当前帧的校验和
+#if SWITCH_VO_AB
+    // 模式A：使用YUV数据计算校验和
     for(int i = 0; i < 100; i++)
     {
         current_frame_sum += shm_yuv[i];
     }
+#else
+    // 模式B：使用ALGO数据计算校验和
+    for(int i = 0; i < 100; i++)
+    {
+        current_frame_sum += shm_algo[i];
+    }
+#endif
     
-    // 检查是否是新帧
     if(current_frame_sum == last_frame_sum)
     {
         printf("Duplicate frame detected\n");
-        // return 0;
     }
     last_frame_sum = current_frame_sum;
 
-    // 数据验证
+#if SWITCH_VO_AB
+    // 模式A：验证YUV、FLOAT、CSI数据
     bool has_yuv_data = false;
     bool has_float_data = false;
+    bool has_csi_data = false;
     
-    for(int i = 0; i < ALGO_YUV_SIZE; i++)
-    {
-        if(shm_yuv[i] > 0)
-        {
-            has_yuv_data = true;
-            break;
-        }
-    }
+    for(int i = 0; i < ALGO_YUV_SIZE; i++) 
+        if(shm_yuv[i] > 0) { has_yuv_data = true; break; }
     
     for(int i = 0; i < ALGO_WIDTH * ALGO_HEIGHT; i++)
-    {
-        if(shm_float[i] > 0)
-        {
-            has_float_data = true;
-            break;
-        }
-    }
+        if(shm_float[i] > 0) { has_float_data = true; break; }
     
-    printf("Frame received: has_yuv_data=%d, has_float_data=%d, checksum=%d\n",
-           has_yuv_data, has_float_data, current_frame_sum);
-
-    if (!fp_yuv || !fp_float)
-    {
-        return -1;
-    }
+    for(int i = 0; i < ALGO_CSI_SIZE; i++)
+        if(shm_csi[i] > 0) { has_csi_data = true; break; }
+    
+    printf("Frame received: yuv=%d, float=%d, csi=%d, checksum=%d\n",
+           has_yuv_data, has_float_data, has_csi_data, current_frame_sum);
 
     // 写入数据
-    if (fwrite(shm_yuv, 1, ALGO_YUV_SIZE, fp_yuv) != ALGO_YUV_SIZE)
+    if (fwrite(shm_yuv, 1, ALGO_YUV_SIZE, fp_yuv) != ALGO_YUV_SIZE ||
+        fwrite(shm_float, 1, ALGO_FLOAT_SIZE, fp_float) != ALGO_FLOAT_SIZE ||
+        fwrite(shm_csi, 1, ALGO_CSI_SIZE, fp_csi) != ALGO_CSI_SIZE)
     {
-        perror("Failed to write YUV data");
+        perror("Failed to write data");
         return -1;
     }
-    fflush(fp_yuv);
 
-    if (fwrite(shm_float, 1, ALGO_FLOAT_SIZE, fp_float) != ALGO_FLOAT_SIZE)
+    fflush(fp_yuv);
+    fflush(fp_float);
+    fflush(fp_csi);
+#else
+    // 模式B：只验证ALGO数据
+    bool has_algo_data = false;
+    for(int i = 0; i < ALGO_ALGO_SIZE; i++)
+        if(shm_algo[i] > 0) { has_algo_data = true; break; }
+    
+    printf("Frame received: algo=%d, checksum=%d\n",
+           has_algo_data, current_frame_sum);
+
+    if (fwrite(shm_algo, 1, ALGO_ALGO_SIZE, fp_algo) != ALGO_ALGO_SIZE)
     {
-        perror("Failed to write float data");
+        perror("Failed to write algo data");
         return -1;
     }
-    fflush(fp_float);
+
+    fflush(fp_algo);
+#endif
 
     return 0;
 }

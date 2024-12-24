@@ -54,7 +54,7 @@ void Test_Pseudo_Color(std::string filename)
     }
 
     // 调用Pseudo函数
-    Pseudo(test_data, y_out, u_out, v_out, 640, 512);
+    Pseudo_420P(test_data, y_out, u_out, v_out, 640, 512);
 
     // 保存结果到文件
     FILE* fp = fopen(filename.c_str(), "wb");
