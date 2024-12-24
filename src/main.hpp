@@ -54,7 +54,7 @@ void ab_thread_func()
     SHM_ALGO_Exit();
 }
 
-// void gst_thread_func()
-// {
-//     VO_GST_Streaming();
-// }
+void gst_thread_func()
+{
+    VO_GST_Streaming();
+}

@@ -15,6 +15,14 @@ private:
     uint8_t m_dev_vis_focus;
     uint8_t m_dev_shutter;
 
+    /* Continuous Move */
+    std::thread m_continuous_thread;
+    std::atomic<bool> m_continuous_running;
+    std::atomic<int> m_continuous_direction;
+    std::mutex m_continuous_mutex;
+    static constexpr int32_t CONTINUOUS_STEP_SIZE = 100;
+    static constexpr int CONTINUOUS_INTERVAL_MS = 50;
+
     /**
      * @brief XOR for data.
      * @return checksum
@@ -28,12 +36,24 @@ private:
     int Parse_Move(const uint8_t* data, size_t len);
     int Parse_Shutter(const uint8_t* data, size_t len);
 
+    void ContinuousMoveThread();
+
 public:
     Motor();
+    virtual ~Motor();
+
+    enum class Direction {
+        FORWARD = 1,
+        BACKWARD = -1,
+        STOP = 0
+    };
 
     int Move_IR(int32_t steps);
     int Move_Vis_Zoom(int32_t steps);
     int Move_Vis_Focus(int32_t steps);
     int Shutter_Open();
     int Shutter_Close();
+
+    bool Move_IR_Start(Direction direction);
+    void Move_IR_Stop();
 };

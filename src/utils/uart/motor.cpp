@@ -6,6 +6,8 @@ Motor::Motor()
     , m_dev_vis_zoom(0x03)
     , m_dev_vis_focus(0x04)
     , m_dev_shutter(0x06)
+    , m_continuous_running(false)
+    , m_continuous_direction(0)
 {
     m_receive_callback = [this](const uint8_t* data, size_t len) -> int {
         if (data[0] != 0x24)
@@ -18,6 +20,11 @@ Motor::Motor()
 
         return -2;
     };
+}
+
+Motor::~Motor()
+{
+    Move_IR_Stop();
 }
 
 uint8_t Motor::Calculate_Checksum(const std::vector<uint8_t>& data, size_t length)
@@ -133,4 +140,56 @@ int Motor::Parse_Move(const uint8_t* data, size_t len)
 int Motor::Parse_Shutter(const uint8_t* data, size_t len)
 {
     return 0;
+}
+
+void Motor::ContinuousMoveThread()
+{
+    while (m_continuous_running)
+    {
+        int direction = m_continuous_direction.load();
+        if (direction != 0)
+        {
+            int32_t steps = CONTINUOUS_STEP_SIZE * direction;
+
+            std::lock_guard<std::mutex> lock(m_continuous_mutex);
+            Move_IR(steps);
+        }
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(CONTINUOUS_INTERVAL_MS));
+    }
+}
+
+bool Motor::Move_IR_Start(Direction direction)
+{
+    if (m_continuous_running)
+    {
+        Move_IR_Stop();
+    }
+
+    m_continuous_direction = static_cast<int>(direction);
+    m_continuous_running = true;
+
+    try
+    {
+        m_continuous_thread = std::thread(&Motor::ContinuousMoveThread, this);
+        return true;
+    }
+    catch (const std::exception& e)
+    {
+        litelog.log.error("Failed to start continuous movement: %s", e.what());
+        m_continuous_running = false;
+        m_continuous_direction = 0;
+        return false;
+    }
+}
+
+void Motor::Move_IR_Stop()
+{
+    m_continuous_running = false;
+    m_continuous_direction = 0;
+
+    if (m_continuous_thread.joinable())
+    {
+        m_continuous_thread.join();
+    }
 }

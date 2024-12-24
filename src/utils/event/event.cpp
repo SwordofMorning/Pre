@@ -45,12 +45,20 @@ void EventListener::PrintKeyEvent(const std::string& device, int code, int value
     // 对焦，远离
     if (code == KEY_F5 && value == 1)
     {
-        m_motor.Move_IR((int32_t)(100));
+        m_motor.Move_IR_Start(Motor::Direction::FORWARD);
+    }
+    if (code == KEY_F5 && value == 0)
+    {
+        m_motor.Move_IR_Start(Motor::Direction::STOP);
     }
     // 对焦，拉近
     else if (code == KEY_F4 && value == 1)
     {
-        m_motor.Move_IR((int32_t)(-100));
+        m_motor.Move_IR_Start(Motor::Direction::BACKWARD);
+    }
+    else if (code == KEY_F4 && value == 0)
+    {
+        m_motor.Move_IR_Start(Motor::Direction::STOP);
     }
     else if (code == KEY_F3 && value == 1)
     {
