@@ -32,7 +32,7 @@ uint16_t quickSelect(uint16_t* arr, int left, int right, int k)
         return arr[left];
     int pivotIndex = left + (right - left) / 2;
     pivotIndex = partition(arr, left, right, pivotIndex);
-    
+
     if (k == pivotIndex)
         return arr[k];
     else if (k < pivotIndex)
@@ -45,15 +45,15 @@ void PseudoAdaptiveMapper::CalculateFrameStats(uint16_t* input, int size, uint16
 {
     int sample_size = size / SAMPLE_STRIDE;
     buffer.resize(sample_size);
-    
+
     for (int i = 0; i < sample_size; i++)
     {
         buffer[i] = input[i * SAMPLE_STRIDE];
     }
-    
+
     int lower_pos = sample_size * 0.01;
     int upper_pos = sample_size * 0.99;
-    
+
     min_val = quickSelect(buffer.data(), 0, sample_size - 1, lower_pos);
     max_val = quickSelect(buffer.data(), 0, sample_size - 1, upper_pos);
 }
