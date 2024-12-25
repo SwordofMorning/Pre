@@ -66,13 +66,13 @@ int GST_Create_Pipeline(int in_width, int in_height, int out_width, int out_heig
     g_object_set(G_OBJECT(videoflip), "method", 3, NULL);
 
     // 设置appsrc输入格式
-    GstCaps* src_caps = gst_caps_new_simple("video/x-raw", "format", G_TYPE_STRING, "I420", "width", G_TYPE_INT, in_width, "height", G_TYPE_INT, in_height, "framerate",
+    GstCaps* src_caps = gst_caps_new_simple("video/x-raw", "format", G_TYPE_STRING, "NV12", "width", G_TYPE_INT, in_width, "height", G_TYPE_INT, in_height, "framerate",
                                             GST_TYPE_FRACTION, 30, 1, NULL);
     g_object_set(G_OBJECT(appsrc), "caps", src_caps, "format", GST_FORMAT_TIME, "stream-type", 0, "is-live", TRUE, NULL);
     gst_caps_unref(src_caps);
 
     // 设置输出分辨率，注意交换宽高
-    GstCaps* scale_caps = gst_caps_new_simple("video/x-raw", "format", G_TYPE_STRING, "I420", "width", G_TYPE_INT, out_width, "height", G_TYPE_INT, out_height,
+    GstCaps* scale_caps = gst_caps_new_simple("video/x-raw", "format", G_TYPE_STRING, "NV12", "width", G_TYPE_INT, out_width, "height", G_TYPE_INT, out_height,
                                               "pixel-aspect-ratio", GST_TYPE_FRACTION, 1, 1, "colorimetry", G_TYPE_STRING, "bt709", NULL);
     g_object_set(G_OBJECT(capsfilter), "caps", scale_caps, NULL);
     gst_caps_unref(scale_caps);
@@ -105,15 +105,18 @@ int GST_Create_Pipeline(int in_width, int in_height, int out_width, int out_heig
 }
 
 // 推送帧数据到GStreamer
-int GST_Push_Frame(uint8_t* y_data, uint8_t* u_data, uint8_t* v_data, int width, int height)
+int GST_Push_Frame(uint8_t* nv12_data, int width, int height)
 {
     if (!appsrc)
+    {
+        g_print("Error: appsrc is NULL\n");
         return -1;
+    }
 
     // 计算buffer大小
     int y_size = width * height;
-    int uv_size = y_size / 4;
-    int total_size = y_size + 2 * uv_size;
+    int uv_size = y_size / 2;  // NV12的UV平面大小是Y平面的一半
+    int total_size = y_size + uv_size;
 
     // 创建buffer
     GstBuffer* buffer = gst_buffer_new_allocate(NULL, total_size, NULL);
@@ -125,14 +128,15 @@ int GST_Push_Frame(uint8_t* y_data, uint8_t* u_data, uint8_t* v_data, int width,
 
     // 填充数据
     GstMapInfo map;
-    gst_buffer_map(buffer, &map, GST_MAP_WRITE);
+    if (!gst_buffer_map(buffer, &map, GST_MAP_WRITE))
+    {
+        g_print("Failed to map buffer\n");
+        gst_buffer_unref(buffer);
+        return -1;
+    }
 
-    // 复制Y平面数据
-    memcpy(map.data, y_data, y_size);
-    // 复制U平面数据
-    memcpy(map.data + y_size, u_data, uv_size);
-    // 复制V平面数据
-    memcpy(map.data + y_size + uv_size, v_data, uv_size);
+    // 直接复制完整的NV12数据
+    memcpy(map.data, nv12_data, total_size);
 
     gst_buffer_unmap(buffer, &map);
 
@@ -140,7 +144,7 @@ int GST_Push_Frame(uint8_t* y_data, uint8_t* u_data, uint8_t* v_data, int width,
     GstFlowReturn ret = gst_app_src_push_buffer(GST_APP_SRC(appsrc), buffer);
     if (ret != GST_FLOW_OK)
     {
-        g_print("Failed to push buffer\n");
+        g_print("Failed to push buffer: %s\n", gst_flow_get_name(ret));
         return -1;
     }
 

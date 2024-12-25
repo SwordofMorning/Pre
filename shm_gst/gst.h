@@ -20,7 +20,7 @@ void GST_Deinit(void);
 int GST_Create_Pipeline(int width, int height);
 
 // 推送数据到GStreamer
-int GST_Push_Frame(uint8_t* y_data, uint8_t* u_data, uint8_t* v_data, int width, int height);
+int GST_Push_Frame(uint8_t* nv12_data, int width, int height);
 
 // 主循环函数
 void* VO_GST_Streaming();
