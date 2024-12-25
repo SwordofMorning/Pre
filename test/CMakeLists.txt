@@ -24,4 +24,7 @@ TARGET_LINK_LIBRARIES(
     libgstreamer-1.0.so
     libgobject-2.0.so
     libgstapp-1.0.so
+
+    libmali.so
+    libOpenCL.so
 )
