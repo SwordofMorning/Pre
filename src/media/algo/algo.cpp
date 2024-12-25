@@ -9,6 +9,15 @@ int Process_One_Frame()
     // uint8_t* v = u + (v4l2_ir_dvp_valid_width * v4l2_ir_dvp_valid_height / 4);
     uint8_t* uv = y + v4l2_ir_dvp_valid_width * v4l2_ir_dvp_valid_height;
 
+    // YUV420P
+    // Pseudo_420P(algo_in, y, u, v, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height);
+    Pseudo_NV12(algo_in, y, uv, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height);
+
+    // GST_Push_Frame(y, u, v, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height);
+
+    /* ----- Section 2 : Temp ----- */
+
+    /*
     // 寻找数据范围（用于float输出）
     uint16_t min_val = 65535;
     uint16_t max_val = 0;
@@ -24,8 +33,6 @@ int Process_One_Frame()
         }
     }
 
-    /* ----- Section 2 : Temp ----- */
-
     float scale = 1.0f / (max_val - min_val);
     for (int i = 0; i < v4l2_ir_dvp_valid_height; i++)
     {
@@ -35,12 +42,7 @@ int Process_One_Frame()
             shm_out_float[i * v4l2_ir_dvp_valid_width + j] = (float)(val - min_val) * scale;
         }
     }
-
-    // YUV420P
-    // Pseudo_420P(algo_in, y, u, v, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height);
-    Pseudo_NV12(algo_in, y, uv, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height);
-
-    // GST_Push_Frame(y, u, v, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height);
+    */
 
     return 0;
 }
@@ -175,11 +177,7 @@ void Pseudo_NV12(uint16_t* input, uint8_t* y_out, uint8_t* uv_out, int width, in
 
             // UV (NV12)
             size_t uv_size = (width * height) / 2; // UV交错存储，总大小不变
-            for (size_t i = 0; i < uv_size; i += 2)
-            {
-                uv_out[i] = 128;     // U
-                uv_out[i + 1] = 128; // V
-            }
+            std::memset(uv_out, 128, uv_size);
             break;
         }
 
@@ -199,11 +197,7 @@ void Pseudo_NV12(uint16_t* input, uint8_t* y_out, uint8_t* uv_out, int width, in
 
             // UV (NV12)
             size_t uv_size = (width * height) / 2;
-            for (size_t i = 0; i < uv_size; i += 2)
-            {
-                uv_out[i] = 128;     // U
-                uv_out[i + 1] = 128; // V
-            }
+            std::memset(uv_out, 128, uv_size);
             break;
         }
 

@@ -65,7 +65,6 @@ void EventListener::PrintKeyEvent(const std::string& device, int code, int value
     {
         usr.pseudo++;
         usr.pseudo %= PSEUDO_NUMS;
-        system("/root/app/utils/vis.sh");
     }
     else if (code == KEY_F2 && value == 1)
     {
