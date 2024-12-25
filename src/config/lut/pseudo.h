@@ -27,6 +27,18 @@ typedef struct
     cl_mem d_lut_v;
 
     bool initialized;
+
+    struct {
+        cl_mem y;
+        cl_mem u;
+        cl_mem v;
+        int current_type;
+        bool initialized;
+    } persistent_lut;
+
+    cl_event write_event;
+    cl_event kernel_event;
+    cl_event read_events[2];
 } PseudoCL;
 
 extern PseudoCL cl_processor;
