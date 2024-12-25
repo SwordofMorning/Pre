@@ -1,79 +1,19 @@
 #include "algo.h"
 
-static PseudoCL cl_processor = {0};
 static PseudoAdaptiveMapper mapper;
-
-// 初始化函数
-bool Pseudo_Init(int width, int height)
-{
-    // 初始化OpenCL处理器
-    if (!PseudoCL_Init(&cl_processor, width, height)) {
-        printf("Failed to initialize OpenCL\n");
-        return false;
-    }
-    return true;
-}
-
-// 清理函数
-void Pseudo_Cleanup(void)
-{
-    PseudoCL_Cleanup(&cl_processor);
-}
-
-void Pseudo_NV12_CL(uint16_t* input, uint8_t* y_out, uint8_t* uv_out, int width, int height)
-{
-    // Update value mapping
-    mapper.UpdateRange(input, width, height);
-    float scale = mapper.GetScale();
-    float min_val = mapper.GetMin();
-
-    // GPU处理
-    const struct YUV420P_LUT* lut = NULL;
-
-    if (usr.pseudo != PSEUDO_BLACK_HOT || usr.pseudo != PSEUDO_WHITE_HOT)
-        lut = Get_LUT(usr.pseudo);
-
-    if (PseudoCL_ProcessNV12(&cl_processor, input, y_out, uv_out, width, height, usr.pseudo, lut, scale, min_val) != 0)
-    {
-        printf("GPU processing failed\n");
-        return;
-    }
-}
 
 int Process_One_Frame()
 {
     /* ----- Section 1 : Color ----- */
-    Pseudo_Init(640, 512);
 
     uint8_t* y = shm_out_yuv;
-    // uint8_t* u = y + v4l2_ir_dvp_valid_width * v4l2_ir_dvp_valid_height;
-    // uint8_t* v = u + (v4l2_ir_dvp_valid_width * v4l2_ir_dvp_valid_height / 4);
     uint8_t* uv = y + v4l2_ir_dvp_valid_width * v4l2_ir_dvp_valid_height;
 
-    // YUV420P
-    // Pseudo_420P(algo_in, y, u, v, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height);
-    // struct timespec start, end;
-
-    // clock_gettime(CLOCK_MONOTONIC, &start);
     Pseudo_NV12_CL(algo_in, y, uv, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height);
-    // clock_gettime(CLOCK_MONOTONIC, &end);
-    // double time_used = ((end.tv_sec - start.tv_sec) * 1e9 + 
-    //                    (end.tv_nsec - start.tv_nsec)) / 1e3;
-    // printf("GPU processing time: %.2f microseconds\n", time_used);
-
-    // clock_gettime(CLOCK_MONOTONIC, &start);
-    // Pseudo_NV12(algo_in, y, uv, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height);
-    // clock_gettime(CLOCK_MONOTONIC, &end);
-    // time_used = ((end.tv_sec - start.tv_sec) * 1e9 + 
-    //                    (end.tv_nsec - start.tv_nsec)) / 1e3;
-    // printf("CPU processing time: %.2f microseconds\n", time_used);
-
-    // GST_Push_Frame(y, u, v, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height);
 
     /* ----- Section 2 : Temp ----- */
-    Pseudo_Cleanup();
 
-    /*
+#if 0
     // 寻找数据范围（用于float输出）
     uint16_t min_val = 65535;
     uint16_t max_val = 0;
@@ -98,15 +38,13 @@ int Process_One_Frame()
             shm_out_float[i * v4l2_ir_dvp_valid_width + j] = (float)(val - min_val) * scale;
         }
     }
-    */
+#endif
 
     return 0;
 }
 
 void Pseudo_420P(uint16_t* input, uint8_t* y_out, uint8_t* u_out, uint8_t* v_out, int width, int height)
 {
-    static PseudoAdaptiveMapper mapper;
-
     // Update value mapping
     mapper.UpdateRange(input, width, height);
     float scale = mapper.GetScale();
@@ -207,8 +145,6 @@ void Pseudo_420P(uint16_t* input, uint8_t* y_out, uint8_t* u_out, uint8_t* v_out
 
 void Pseudo_NV12(uint16_t* input, uint8_t* y_out, uint8_t* uv_out, int width, int height)
 {
-    static PseudoAdaptiveMapper mapper;
-
     // Update value mapping
     mapper.UpdateRange(input, width, height);
     float scale = mapper.GetScale();
@@ -305,4 +241,22 @@ void Pseudo_NV12(uint16_t* input, uint8_t* y_out, uint8_t* uv_out, int width, in
         }
     }
     // clang-format on
+}
+
+void Pseudo_NV12_CL(uint16_t* input, uint8_t* y_out, uint8_t* uv_out, int width, int height)
+{
+    mapper.UpdateRange(input, width, height);
+    float scale = mapper.GetScale();
+    float min_val = mapper.GetMin();
+
+    const struct YUV420P_LUT* lut = NULL;
+
+    if (usr.pseudo != PSEUDO_BLACK_HOT || usr.pseudo != PSEUDO_WHITE_HOT)
+        lut = Get_LUT(usr.pseudo);
+
+    if (PseudoCL_ProcessNV12(&cl_processor, input, y_out, uv_out, width, height, usr.pseudo, lut, scale, min_val) != 0)
+    {
+        printf("GPU processing failed\n");
+        return;
+    }
 }
