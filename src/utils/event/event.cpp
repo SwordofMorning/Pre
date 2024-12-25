@@ -65,6 +65,7 @@ void EventListener::PrintKeyEvent(const std::string& device, int code, int value
     {
         usr.pseudo++;
         usr.pseudo %= PSEUDO_NUMS;
+        system("/root/app/utils/vis.sh");
     }
     else if (code == KEY_F2 && value == 1)
     {
@@ -76,19 +77,19 @@ void EventListener::PrintKeyEvent(const std::string& device, int code, int value
     }
     else if (code == KEY_3 && value == 1)
     {
-        m_motor.Move_Vis_Zoom((int32_t)(100));
+        m_motor.Move_Vis_Zoom((int32_t)(50));
     }
     else if (code == KEY_4 && value == 1)
     {
-        m_motor.Move_Vis_Zoom((int32_t)(-100));
+        m_motor.Move_Vis_Zoom((int32_t)(-50));
     }
     else if (code == KEY_5 && value == 1)
     {
-        m_motor.Move_Vis_Focus((int32_t)(100));
+        m_motor.Move_Vis_Focus((int32_t)(50));
     }
     else if (code == KEY_6 && value == 1)
     {
-        m_motor.Move_Vis_Focus((int32_t)(-100));
+        m_motor.Move_Vis_Focus((int32_t)(-50));
     }
     else if (code == KEY_7 && value == 1)
     {
