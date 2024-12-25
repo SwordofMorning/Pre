@@ -251,7 +251,7 @@ void Pseudo_NV12_CL(uint16_t* input, uint8_t* y_out, uint8_t* uv_out, int width,
 
     const struct YUV420P_LUT* lut = NULL;
 
-    if (usr.pseudo != PSEUDO_BLACK_HOT || usr.pseudo != PSEUDO_WHITE_HOT)
+    if (usr.pseudo != PSEUDO_BLACK_HOT && usr.pseudo != PSEUDO_WHITE_HOT)
         lut = Get_LUT(usr.pseudo);
 
     if (PseudoCL_ProcessNV12(&cl_processor, input, y_out, uv_out, width, height, usr.pseudo, lut, scale, min_val) != 0)

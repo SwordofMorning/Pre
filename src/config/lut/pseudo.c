@@ -212,40 +212,36 @@ int PseudoCL_ProcessNV12(PseudoCL* cl,
             if(lut)
             {
                 active_kernel = cl->kernel_color_map;
-                
+
                 // Create and update lut
                 size_t lut_size = lut->size * sizeof(uint8_t);
-                
+
                 // Create lut buffer
-                cl->d_lut_y = clCreateBuffer(cl->context, CL_MEM_READ_ONLY,
-                                           lut_size, NULL, &err);
-                if (err != CL_SUCCESS) {
+                cl->d_lut_y = clCreateBuffer(cl->context, CL_MEM_READ_ONLY, lut_size, NULL, &err);
+                if (err != CL_SUCCESS)
+                {
                     printf("Failed to create LUT Y buffer: %d\n", err);
                     return -1;
                 }
 
-                cl->d_lut_u = clCreateBuffer(cl->context, CL_MEM_READ_ONLY,
-                                           lut_size, NULL, &err);
-                if (err != CL_SUCCESS) {
+                cl->d_lut_u = clCreateBuffer(cl->context, CL_MEM_READ_ONLY, lut_size, NULL, &err);
+                if (err != CL_SUCCESS)
+                {
                     printf("Failed to create LUT U buffer: %d\n", err);
                     goto cleanup_lut_y;
                 }
 
-                cl->d_lut_v = clCreateBuffer(cl->context, CL_MEM_READ_ONLY,
-                                           lut_size, NULL, &err);
-                if (err != CL_SUCCESS) {
+                cl->d_lut_v = clCreateBuffer(cl->context, CL_MEM_READ_ONLY, lut_size, NULL, &err);
+                if (err != CL_SUCCESS)
+                {
                     printf("Failed to create LUT V buffer: %d\n", err);
                     goto cleanup_lut_u;
                 }
 
                 // write lut data to pseudo
-                err = clEnqueueWriteBuffer(cl->queue, cl->d_lut_y, CL_TRUE, 0,
-                                         lut_size, lut->y, 0, NULL, NULL);
-                err |= clEnqueueWriteBuffer(cl->queue, cl->d_lut_u, CL_TRUE, 0,
-                                          lut_size, lut->u, 0, NULL, NULL);
-                err |= clEnqueueWriteBuffer(cl->queue, cl->d_lut_v, CL_TRUE, 0,
-                                          lut_size, lut->v, 0, NULL, NULL);
-                
+                err = clEnqueueWriteBuffer(cl->queue, cl->d_lut_y, CL_TRUE, 0, lut_size, lut->y, 0, NULL, NULL);
+                err |= clEnqueueWriteBuffer(cl->queue, cl->d_lut_u, CL_TRUE, 0, lut_size, lut->u, 0, NULL, NULL);
+                err |= clEnqueueWriteBuffer(cl->queue, cl->d_lut_v, CL_TRUE, 0, lut_size, lut->v, 0, NULL, NULL);
                 if (err != CL_SUCCESS)
                 {
                     printf("Failed to write LUT data: %d\n", err);
