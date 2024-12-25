@@ -255,8 +255,5 @@ void Pseudo_NV12_CL(uint16_t* input, uint8_t* y_out, uint8_t* uv_out, int width,
         lut = Get_LUT(usr.pseudo);
 
     if (PseudoCL_ProcessNV12(&cl_processor, input, y_out, uv_out, width, height, usr.pseudo, lut, scale, min_val) != 0)
-    {
-        printf("GPU processing failed\n");
-        return;
-    }
+        litelog.log.warning("GPU processing failed\n");
 }
