@@ -1,33 +1,60 @@
 #pragma once
 
 #include "uartclass.h"
+#include "../log/litelog.h"
 
 class Motor : public UART
 {
 private:
-    // int m_step_ir_max;
-    // int m_step_ir_cur;
-    // int m_step_vis_focus_max;
-    // int m_step_vis_focus_cur;
-    // int m_step_vis_zoom_max;
-    // int m_step_vis_zoom_cur;
-    // bool m_shutter;
+    int32_t m_step_ir_cur;
+    int32_t m_step_vis_focus_cur;
+    int32_t m_step_vis_zoom_cur;
 
     uint8_t m_dev_ir;
     uint8_t m_dev_vis_zoom;
     uint8_t m_dev_vis_focus;
+    uint8_t m_dev_shutter;
+
+    /* Continuous Move */
+    std::thread m_continuous_thread;
+    std::atomic<bool> m_continuous_running;
+    std::atomic<int> m_continuous_direction;
+    std::mutex m_continuous_mutex;
+    static constexpr int32_t CONTINUOUS_STEP_SIZE = 100;
+    static constexpr int CONTINUOUS_INTERVAL_MS = 50;
 
     /**
      * @brief XOR for data.
      * @return checksum
      */
     uint8_t Calculate_Checksum(const std::vector<uint8_t>& data, size_t length);
+    uint8_t Calculate_Checksum(const uint8_t* data, size_t length);
+
+    int Move(uint8_t dev, int32_t steps);
+    int Shutter(uint8_t operation);
+
+    int Parse_Move(const uint8_t* data, size_t len);
+    int Parse_Shutter(const uint8_t* data, size_t len);
+
+    void ContinuousMoveThread();
 
 public:
     Motor();
+    virtual ~Motor();
 
-    int Move(uint8_t dev, int32_t steps);
+    enum class Direction
+    {
+        FORWARD = 1,
+        BACKWARD = -1,
+        STOP = 0
+    };
+
     int Move_IR(int32_t steps);
     int Move_Vis_Zoom(int32_t steps);
     int Move_Vis_Focus(int32_t steps);
+    int Shutter_Open();
+    int Shutter_Close();
+
+    bool Move_IR_Start(Direction direction);
+    void Move_IR_Stop();
 };

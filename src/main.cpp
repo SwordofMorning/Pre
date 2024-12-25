@@ -18,9 +18,9 @@ void exit()
     dvp_running = false;
     if (dvp_thread.joinable())
         dvp_thread.join();
-    // csi_running = false;
-    // if (csi_thread.joinable())
-    //     csi_thread.join();
+    csi_running = false;
+    if (csi_thread.joinable())
+        csi_thread.join();
 
     vo_running = false;
     if (vo_thread.joinable())
@@ -46,10 +46,10 @@ void execute()
 
     Motor motor;
     motor.Start();
-    EventListener el(motor);
+    FPGA fpga;
+    fpga.Start();
+    EventListener el(motor, fpga);
     el.Start();
-
-    // system("/root/app/utils/ui.sh");
 
     Listen li;
     li();

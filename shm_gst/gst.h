@@ -3,8 +3,8 @@
 #include <gst/gst.h>
 #include <gst/app/app.h>
 #include <string.h>
-#include "../../config/config.h"
-#include "../../utils/log/litelog.h"
+#include <stdint.h>
+#include <stdio.h>
 
 #ifdef __cplusplus
 extern "C" {

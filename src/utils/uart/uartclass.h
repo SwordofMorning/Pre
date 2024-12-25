@@ -8,6 +8,7 @@
 #include <iostream>
 #include <condition_variable>
 #include "uartwrap.h"
+#include "../log/litelog.h"
 
 class UART
 {

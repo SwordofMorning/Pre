@@ -12,6 +12,7 @@
 #include "./utils/listen/listen.h"
 #include "./utils/event/event.h"
 #include "./utils/uart/motor.h"
+#include "./utils/uart/fpga.h"
 
 std::thread dvp_thread;
 bool dvp_running = true;
@@ -54,7 +55,7 @@ void ab_thread_func()
     SHM_ALGO_Exit();
 }
 
-// void gst_thread_func()
-// {
-//     VO_GST_Streaming();
-// }
+void gst_thread_func()
+{
+    VO_GST_Streaming();
+}

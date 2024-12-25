@@ -33,12 +33,14 @@ INCLUDE_DIRECTORIES(
 
 SET(APP_NAME "pre")
 SET(SHM_NAME "pre_shm")
+SET(SHM_GST_NAME "pre_shm_gst")
 SET(TEST_NAME "pre_test")
 
 # ===== Step 5 : Add Subdirectory =====
 
 ADD_SUBDIRECTORY(src bin)
 ADD_SUBDIRECTORY(shm)
+ADD_SUBDIRECTORY(shm_gst)
 ADD_SUBDIRECTORY(test)
 
 # ===== Step 6: Generate Version Info =====

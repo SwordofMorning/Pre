@@ -2,9 +2,10 @@
 
 static bool is_vis = true;
 
-EventListener::EventListener(Motor& p_motor)
+EventListener::EventListener(Motor& p_motor, FPGA& p_fpga)
     : running_(false)
     , m_motor(p_motor)
+    , m_fpga(p_fpga)
 {
     // do nothing
 }
@@ -45,41 +46,54 @@ void EventListener::PrintKeyEvent(const std::string& device, int code, int value
     // 对焦，远离
     if (code == KEY_F5 && value == 1)
     {
-        m_motor.Move_IR((int32_t)(100));
+        m_motor.Move_IR_Start(Motor::Direction::FORWARD);
+    }
+    if (code == KEY_F5 && value == 0)
+    {
+        m_motor.Move_IR_Start(Motor::Direction::STOP);
     }
     // 对焦，拉近
     else if (code == KEY_F4 && value == 1)
     {
-        m_motor.Move_IR((int32_t)(-100));
+        m_motor.Move_IR_Start(Motor::Direction::BACKWARD);
+    }
+    else if (code == KEY_F4 && value == 0)
+    {
+        m_motor.Move_IR_Start(Motor::Direction::STOP);
     }
     else if (code == KEY_F3 && value == 1)
     {
         usr.pseudo++;
         usr.pseudo %= PSEUDO_NUMS;
+        system("/root/app/utils/vis.sh");
     }
     else if (code == KEY_F2 && value == 1)
     {
-        if (is_vis)
-            system("/root/app/utils/vis.sh");
-        else
-            system("killall gst-launch-1.0");
-        is_vis = !is_vis;
+        m_motor.Shutter_Open();
+    }
+    else if (code == KEY_F1 && value == 1)
+    {
+        m_motor.Shutter_Close();
     }
     else if (code == KEY_3 && value == 1)
     {
-        m_motor.Move_Vis_Zoom((int32_t)(100));
+        m_motor.Move_Vis_Zoom((int32_t)(50));
     }
     else if (code == KEY_4 && value == 1)
     {
-        m_motor.Move_Vis_Zoom((int32_t)(-100));
+        m_motor.Move_Vis_Zoom((int32_t)(-50));
     }
     else if (code == KEY_5 && value == 1)
     {
-        m_motor.Move_Vis_Focus((int32_t)(100));
+        m_motor.Move_Vis_Focus((int32_t)(50));
     }
     else if (code == KEY_6 && value == 1)
     {
-        m_motor.Move_Vis_Focus((int32_t)(-100));
+        m_motor.Move_Vis_Focus((int32_t)(-50));
+    }
+    else if (code == KEY_7 && value == 1)
+    {
+        m_fpga.NUC();
     }
 }
 
