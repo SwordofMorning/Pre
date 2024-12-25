@@ -360,7 +360,7 @@ int main()
             printf("Failed to save frame %d\n", frame_count);
         }
 #endif
-        GST_Push_Frame(shm_yuv, shm_yuv + (640 * 512), shm_yuv + (640 * 512 /4), 640, 512);
+        GST_Push_Frame(shm_yuv, 640, 512);
 
         // 释放信号量
         sem_op.sem_num = 0;

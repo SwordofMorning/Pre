@@ -193,6 +193,13 @@ static int Init_LUTs()
     {
         return -1;
     }
+
+    if (!PseudoCL_Init(&cl_processor, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height))
+    {
+        printf("Failed to initialize OpenCL\n");
+        return -1;
+    }
+
     return 0;
 }
 
@@ -210,5 +217,6 @@ void Config_Init()
 
 void Config_Exit()
 {
+    PseudoCL_Cleanup(&cl_processor);
     Free_All_LUTs();
 }

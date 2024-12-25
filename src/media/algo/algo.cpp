@@ -1,14 +1,19 @@
 #include "algo.h"
 
+static PseudoAdaptiveMapper mapper;
+
 int Process_One_Frame()
 {
     /* ----- Section 1 : Color ----- */
 
     uint8_t* y = shm_out_yuv;
-    uint8_t* u = y + v4l2_ir_dvp_valid_width * v4l2_ir_dvp_valid_height;
-    uint8_t* v = u + (v4l2_ir_dvp_valid_width * v4l2_ir_dvp_valid_height / 4);
-    // uint8_t* uv = y + v4l2_ir_dvp_valid_width * v4l2_ir_dvp_valid_height;
+    uint8_t* uv = y + v4l2_ir_dvp_valid_width * v4l2_ir_dvp_valid_height;
 
+    Pseudo_NV12_CL(algo_in, y, uv, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height);
+
+    /* ----- Section 2 : Temp ----- */
+
+#if 0
     // 寻找数据范围（用于float输出）
     uint16_t min_val = 65535;
     uint16_t max_val = 0;
@@ -24,8 +29,6 @@ int Process_One_Frame()
         }
     }
 
-    /* ----- Section 2 : Temp ----- */
-
     float scale = 1.0f / (max_val - min_val);
     for (int i = 0; i < v4l2_ir_dvp_valid_height; i++)
     {
@@ -35,20 +38,13 @@ int Process_One_Frame()
             shm_out_float[i * v4l2_ir_dvp_valid_width + j] = (float)(val - min_val) * scale;
         }
     }
-
-    // YUV420P
-    Pseudo_420P(algo_in, y, u, v, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height);
-    // Pseudo_NV12(algo_in, y, uv, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height);
-
-    // GST_Push_Frame(y, u, v, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height);
+#endif
 
     return 0;
 }
 
 void Pseudo_420P(uint16_t* input, uint8_t* y_out, uint8_t* u_out, uint8_t* v_out, int width, int height)
 {
-    static PseudoAdaptiveMapper mapper;
-
     // Update value mapping
     mapper.UpdateRange(input, width, height);
     float scale = mapper.GetScale();
@@ -149,8 +145,6 @@ void Pseudo_420P(uint16_t* input, uint8_t* y_out, uint8_t* u_out, uint8_t* v_out
 
 void Pseudo_NV12(uint16_t* input, uint8_t* y_out, uint8_t* uv_out, int width, int height)
 {
-    static PseudoAdaptiveMapper mapper;
-
     // Update value mapping
     mapper.UpdateRange(input, width, height);
     float scale = mapper.GetScale();
@@ -175,11 +169,7 @@ void Pseudo_NV12(uint16_t* input, uint8_t* y_out, uint8_t* uv_out, int width, in
 
             // UV (NV12)
             size_t uv_size = (width * height) / 2; // UV交错存储，总大小不变
-            for (size_t i = 0; i < uv_size; i += 2)
-            {
-                uv_out[i] = 128;     // U
-                uv_out[i + 1] = 128; // V
-            }
+            std::memset(uv_out, 128, uv_size);
             break;
         }
 
@@ -199,11 +189,7 @@ void Pseudo_NV12(uint16_t* input, uint8_t* y_out, uint8_t* uv_out, int width, in
 
             // UV (NV12)
             size_t uv_size = (width * height) / 2;
-            for (size_t i = 0; i < uv_size; i += 2)
-            {
-                uv_out[i] = 128;     // U
-                uv_out[i + 1] = 128; // V
-            }
+            std::memset(uv_out, 128, uv_size);
             break;
         }
 
@@ -255,4 +241,19 @@ void Pseudo_NV12(uint16_t* input, uint8_t* y_out, uint8_t* uv_out, int width, in
         }
     }
     // clang-format on
+}
+
+void Pseudo_NV12_CL(uint16_t* input, uint8_t* y_out, uint8_t* uv_out, int width, int height)
+{
+    mapper.UpdateRange(input, width, height);
+    float scale = mapper.GetScale();
+    float min_val = mapper.GetMin();
+
+    const struct YUV420P_LUT* lut = NULL;
+
+    if (usr.pseudo != PSEUDO_BLACK_HOT && usr.pseudo != PSEUDO_WHITE_HOT)
+        lut = Get_LUT(usr.pseudo);
+
+    if (PseudoCL_ProcessNV12(&cl_processor, input, y_out, uv_out, width, height, usr.pseudo, lut, scale, min_val) != 0)
+        litelog.log.warning("GPU processing failed\n");
 }
