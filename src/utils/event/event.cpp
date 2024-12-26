@@ -94,6 +94,10 @@ void EventListener::PrintKeyEvent(const std::string& device, int code, int value
     {
         m_fpga.NUC();
     }
+    else if (code == KEY_8 && value == 1)
+    {
+        m_fpga.Set_Gas_Enhancement(++usr.gas_enhancement);
+    }
 }
 
 void EventListener::ProcessDevice(const std::string& device)
