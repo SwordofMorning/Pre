@@ -25,4 +25,5 @@ TARGET_LINK_LIBRARIES(
     libopencv_core.so;
     libopencv_highgui.so;
     libopencv_imgproc.so;
+    libopencv_imgcodecs.so
 )
