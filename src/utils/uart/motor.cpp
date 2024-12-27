@@ -200,3 +200,8 @@ void Motor::Move_IR_Stop()
         m_continuous_thread.join();
     }
 }
+
+int32_t Motor::Get_Step_IR_Cur()
+{
+    return m_step_ir_cur;
+}
