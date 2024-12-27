@@ -96,7 +96,8 @@ void EventListener::PrintKeyEvent(const std::string& device, int code, int value
     }
     else if (code == KEY_8 && value == 1)
     {
-        m_fpga.Set_Gas_Enhancement(++usr.gas_enhancement);
+        // m_fpga.Set_Gas_Enhancement(++usr.gas_enhancement);
+        ir_auto_focusing_by_image_continuous(m_motor, 320, 256);
     }
 }
 

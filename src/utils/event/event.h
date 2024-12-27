@@ -13,6 +13,7 @@
 #include "../../config/config.h"
 #include "../uart/motor.h"
 #include "../uart/fpga.h"
+#include "../../media/algo/ir_auto_focusing.h"
 
 class EventListener
 {

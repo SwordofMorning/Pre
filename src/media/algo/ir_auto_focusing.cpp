@@ -7,33 +7,7 @@
  * @LastEditTime : 2024-12-27 14:00:12
  * @Copyright    : G AUTOMOBILE RESEARCH INSTITUTE CO.,LTD Copyright (c) 2024.
 **/
-/**
- * @FilePath     : /project/pre/src/media/algo/ir_auto_focusing.cpp
- * @Description  :  
- * @Author       : xiaojing
- * @Version      : 0.0.1
- * @LastEditors  : xiaojing
- * @LastEditTime : 2024-12-27 08:43:04
- * @Copyright    : G AUTOMOBILE RESEARCH INSTITUTE CO.,LTD Copyright (c) 2024.
-**/
-/**
- * @FilePath     : /project/pre/src/media/algo/ir_auto_focusing.cpp
- * @Description  :  
- * @Author       : xiaojing
- * @Version      : 0.0.1
- * @LastEditors  : xiaojing
- * @LastEditTime : 2024-12-26 15:29:35
- * @Copyright    : G AUTOMOBILE RESEARCH INSTITUTE CO.,LTD Copyright (c) 2024.
-**/
 #include "ir_auto_focusing.h"
-#include<string>
-#include <iostream>
-
-#include <filesystem>
-#include <sstream>
-
-#include "../../config/config.h"
-
 
 int IR_HIGH = 512;
 int IR_WIDTH = 640;
@@ -41,93 +15,7 @@ int IR_W_Cut = 150;
 int IR_H_Cut = 150;
 int IR_Motor_Step_Total = 2000;
 int IR_MOTOR_MUC_RETURN_FREQ = 20;
-bool Print_Debug_Algo_Log_Info = true;
-
-
-// void IR_Show_16(irData16)
-// {
-//     uint16_t* yuyv16 = (uint16_t*)v4l2_ir_dvp_buffer_global[v4l2_ir_dvp_buffer_global_index].start;
-
-//     uint16_t tmpVal =0;
-//     int index, i, j;
-//     int count0 = 0;
-
-//     for (i = 0; i < IR_HIGH; i++){
-//         for(j = 0; j < IR_WIDTH; j++)
-//         {
-//             index = (i * IR_WIDTH + j);
-//             irData16.at<uint16_t>(i, j) = yuyv16[index];
-//         }
-//     }
-
-// }
-
-
-// void ir_save_16_png(){
-//     std::string ROOT_DIR = "/root/xj/img16/"
-
-
-//     auto now = std::chrono::system_clock::now();
-//     auto now_c = std::chrono::system_clock::to_time_t(now);
-
-//     // 将时间转换为字符串
-//     std::stringstream ss;
-//     ss << std::put_time(std::localtime(&now_c), "%Y-%m-%d_%H-%M-%S");
-//     std::string folderName = ss.str();
-
-
-//      // 创建文件夹路径
-//     std::filesystem::path dirPath = folderName;
-
-//     // 检查文件夹是否已经存在
-//     if (!std::filesystem::exists(dirPath)) {
-//         // 创建文件夹
-//         if (std::filesystem::create_directory(dirPath)) {
-//             std::cout << "Directory created successfully: " << dirPath << std::endl;
-//         } else {
-//             std::cerr << "Error creating directory: " << dirPath << std::endl;
-//         }
-//     } else {
-//         std::cout << "Directory already exists: " << dirPath << std::endl;
-//     }
-
-
-
-//     cv::Mat irRaw(IR_HIGH, IR_WIDTH, CV_16U);
-
-
-//     for(int i =0; i<6000; i++){
-
-
-//         std::string stri = std::to_string(i);
-//         std::string filename= ROOT_DIR + "img/" + stri + ".jpg";
-//         //cv::imwrite(str1, irData);
-
-        
-//         filename= ROOT_DIR + "img16/" + stri + ".png";
-//         while(v4l2_ir_dvp_buffer_global_index == last_index){
-//             usleep(1000);
-//         }
-//         last_index = v4l2_ir_dvp_buffer_global_index;
-
-//         cv::Mat irData16(IR_HIGH, IR_WIDTH, CV_16U);
-
-
-//         IR_Show_16(irData16);
-
-//         cv::imwrite(filename, irData16);
-
-//         std::cout<< filename << std::endl;
-
-
-       
-        
-//     }
- 
-
-
-    
-// }
+bool Print_Debug_Algo_Log_Info = false;
 
 
 void IR_Show_O(cv::Mat &irData){
@@ -149,12 +37,6 @@ void IR_Show_O(cv::Mat &irData){
     cv::normalize(irRaw, irData, 0, 255, cv::NORM_MINMAX, CV_8U);
 
 }
-
-
-
-
-// 截取图为了计算5x5均值滤波
-
 
 // 清晰度评价函数
 void eig_my(uint8_t* pixels, float* eig) {
@@ -222,9 +104,6 @@ float findMaxValue(float* array, size_t size) {
     return max;
 }
 
-
- 
-
 double IR_Get_EIG(cv::Mat &irGray255){
 
     //cv::Mat grayImg = irGray255(cv::Rect(centerX, centerY, 150, 150));
@@ -237,7 +116,6 @@ double IR_Get_EIG(cv::Mat &irGray255){
     double OutValue = cv::mean(resImg)[0];
     return OutValue;
 }
-
 
 double IR_Get_EIG_test(cv::Mat &irGray255){
 
@@ -259,22 +137,8 @@ int eig_index_glob = 0;
 
 float get_eig(int centX, int centY) {
 
-
-    //printf("centX = %d\n", centX);
-    // 从摄像头捕获一帧图像
     cv::Mat grayImage(IR_HIGH, IR_WIDTH, CV_8U);
-   // IR_show_for_auto_focusing(grayImage, centX, centY);
-   // usleep(100000);
     IR_Show_O(grayImage);
-
-    // eig_index_glob +=1;
-    // std::string ROOT_DIR = "/root/xj/";
-    // std::string stri = std::to_string(eig_index_glob);
-    // std::string filename= ROOT_DIR + "img/"+stri + ".jpg";
-    // cv::imwrite(filename, grayImage);
-   // printf("eig_index_glob = %d\n", eig_index_glob);
-
-
 
     cv::blur(grayImage, grayImage, cv::Size(3, 3));
 
@@ -282,29 +146,12 @@ float get_eig(int centX, int centY) {
 
     int xLeft = centX - IR_W_Cut / 2;
     int yLeft = centY - IR_H_Cut / 2;
-   // printf("xLeft = %d; yLeft = %d\n", xLeft, yLeft);
     if(xLeft<IR_W_Cut) xLeft = IR_WIDTH - IR_W_Cut + 1;
     if(yLeft<IR_H_Cut) yLeft = IR_HIGH - IR_H_Cut + 1;
 
     cv::Rect rect(xLeft, yLeft, IR_W_Cut, IR_H_Cut); //创建一个Rect对象
 
-   // cv::Mat grayImage;
-
-
-
     cv::Mat imgcut = grayImage(rect);//.clone();
-
-
-   // cv::normalize(imgcut, imgcut, 0, 255, cv::NORM_MINMAX, CV_8U);
-
-
-    //cv::blur(imgcut, imgcut, cv::Size(3, 3));
-
-
-
-    //cv::imwrite("/root/xj/img/imgcut.jpg", imgcut);
-
-
 
     float eig_value = 0.0;
 
@@ -312,9 +159,6 @@ float get_eig(int centX, int centY) {
 
     eig_value = IR_Get_EIG(imgcut);
     if(Print_Debug_Algo_Log_Info) printf( "eig_my = %f \n", eig_value);
-
-    // 显示捕获的帧
-
 
     return eig_value;
 }
@@ -440,17 +284,6 @@ int Auto_Focusing::get_max_eig_pos(){
     x0 =  motor_return_pos_list[max_index];
 
     printf("x0 = %d,  max_index = %d \n", x0,  max_index);
-
-
-    // if(max_index == list_index){
-    //     return x0;
-    // }
-    // else if(max_index > 0) {
-    //     int motor_return_pos_max_points[3] = { motor_return_pos_list[max_index - 1], motor_return_pos_list[max_index], motor_return_pos_list[max_index + 1] };
-    //     float eig_values_max_points[3] = { eig_values_list[max_index - 1], eig_values_list[max_index], eig_values_list[max_index + 1] };
-    //     x0 = get_x0_y0(motor_return_pos_max_points, eig_values_max_points);
-    //     if(x0 < 0 || x0 > IR_Motor_Step_Total) { return motor_return_pos_list[max_index];}
-    // }
    
     return  x0;
 }
@@ -461,7 +294,6 @@ float Auto_Focusing::get_eig_max_minus_current(){
 }
 
 float Auto_Focusing::get_eig_last_minus_current(){
-   // printf("eig_values_list[-2]= %f, eig = %f\n", eig_values_list[-2], eig);
     return eig_values_list[list_index-2] -eig ;
 }
 
@@ -517,8 +349,6 @@ show(){
 
 }
 
-
-
 // 第一次对焦时使用
 void ir_auto_focusing_by_image_continuous(Motor& ir_motor,int x, int y) {
     printf(" auto_focusing starting .....\n");
@@ -534,18 +364,19 @@ void ir_auto_focusing_by_image_continuous(Motor& ir_motor,int x, int y) {
     auto_focusing->set_eig(start_pos);
     
 
+    // to 0
     int count = 0;
     for(int i=0; i<3;i++)
     {
         auto_focusing->ir_motor_move(-3000);
         count = 0;
-        while(count<1000)
+        while(count<100)
         {
             count++;
             pos = auto_focusing->get_motor_current_pos();
             auto_focusing->set_eig(pos);
             if(pos==0) break;
-            usleep(30000);
+            usleep(20000);
         }
         pos = auto_focusing->get_motor_current_pos();
         if(pos==0) break;
@@ -563,6 +394,7 @@ void ir_auto_focusing_by_image_continuous(Motor& ir_motor,int x, int y) {
 
 
 
+    // to max
     bool end_move_flag = false;
     for(int i=0; i<3;i++)
     {
@@ -571,25 +403,16 @@ void ir_auto_focusing_by_image_continuous(Motor& ir_motor,int x, int y) {
         motor_pulse = IR_Motor_Step_Total - pos;
         auto_focusing->ir_motor_move(motor_pulse);
         count = 0;
-        while(count<1000)
+        while(count<100)
         {
             count++;
             pos = auto_focusing->get_motor_current_pos();
             auto_focusing->set_eig(pos);
 
-            // if(i <auto_focusing->list_index/2) continue;
-            // if(auto_focusing->list_index/2 < abs(motor_pulse)/IR_MOTOR_MUC_RETURN_FREQ/3 ) continue;
-
             if(pos >1200) {end_move_flag = true;  printf("(pos >1200, end_move_flag = true; \n");}
 
-            // if(auto_focusing->get_eig_max_minus_current() > auto_focusing->get_max_eig()/2) 
-            // {
-            //     printf("auto_focusing->get_eig_max_minus_current() > auto_focusing->get_max_eig()/2\n");
-            //     end_move_flag = true;
-            // }
-
             if(end_move_flag) break;
-            usleep(30000);
+            usleep(20000);
         }
         if(end_move_flag) break;
     }
@@ -602,6 +425,7 @@ void ir_auto_focusing_by_image_continuous(Motor& ir_motor,int x, int y) {
 
 
 
+    // return to max
     end_move_flag = false;
     for(int i=0; i<3;i++)
     {
@@ -610,7 +434,7 @@ void ir_auto_focusing_by_image_continuous(Motor& ir_motor,int x, int y) {
         motor_pulse = IR_Motor_Step_Total - pos;
         auto_focusing->ir_motor_move(motor_pulse);
         count = 0;
-        while(count<1000)
+        while(count<100)
         {
             count++;
             pos = auto_focusing->get_motor_current_pos();
@@ -620,7 +444,7 @@ void ir_auto_focusing_by_image_continuous(Motor& ir_motor,int x, int y) {
             if(auto_focusing->get_max_eig() == auto_focusing->eig) {end_move_flag = true;  printf("(pos >1200, end_move_flag = true; \n");};
             if(pos <= max_eig_pos ) {end_move_flag = true;  printf("(pos >1200, end_move_flag = true; \n");};
             if(end_move_flag) break;
-            usleep(30000);
+            usleep(20000);
         }
         if(end_move_flag) break;
     }
@@ -640,9 +464,4 @@ void ir_auto_focusing_by_image_continuous(Motor& ir_motor,int x, int y) {
     auto_focusing->show();
 
     delete auto_focusing;
-
-    //std::cout<<"end auto focusing...  "<< "IR_Motor_Sensor_Move(0) " << auto_focusing->get_motor_current_pos() << std::endl;
-    // 需要获取电机当前位置
 }
-
-
