@@ -11,6 +11,7 @@
 
 int IR_HIGH = 512;
 int IR_WIDTH = 640;
+// 中心点范围
 int IR_W_Cut = 150;
 int IR_H_Cut = 150;
 int IR_Motor_Step_Total = 2000;
@@ -36,49 +37,6 @@ void IR_Show_O(cv::Mat &irData){
     cv::medianBlur(irRaw, irRaw, 3);
     cv::normalize(irRaw, irData, 0, 255, cv::NORM_MINMAX, CV_8U);
 
-}
-
-// 清晰度评价函数
-void eig_my(uint8_t* pixels, float* eig) {
-
-    int index = 0;
-    double out = 0.0;
-    for (int i = 0; i < IR_W_Cut - 1; i++) {
-        for (int j = 0; j < IR_H_Cut - 1; j++) {
-            index = i + j * IR_W_Cut;
-            printf("pixels[index] = %f\n", pixels[index] );
-            out += (pixels[index] - pixels[index + 1]) * (pixels[index] - pixels[index + 1]) + (pixels[index] - pixels[i + (j + 1) * IR_W_Cut]) * (pixels[index] - pixels[i + (j + 1) * IR_W_Cut]);
-
-        }
-    }
-    out = out / IR_W_Cut / IR_H_Cut;
-    printf("eig out = %f\n", out);
-    *eig = out;
-
-}
-
-
-// 函数定义：用于查找数组中的最大值
-int findMaxIndex(float* array, size_t size) {
-    if (size == 0) {
-        // 如果数组为空，返回一个默认值或处理错误
-        return -1; // 这里假设 -1 表示无效值
-    }
-
-    // 假设数组的第一个元素是最大值
-    float max = array[0];
-    int index = 0;
-
-    // 遍历数组，找到最大值
-    for (size_t i = 0; i < size; i++) {
-        if (array[i] > max) {
-            max = array[i];
-            index = i;
-        }
-       // printf("eig value [%d] = %f\n", i, array[i]);
-    }
-
-    return index;
 }
 
 
@@ -116,22 +74,6 @@ double IR_Get_EIG(cv::Mat &irGray255){
     double OutValue = cv::mean(resImg)[0];
     return OutValue;
 }
-
-double IR_Get_EIG_test(cv::Mat &irGray255){
-
-    double result = .0f;
-
-  	for (int i = 0; i < irGray255.rows-1; ++i){
-		for (int j = 0; j < irGray255.cols - 1; ++j){
-            //printf("irGray255.at<u_char>(%d,%d) = %d\n", i,j, irGray255.at<u_char>(i,j));
-			result += pow(irGray255.at<u_char>(i,j+1)-irGray255.at<u_char>(i,j), 2) + pow(irGray255.at<u_char>(i+1,j)-irGray255.at<u_char>(i,j), 2);
-		}
-	}
-    double outValue = result/irGray255.total();
-    return outValue;
-}
-
-
 
 int eig_index_glob = 0;
 
@@ -205,10 +147,6 @@ class Auto_Focusing{
     float get_eig_last_minus_current();
     void finetune(int motor_pulse_finetune);
     void show();
-
-
-
-
 };
 
 Auto_Focusing::Auto_Focusing(Motor& ir_motor1)
@@ -220,8 +158,6 @@ Auto_Focusing::Auto_Focusing(Motor& ir_motor1)
 int Auto_Focusing::get_motor_current_pos(){
     printf("IR_Motor.Get_Step_IR_Cur() = %d \n" , IR_Motor.Get_Step_IR_Cur());
     return IR_Motor.Get_Step_IR_Cur();
-    //return static_cast<int>(IR_Motor.Get_Step_IR_Cur()); 
-   // return 1;
     }
     
 
@@ -364,7 +300,7 @@ void ir_auto_focusing_by_image_continuous(Motor& ir_motor,int x, int y) {
     auto_focusing->set_eig(start_pos);
     
 
-    // to 0
+    // Set Motor Postion to 0
     int count = 0;
     for(int i=0; i<3;i++)
     {
@@ -381,10 +317,6 @@ void ir_auto_focusing_by_image_continuous(Motor& ir_motor,int x, int y) {
         pos = auto_focusing->get_motor_current_pos();
         if(pos==0) break;
     }
-
-
-        
-    
     
     // 必须到0位置
     // 反转
@@ -392,9 +324,7 @@ void ir_auto_focusing_by_image_continuous(Motor& ir_motor,int x, int y) {
     pos = auto_focusing->get_motor_current_pos();
     auto_focusing->set_eig(pos);
 
-
-
-    // to max
+    // Move Motor Postion to Max
     bool end_move_flag = false;
     for(int i=0; i<3;i++)
     {
@@ -409,6 +339,7 @@ void ir_auto_focusing_by_image_continuous(Motor& ir_motor,int x, int y) {
             pos = auto_focusing->get_motor_current_pos();
             auto_focusing->set_eig(pos);
 
+            // normally, motor could only move to 1200, which no need to move to 2000 steps.
             if(pos >1200) {end_move_flag = true;  printf("(pos >1200, end_move_flag = true; \n");}
 
             if(end_move_flag) break;
@@ -420,12 +351,13 @@ void ir_auto_focusing_by_image_continuous(Motor& ir_motor,int x, int y) {
 
     pos = auto_focusing->get_motor_current_pos();
 
+    // -110 is experience value.
     int max_eig_pos = auto_focusing->get_max_eig_pos() -110;
     if(max_eig_pos<0) max_eig_pos = 0;
 
 
 
-    // return to max
+    // return to best point
     end_move_flag = false;
     for(int i=0; i<3;i++)
     {
@@ -453,6 +385,7 @@ void ir_auto_focusing_by_image_continuous(Motor& ir_motor,int x, int y) {
     pos = auto_focusing->get_motor_current_pos();
 
     auto_focusing->set_eig(pos);
+    // 20 微调步数
     if(auto_focusing->get_eig_last_minus_current()>=0) motor_pulse = 20;
     else motor_pulse = -20;
 

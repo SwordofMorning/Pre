@@ -6,6 +6,7 @@ EventListener::EventListener(Motor& p_motor, FPGA& p_fpga)
     : running_(false)
     , m_motor(p_motor)
     , m_fpga(p_fpga)
+    , m_af_ir(640, 512, 2000, m_motor)
 {
     // do nothing
 }
@@ -98,6 +99,7 @@ void EventListener::PrintKeyEvent(const std::string& device, int code, int value
     {
         // m_fpga.Set_Gas_Enhancement(++usr.gas_enhancement);
         ir_auto_focusing_by_image_continuous(m_motor, 320, 256);
+        // m_af_ir.Focus(320, 256);
     }
 }
 

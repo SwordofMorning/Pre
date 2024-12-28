@@ -14,6 +14,7 @@
 #include "../uart/motor.h"
 #include "../uart/fpga.h"
 #include "../../media/algo/ir_auto_focusing.h"
+#include "../../media/algo/af/af_ir.h"
 
 class EventListener
 {
@@ -39,4 +40,5 @@ private:
 
     Motor& m_motor;
     FPGA& m_fpga;
+    AF_IR m_af_ir;
 };
