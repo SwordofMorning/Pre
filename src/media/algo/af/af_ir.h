@@ -5,7 +5,6 @@
 class AF_IR : public AF
 {
 private:
-
     int m_step_length;
 
     /**

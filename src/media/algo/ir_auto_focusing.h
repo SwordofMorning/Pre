@@ -1,6 +1,6 @@
 #include "../../config/config.h"
 #include "../../utils/uart/motor.h"
-#include<string>
+#include <string>
 #include <iostream>
 #include <filesystem>
 #include <sstream>

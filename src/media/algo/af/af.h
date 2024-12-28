@@ -1,6 +1,6 @@
 #pragma once
 
-#include<string>
+#include <string>
 #include <iostream>
 #include <opencv2/opencv.hpp>
 #include "../../../config/config.h"
@@ -14,7 +14,7 @@ protected:
     int m_motor_total_steps;
 
     Motor& m_motor;
-    
+
     /**
      * @brief Preprocess image data, from raw to 8bit grey.
      * 

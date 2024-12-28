@@ -1,7 +1,7 @@
 #include "af_ir.h"
 
 AF_IR::AF_IR(const int& p_iw, const int& p_ih, const int& p_steps, Motor& p_motor)
-    :AF(p_iw, p_ih, p_steps, p_motor)
+    : AF(p_iw, p_ih, p_steps, p_motor)
 {
     m_step_length = 20;
 }
@@ -19,7 +19,6 @@ cv::Mat AF_IR::Create_8bit_Mat()
 
 void AF_IR::Focus(const int& x, const int& y)
 {
-
     std::cout << "1" << std::endl;
 
     /* Step 1 : Move motor to position 0 */
