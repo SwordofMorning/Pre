@@ -12,11 +12,14 @@
 #include <atomic>
 #include "../../config/config.h"
 #include "../uart/motor.h"
+#include "../uart/fpga.h"
+#include "../../media/algo/ir_auto_focusing.h"
+#include "../../media/algo/af/af_ir.h"
 
 class EventListener
 {
 public:
-    EventListener(Motor& p_motor);
+    EventListener(Motor& p_motor, FPGA& p_fpga);
     ~EventListener();
 
     // 启动监听
@@ -36,4 +39,6 @@ private:
     std::atomic<bool> running_;
 
     Motor& m_motor;
+    FPGA& m_fpga;
+    AF_IR m_af_ir;
 };

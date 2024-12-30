@@ -1,11 +1,11 @@
-#include "vo_shm.h"
+#include "shm_vo.h"
 
 /**
  * @brief Copy data from frame_sync_dvp to algo_in;
  * 
  * @return success or not.
  */
-static int SHM_Copy()
+static int SHM_VO_Copy()
 {
     struct timeval current_time;
     gettimeofday(&current_time, NULL);
@@ -55,15 +55,16 @@ static int SHM_Copy()
  * 
  * @return success or not.
  */
-static int SHM_Send()
+static int SHM_VO_Send()
 {
+    /*
     static uint8_t last_frame_sum = 0;
     uint8_t current_frame_sum = 0;
 
     // 计算当前帧的校验和
     for (int i = 0; i < 100; i++)
     {
-        current_frame_sum += algo_out_yuv[i];
+        current_frame_sum += shm_out_yuv[i];
     }
 
     // 验证数据是否有更新
@@ -74,6 +75,7 @@ static int SHM_Send()
     }
     // printf("current sum: %d\n", current_frame_sum);
     last_frame_sum = current_frame_sum;
+    */
 
     struct sembuf sem_op;
 
@@ -81,7 +83,7 @@ static int SHM_Send()
     sem_op.sem_num = 0;
     sem_op.sem_op = -1;
     sem_op.sem_flg = 0;
-    if (semop(semid, &sem_op, 1) < 0)
+    if (semop(semid_vo, &sem_op, 1) < 0)
     {
         litelog.log.fatal("Wait signal error.");
         perror("semop");
@@ -89,14 +91,14 @@ static int SHM_Send()
     }
 
     // Copy data to shm with verification
-    memcpy(shm_yuv, algo_out_yuv, SHM_OUT_YUV_SIZE);
-    memcpy(shm_float, algo_out_float, SHM_OUT_FLOAT_SIZE);
+    memcpy(shm_yuv, shm_out_yuv, SHM_OUT_YUV_SIZE);
+    memcpy(shm_float, shm_out_float, SHM_OUT_FLOAT_SIZE);
 
     // Copy CSI data
     pthread_mutex_lock(&frame_sync_csi.mutex);
-    if (frame_sync_csi.frame_count > 0) {
-        memcpy(shm_vis, frame_sync_csi.frame_buffer[frame_sync_csi.read_pos], 
-               SHM_OUT_CSI_SIZE);
+    if (frame_sync_csi.frame_count > 0)
+    {
+        memcpy(shm_vis, frame_sync_csi.frame_buffer[frame_sync_csi.read_pos], SHM_OUT_CSI_SIZE);
 
         frame_sync_csi.read_pos = (frame_sync_csi.read_pos + 1) % FRAME_SYNC_BUFFER_SIZE;
         frame_sync_csi.frame_count--;
@@ -110,7 +112,7 @@ static int SHM_Send()
     sem_op.sem_num = 0;
     sem_op.sem_op = 1;
     sem_op.sem_flg = 0;
-    if (semop(semid, &sem_op, 1) < 0)
+    if (semop(semid_vo, &sem_op, 1) < 0)
     {
         litelog.log.fatal("Release signal error.");
         perror("semop");
@@ -120,14 +122,14 @@ static int SHM_Send()
     return 0;
 }
 
-int SHM_Init()
+int SHM_VO_Init()
 {
     // Allocate internal buffer
     algo_in = (uint16_t*)malloc(v4l2_ir_dvp_valid_width * v4l2_ir_dvp_valid_height * sizeof(uint16_t));
-    algo_out_yuv = (uint8_t*)malloc(SHM_OUT_YUV_SIZE);
-    algo_out_float = (float*)malloc(SHM_OUT_FLOAT_SIZE);
+    shm_out_yuv = (uint8_t*)malloc(SHM_OUT_YUV_SIZE);
+    shm_out_float = (float*)malloc(SHM_OUT_FLOAT_SIZE);
 
-    if (!algo_in || !algo_out_yuv || !algo_out_float)
+    if (!algo_in || !shm_out_yuv || !shm_out_float)
     {
         litelog.log.fatal("Init SHM error.");
         perror("malloc");
@@ -135,12 +137,12 @@ int SHM_Init()
     }
 
     // Create SHM buffer
-    shmid_yuv = shmget(ALGO_SHM_YUV_KEY, SHM_OUT_YUV_SIZE, IPC_CREAT | 0666);
-    shmid_float = shmget(ALGO_SHM_FLOAT_KEY, SHM_OUT_FLOAT_SIZE, IPC_CREAT | 0666);
-    shmid_csi = shmget(ALGO_SHM_CSI_KEY, SHM_OUT_CSI_SIZE, IPC_CREAT | 0666);
+    shmid_yuv = shmget(VO_YUV_KEY, SHM_OUT_YUV_SIZE, IPC_CREAT | 0666);
+    shmid_float = shmget(VO_FLOAT_KEY, SHM_OUT_FLOAT_SIZE, IPC_CREAT | 0666);
+    shmid_csi = shmget(VO_CSI_KEY, SHM_OUT_CSI_SIZE, IPC_CREAT | 0666);
     if (shmid_yuv < 0 || shmid_float < 0 || shmid_csi < 0)
     {
-        litelog.log.fatal("Create SHM error.");
+        litelog.log.fatal("VO Create SHM error.");
         perror("shmget");
         return -1;
     }
@@ -157,8 +159,8 @@ int SHM_Init()
     }
 
     // Create signal
-    semid = semget(ALGO_SEM_KEY, 1, IPC_CREAT | 0666);
-    if (semid < 0)
+    semid_vo = semget(VO_SEM_KEY, 1, IPC_CREAT | 0666);
+    if (semid_vo < 0)
     {
         litelog.log.fatal("semget error.");
         perror("semget");
@@ -166,7 +168,7 @@ int SHM_Init()
     }
 
     // Init signal
-    if (semctl(semid, 0, SETVAL, 1) < 0)
+    if (semctl(semid_vo, 0, SETVAL, 1) < 0)
     {
         litelog.log.fatal("semctl error.");
         perror("semctl");
@@ -177,12 +179,12 @@ int SHM_Init()
     return 0;
 }
 
-int SHM_Process()
+int SHM_VO_Process()
 {
     struct timeval start_time, end_time;
     gettimeofday(&start_time, NULL);
 
-    if (SHM_Copy() < 0)
+    if (SHM_VO_Copy() < 0)
     {
         return -1;
     }
@@ -192,7 +194,7 @@ int SHM_Process()
         return -1;
     }
 
-    if (SHM_Send() < 0)
+    if (SHM_VO_Send() < 0)
     {
         return -1;
     }
@@ -212,29 +214,33 @@ int SHM_Process()
     return 0;
 }
 
-void SHM_Exit()
+void SHM_VO_Exit()
 {
     // Release internal buffer
     if (algo_in)
         free(algo_in);
-    if (algo_out_yuv)
-        free(algo_out_yuv);
-    if (algo_out_float)
-        free(algo_out_float);
+    if (shm_out_yuv)
+        free(shm_out_yuv);
+    if (shm_out_float)
+        free(shm_out_float);
 
     // Disconnect SHM
     if (shm_yuv != (void*)-1)
         shmdt(shm_yuv);
     if (shm_float != (void*)-1)
         shmdt(shm_float);
+    if (shm_vis != (void*)-1)
+        shmdt(shm_vis);
 
     // Delete SHM
     if (shmid_yuv >= 0)
         shmctl(shmid_yuv, IPC_RMID, NULL);
     if (shmid_float >= 0)
         shmctl(shmid_float, IPC_RMID, NULL);
+    if (shmid_csi >= 0)
+        shmctl(shmid_csi, IPC_RMID, NULL);
 
     // Delete signal
-    if (semid >= 0)
-        semctl(semid, 0, IPC_RMID);
+    if (semid_vo >= 0)
+        semctl(semid_vo, 0, IPC_RMID);
 }

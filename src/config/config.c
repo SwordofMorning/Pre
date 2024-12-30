@@ -43,19 +43,23 @@ struct FrameSync8 frame_sync_csi;
 
 // Buffer
 uint16_t* algo_in = NULL;
-uint8_t* algo_out_yuv = NULL;
-float* algo_out_float = NULL;
+uint8_t* shm_out_yuv = NULL;
+float* shm_out_float = NULL;
+uint8_t* shm_out_algo = NULL;
 
 // ID
 int shmid_yuv = -1;
 int shmid_float = -1;
 int shmid_csi = -1;
-int semid = -1;
+int shmid_algo = -1;
+int semid_vo = -1;
+int semid_ab = -1;
 
 // Pointer
 uint8_t* shm_yuv = NULL;
 float* shm_float = NULL;
 uint8_t* shm_vis = NULL;
+uint8_t* shm_algo = NULL;
 
 /* ----- User Config ---- */
 
@@ -189,6 +193,13 @@ static int Init_LUTs()
     {
         return -1;
     }
+
+    if (!PseudoCL_Init(&cl_processor, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height))
+    {
+        printf("Failed to initialize OpenCL\n");
+        return -1;
+    }
+
     return 0;
 }
 
@@ -206,5 +217,6 @@ void Config_Init()
 
 void Config_Exit()
 {
+    PseudoCL_Cleanup(&cl_processor);
     Free_All_LUTs();
 }

@@ -83,7 +83,7 @@ static int init_single_lut(struct YUV420P_LUT* lut, const char* bin_file)
     lut->size = color_count;
     free(rgb_data);
 
-    printf("Loaded color map: %d colors\n", color_count);
+    // printf("Loaded color map: %d colors\n", color_count);
     return 0;
 }
 

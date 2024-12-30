@@ -9,9 +9,12 @@
 #include <time.h>
 #include <stdint.h>
 #include <sys/time.h>
+#include "gst.h"
 
-#define SWITCH_VO_AB 0
-#define SAVE_FILE 1
+#include <thread>
+
+#define SWITCH_VO_AB 1
+#define SAVE_FILE 0
 
 #if SWITCH_VO_AB
     #define ALGO_SEM_KEY 0x0010
@@ -56,6 +59,11 @@ static uint8_t* shm_algo = NULL;
 static struct timeval last_fps_time;
 static int fps_frame_count = 0;
 static double current_fps = 0.0;
+
+void gst_thread_func()
+{
+    VO_GST_Streaming();
+}
 
 // 信号处理函数
 void signal_handler(int signo)
@@ -302,6 +310,10 @@ int save_frame()
 
 int main()
 {
+    std::thread gst_thread = std::thread(gst_thread_func);
+
+    sleep(1);
+
     // 设置信号处理
     signal(SIGINT, signal_handler);
 
@@ -348,6 +360,7 @@ int main()
             printf("Failed to save frame %d\n", frame_count);
         }
 #endif
+        GST_Push_Frame(shm_yuv, 640, 512);
 
         // 释放信号量
         sem_op.sem_num = 0;
@@ -394,6 +407,9 @@ int main()
     // 清理资源
     cleanup_resources();
     printf("Capture program terminated.\n");
+
+    if (gst_thread.joinable())
+        gst_thread.join();
 
     return 0;
 }

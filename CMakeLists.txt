@@ -4,7 +4,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.5)
 
 # ===== Step 1 : Set Cross Compiler Path =====
 
-SET(_SDK_PATH_ "/hdd/System/")
+SET(_SDK_PATH_ "/home/xjt/_Workspace_/System/")
 SET(_BUILDROOT_PATH_ "${_SDK_PATH_}rk3588-linux/buildroot/output/rockchip_rk3588/host/")
 SET(_COMPILER_PATH_ "${_BUILDROOT_PATH_}bin/")
 
@@ -33,12 +33,14 @@ INCLUDE_DIRECTORIES(
 
 SET(APP_NAME "pre")
 SET(SHM_NAME "pre_shm")
+SET(SHM_GST_NAME "pre_shm_gst")
 SET(TEST_NAME "pre_test")
 
 # ===== Step 5 : Add Subdirectory =====
 
 ADD_SUBDIRECTORY(src bin)
 ADD_SUBDIRECTORY(shm)
+ADD_SUBDIRECTORY(shm_gst)
 ADD_SUBDIRECTORY(test)
 
 # ===== Step 6: Generate Version Info =====

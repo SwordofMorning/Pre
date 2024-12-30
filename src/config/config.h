@@ -17,6 +17,7 @@
 #include "./include/global.h"
 #include "./include/debug.h"
 #include "./lut/lut.h"
+#include "./lut/pseudo.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -24,4 +24,12 @@ TARGET_LINK_LIBRARIES(
     libgstreamer-1.0.so
     libgobject-2.0.so
     libgstapp-1.0.so
+
+    libmali.so
+    libOpenCL.so
+
+    libopencv_core.so;
+    libopencv_highgui.so;
+    libopencv_imgproc.so;
+    libopencv_imgcodecs.so
 )

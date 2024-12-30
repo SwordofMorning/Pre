@@ -14,10 +14,15 @@
 #include <cstring>
 #include <cmath>
 #include "../../config/lut/lut.h"
+#include "../../config/lut/pseudo.h"
 #include "../../config/config.h"
-#include "../vo/vo_gst.h"
-#include "pseudo.h"
+#include "../vo/gst.h"
+#include "pseudo_am.h"
 
 int Process_One_Frame();
 
-void Pseudo(uint16_t* input, uint8_t* y_out, uint8_t* u_out, uint8_t* v_out, int width, int height);
+void Pseudo_420P(uint16_t* input, uint8_t* y_out, uint8_t* u_out, uint8_t* v_out, int width, int height);
+
+void Pseudo_NV12(uint16_t* input, uint8_t* y_out, uint8_t* uv_out, int width, int height);
+
+void Pseudo_NV12_CL(uint16_t* input, uint8_t* y_out, uint8_t* uv_out, int width, int height);
