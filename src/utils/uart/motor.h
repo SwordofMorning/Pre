@@ -57,4 +57,10 @@ public:
 
     bool Move_IR_Start(Direction direction);
     void Move_IR_Stop();
+
+    /**
+     * @brief Get Current IR Step.
+     * @return m_step_ir_cur 
+     */
+    int32_t Get_Step_IR_Cur();
 };

@@ -1,5 +1,4 @@
 #include "main.hpp"
-#include <opencv2/opencv.hpp>
 
 void init()
 {
@@ -58,8 +57,6 @@ void execute()
 
 int main()
 {
-    cv::Mat ma{1, 2, 3, 4 ,5};
-
     init();
     execute();
     exit();

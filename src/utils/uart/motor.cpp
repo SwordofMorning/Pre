@@ -10,13 +10,6 @@ Motor::Motor()
     , m_continuous_direction(0)
 {
     m_receive_callback = [this](const uint8_t* data, size_t len) -> int {
-        std::cout << "Received " << len << " bytes: ";
-        for (size_t i = 0; i < len; ++i)
-        {
-            printf("%02X ", data[i]);
-        }
-        std::cout << std::endl;
-
         if (data[0] != 0x24)
             return -1;
 
@@ -199,4 +192,9 @@ void Motor::Move_IR_Stop()
     {
         m_continuous_thread.join();
     }
+}
+
+int32_t Motor::Get_Step_IR_Cur()
+{
+    return m_step_ir_cur;
 }

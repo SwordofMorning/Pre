@@ -27,4 +27,9 @@ TARGET_LINK_LIBRARIES(
 
     libmali.so
     libOpenCL.so
+
+    libopencv_core.so;
+    libopencv_highgui.so;
+    libopencv_imgproc.so;
+    libopencv_imgcodecs.so
 )
