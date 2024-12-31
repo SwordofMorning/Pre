@@ -3,7 +3,7 @@
 /**
  * @file v4l2_dvp.h
  * @author Xiaojintao
- * @brief 
+ * @brief DVP for IR.
  * @version 0.1
  * @date 2024-08-06
  * 

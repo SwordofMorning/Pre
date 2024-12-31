@@ -7,6 +7,17 @@
 #include <variant>
 #include "../log/litelog.h"
 
+/**
+ * @file controller.h
+ * @author Xiaojintao
+ * @brief MQTT json wrapper and parser.
+ * @version 0.1
+ * @date 2024-12-31
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ */
+
 class JWrap
 {
 public:

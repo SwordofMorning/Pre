@@ -19,6 +19,17 @@
 #include "./lut/lut.h"
 #include "./lut/pseudo.h"
 
+/**
+ * @file config.h
+ * @author Xiaojintao
+ * @brief Total config for program.
+ * @version 0.1
+ * @date 2024-12-31
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ */
+
 #ifdef __cplusplus
 extern "C" {
 #endif

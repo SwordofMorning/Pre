@@ -1,5 +1,16 @@
-// pseudo_cl.h
 #pragma once
+
+/**
+ * @file pseudo.h
+ * @author Xiaojintao
+ * @brief OpenCL kernel constructor for pseudo color.
+ * @version 0.1
+ * @date 2024-12-31
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ */
+
 #include <CL/cl.h>
 #include <stdint.h>
 #include <stdbool.h>

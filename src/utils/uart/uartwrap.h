@@ -1,5 +1,16 @@
 #pragma once
 
+/**
+ * @file uartwrap.h
+ * @author Xiaojintao
+ * @brief Uart C lang interface.
+ * @version 0.1
+ * @date 2024-12-31
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ */
+
 #include <strings.h>
 #include <string.h>
 #include <stdio.h>

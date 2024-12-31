@@ -1,4 +1,3 @@
-// pseudo_cl.c
 #include "pseudo.h"
 #include <stdio.h>
 #include <stdlib.h>

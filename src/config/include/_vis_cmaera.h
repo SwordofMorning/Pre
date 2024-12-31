@@ -1,5 +1,16 @@
 #pragma once
 
+/**
+ * @file _vis_camera.h
+ * @author Xiaojintao
+ * @brief Config for visible camera.
+ * @version 0.1
+ * @date 2024-12-31
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ */
+
 #ifdef __cplusplus
 extern "C" {
 #endif

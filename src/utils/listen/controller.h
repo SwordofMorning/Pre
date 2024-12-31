@@ -1,5 +1,16 @@
 #pragma once
 
+/**
+ * @file controller.h
+ * @author Xiaojintao
+ * @brief MQTT command controller.
+ * @version 0.1
+ * @date 2024-12-31
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ */
+
 #include <mutex>
 #include <condition_variable>
 #include <thread>

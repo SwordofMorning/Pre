@@ -1,5 +1,16 @@
 #pragma once
 
+/**
+ * @file pseudo_am.h
+ * @author Xiaojintao
+ * @brief Pseudo Adaptive Mapper.
+ * @version 0.1
+ * @date 2024-12-31
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ */
+
 #include <iostream>
 #include <string.h>
 #include <stdio.h>
@@ -15,7 +26,7 @@
 #include <cmath>
 #include "../../../config/lut/lut.h"
 #include "../../../config/config.h"
-#include "../../vo/gst.h"
+#include "../../../utils/log/litelog.h"
 
 class PseudoAdaptiveMapper
 {

@@ -35,14 +35,12 @@ void exit()
 
 void execute()
 {
-    // gst_thread = std::thread(gst_thread_func);
-    sleep(1);
     dvp_thread = std::thread(dvp_thread_func);
     csi_thread = std::thread(csi_thread_func);
-    sleep(1);
+    usleep(100 * 1000);
     vo_thread = std::thread(vo_thread_func);
     ab_thread = std::thread(ab_thread_func);
-    sleep(1);
+    usleep(100 * 1000);
 
     Motor motor;
     motor.Start();
