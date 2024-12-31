@@ -1,57 +1,11 @@
-#include "algo.h"
+#include "pseudo.h"
 
-// static PseudoAdaptiveMapper mapper;
-static Pseudo ps;
-
-int Process_One_Frame()
-{
-    /* ----- Section 1 : Color ----- */
-
-    uint8_t* y = shm_out_yuv;
-    uint8_t* uv = y + v4l2_ir_dvp_valid_width * v4l2_ir_dvp_valid_height;
-
-    ps(algo_in, y, uv, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height);
-
-    /* ----- Section 2 : Temp ----- */
-
-#if 0
-    // 寻找数据范围（用于float输出）
-    uint16_t min_val = 65535;
-    uint16_t max_val = 0;
-    for (int i = 0; i < v4l2_ir_dvp_valid_height; i++)
-    {
-        for (int j = 0; j < v4l2_ir_dvp_valid_width; j++)
-        {
-            uint16_t val = algo_in[i * v4l2_ir_dvp_valid_width + j];
-            if (val > max_val)
-                max_val = val;
-            if (val < min_val)
-                min_val = val;
-        }
-    }
-
-    float scale = 1.0f / (max_val - min_val);
-    for (int i = 0; i < v4l2_ir_dvp_valid_height; i++)
-    {
-        for (int j = 0; j < v4l2_ir_dvp_valid_width; j++)
-        {
-            uint16_t val = algo_in[i * v4l2_ir_dvp_valid_width + j];
-            shm_out_float[i * v4l2_ir_dvp_valid_width + j] = (float)(val - min_val) * scale;
-        }
-    }
-#endif
-
-    return 0;
-}
-
-#if 0
-
-void Pseudo_420P(uint16_t* input, uint8_t* y_out, uint8_t* u_out, uint8_t* v_out, int width, int height)
+void Pseudo::Pseudo_420P(uint16_t* input, uint8_t* y_out, uint8_t* u_out, uint8_t* v_out, int width, int height)
 {
     // Update value mapping
-    mapper.UpdateRange(input, width, height);
-    float scale = mapper.GetScale();
-    float min_val = mapper.GetMin();
+    PAM_mapper.UpdateRange(input, width, height);
+    float scale = PAM_mapper.GetScale();
+    float min_val = PAM_mapper.GetMin();
 
     // clang-format off
     switch(usr.pseudo)
@@ -146,12 +100,12 @@ void Pseudo_420P(uint16_t* input, uint8_t* y_out, uint8_t* u_out, uint8_t* v_out
     // clang-format on
 }
 
-void Pseudo_NV12(uint16_t* input, uint8_t* y_out, uint8_t* uv_out, int width, int height)
+void Pseudo::Pseudo_NV12(uint16_t* input, uint8_t* y_out, uint8_t* uv_out, int width, int height)
 {
     // Update value mapping
-    mapper.UpdateRange(input, width, height);
-    float scale = mapper.GetScale();
-    float min_val = mapper.GetMin();
+    PAM_mapper.UpdateRange(input, width, height);
+    float scale = PAM_mapper.GetScale();
+    float min_val = PAM_mapper.GetMin();
 
     // clang-format off
     switch(usr.pseudo)
@@ -246,11 +200,11 @@ void Pseudo_NV12(uint16_t* input, uint8_t* y_out, uint8_t* uv_out, int width, in
     // clang-format on
 }
 
-void Pseudo_NV12_CL(uint16_t* input, uint8_t* y_out, uint8_t* uv_out, int width, int height)
+void Pseudo::Pseudo_NV12_CL(uint16_t* input, uint8_t* y_out, uint8_t* uv_out, int width, int height)
 {
-    mapper.UpdateRange(input, width, height);
-    float scale = mapper.GetScale();
-    float min_val = mapper.GetMin();
+    PAM_mapper.UpdateRange(input, width, height);
+    float scale = PAM_mapper.GetScale();
+    float min_val = PAM_mapper.GetMin();
 
     const struct YUV420P_LUT* lut = NULL;
 
@@ -258,7 +212,10 @@ void Pseudo_NV12_CL(uint16_t* input, uint8_t* y_out, uint8_t* uv_out, int width,
         lut = Get_LUT(usr.pseudo);
 
     if (PseudoCL_ProcessNV12(&cl_processor, input, y_out, uv_out, width, height, usr.pseudo, lut, scale, min_val) != 0)
-        litelog.log.warning("GPU processing failed\n");
+        litelog.log.warning("PseudoCL_ProcessNV12 processing failed\n");
 }
 
-#endif
+void Pseudo::operator()(uint16_t* input, uint8_t* y_out, uint8_t* uv_out, int width, int height)
+{
+    return this->Pseudo_NV12_CL(input, y_out, uv_out, width, height);
+}

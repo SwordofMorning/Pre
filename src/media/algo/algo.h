@@ -18,6 +18,7 @@
 #include "../../config/config.h"
 #include "../vo/gst.h"
 #include "pseudo/pseudo_am.h"
+#include "pseudo/pseudo.h"
 
 int Process_One_Frame();
 

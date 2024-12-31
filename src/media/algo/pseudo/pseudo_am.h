@@ -43,3 +43,5 @@ public:
     float GetMin() const;
     float GetMax() const;
 };
+
+extern PseudoAdaptiveMapper PAM_mapper;
