@@ -1,5 +1,5 @@
-#include "../../config/config.h"
-#include "../../utils/uart/motor.h"
+#include "../../../config/config.h"
+#include "../../../utils/uart/motor.h"
 #include <string>
 #include <iostream>
 #include <filesystem>

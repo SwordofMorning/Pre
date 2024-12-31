@@ -17,7 +17,7 @@
 #include "../../config/lut/pseudo.h"
 #include "../../config/config.h"
 #include "../vo/gst.h"
-#include "pseudo_am.h"
+#include "pseudo/pseudo_am.h"
 
 int Process_One_Frame();
 

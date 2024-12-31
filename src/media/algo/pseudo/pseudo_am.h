@@ -13,9 +13,9 @@
 #include <algorithm>
 #include <cstring>
 #include <cmath>
-#include "../../config/lut/lut.h"
-#include "../../config/config.h"
-#include "../vo/gst.h"
+#include "../../../config/lut/lut.h"
+#include "../../../config/config.h"
+#include "../../vo/gst.h"
 
 class PseudoAdaptiveMapper
 {
