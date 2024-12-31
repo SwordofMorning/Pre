@@ -2,7 +2,6 @@
 
 #include <iostream>
 #include <thread>
-#include "../others/version/version.h"
 #include "./utils/log/litelog.h"
 #include "./media/vi/v4l2_dvp.h"
 #include "./media/vi/v4l2_csi.h"

@@ -3,12 +3,6 @@
 void init()
 {
     Config_Init();
-
-    litelog.init("Pre");
-    litelog.log.notice("Start!");
-    litelog.log.notice("Branch: %s", __GIT_BRANCH__);
-    litelog.log.notice("Commit ID: %s", __GIT_COMMIT_ID__);
-    litelog.log.notice("User: %s", __GIT_USER__);
 }
 
 void exit()

@@ -12,12 +12,14 @@
 #include <time.h>
 #include <sys/sysinfo.h>
 #include <stdarg.h>
-#include "./include/device.h"
-#include "./include/enum.h"
-#include "./include/global.h"
-#include "./include/debug.h"
-#include "./lut/lut.h"
-#include "./lut/pseudo.h"
+#include "include/device.h"
+#include "include/enum.h"
+#include "include/global.h"
+#include "include/debug.h"
+#include "lut/lut.h"
+#include "lut/pseudo.h"
+#include "../../others/version/version.h"
+#include "../utils/log/litelog.h"
 
 /**
  * @file config.h

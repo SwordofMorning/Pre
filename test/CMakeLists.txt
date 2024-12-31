@@ -1,11 +1,5 @@
 FILE(
     GLOB_RECURSE SRC_LIST 
-    ../src/config/*.c
-    ../src/config/*.cpp
-    ../src/media/*.c
-    ../src/media/*.cpp
-    ../src/utils/*.c
-    ../src/utils/*.cpp
     ./*.c
     ./*.cpp
 )
