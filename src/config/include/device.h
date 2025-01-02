@@ -117,9 +117,9 @@ extern struct V4L2_IR_DVP_Buffer* v4l2_ir_dvp_buffer_global;
 
 #if (VISIBLE_CAMERA_MODE == VISIBLE_CAMERA_MODE_HGD_IMX335)
 #define V4L2_VIS_CSI_DEVICE_NAME "/dev/video22"
-#define V4L2_VIS_CSI_PIX_FMT V4L2_PIX_FMT_UYVY
-// It means UYVY have 2 times size of pixels
-#define V4L2_VIS_CSI_PIX_FMT_SCALE 2
+#define V4L2_VIS_CSI_PIX_FMT V4L2_PIX_FMT_NV12
+// It means NV12 have 1.5 times size of pixels
+#define V4L2_VIS_CSI_PIX_FMT_SCALE 1.5
 #elif (VISIBLE_CAMERA_MODE == VISIBLE_CAMERA_MODE_NGD)
 #define V4L2_VIS_CSI_DEVICE_NAME "/dev/video11"
 #define V4L2_VIS_CSI_PIX_FMT V4L2_PIX_FMT_UYVY

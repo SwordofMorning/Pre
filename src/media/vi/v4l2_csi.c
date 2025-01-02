@@ -165,7 +165,7 @@ static void CSI_Send()
     }
 
     memcpy(frame_sync_csi.frame_buffer[frame_sync_csi.write_pos], (uint8_t*)v4l2_vis_csi_buffer_global[v4l2_vis_csi_buffer_global_index].start,
-           v4l2_vis_csi_width * v4l2_vis_csi_height * sizeof(uint8_t) * 2);
+           v4l2_vis_csi_width * v4l2_vis_csi_height * sizeof(uint8_t) * V4L2_VIS_CSI_PIX_FMT_SCALE);
 
     // Update write index
     frame_sync_csi.write_pos = (frame_sync_csi.write_pos + 1) % FRAME_SYNC_BUFFER_SIZE;
