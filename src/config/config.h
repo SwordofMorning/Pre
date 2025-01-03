@@ -17,7 +17,8 @@
 #include "include/global.h"
 #include "include/debug.h"
 #include "lut/lut.h"
-#include "lut/pseudo.h"
+#include "cl/pseudo_cl.h"
+#include "cl/filter_cl.h"
 #include "../../others/version/version.h"
 #include "../utils/log/litelog.h"
 

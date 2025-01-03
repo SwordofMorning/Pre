@@ -24,10 +24,9 @@
 #include <algorithm>
 #include <cstring>
 #include <cmath>
-#include "../../config/lut/lut.h"
-#include "../../config/lut/pseudo.h"
 #include "../../config/config.h"
 #include "pseudo/pseudo_am.h"
 #include "pseudo/pseudo.h"
+#include "filter/filter.h"
 
 int Process_One_Frame();

@@ -11,11 +11,7 @@
  * 
  */
 
-#include <CL/cl.h>
-#include <stdint.h>
-#include <stdbool.h>
-#include "lut.h"
-#include "../include/global.h"
+#include "cl.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -40,7 +36,7 @@ typedef struct
     bool initialized;
 } PseudoCL;
 
-extern PseudoCL cl_processor;
+extern PseudoCL pseudo_cl;
 
 // 初始化OpenCL环境
 bool PseudoCL_Init(PseudoCL* cl, int width, int height);

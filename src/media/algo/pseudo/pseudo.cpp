@@ -211,7 +211,7 @@ void Pseudo::Pseudo_NV12_CL(uint16_t* input, uint8_t* y_out, uint8_t* uv_out, in
     if (usr.pseudo != PSEUDO_BLACK_HOT && usr.pseudo != PSEUDO_WHITE_HOT)
         lut = Get_LUT(usr.pseudo);
 
-    if (PseudoCL_ProcessNV12(&cl_processor, input, y_out, uv_out, width, height, usr.pseudo, lut, scale, min_val) != 0)
+    if (PseudoCL_ProcessNV12(&pseudo_cl, input, y_out, uv_out, width, height, usr.pseudo, lut, scale, min_val) != 0)
         litelog.log.warning("PseudoCL_ProcessNV12 processing failed\n");
 }
 

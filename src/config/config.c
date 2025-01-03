@@ -195,13 +195,28 @@ static int Init_LUTs()
         return -1;
     }
 
-    if (!PseudoCL_Init(&cl_processor, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height))
+    if (!PseudoCL_Init(&pseudo_cl, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height))
     {
         printf("Failed to initialize OpenCL\n");
         return -1;
     }
 
     return 0;
+}
+
+static int Init_CL()
+{
+    if (!PseudoCL_Init(&pseudo_cl, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height))
+    {
+        printf("Failed to initialize PseudoCL_Init\n");
+        return -1;
+    }
+
+    if (!FilterCL_Init(&filter_cl, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height))
+    {
+        printf("Failed to initialize FilterCL_Init\n");
+        return -1;
+    }
 }
 
 static void Init_Log()
@@ -229,10 +244,12 @@ void Config_Init()
     Init_DVP();
     Init_CIS();
     Init_LUTs();
+    Init_CL();
 }
 
 void Config_Exit()
 {
-    PseudoCL_Cleanup(&cl_processor);
+    PseudoCL_Cleanup(&pseudo_cl);
+    FilterCL_Cleanup(&filter_cl);
     Free_All_LUTs();
 }
