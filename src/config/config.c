@@ -69,6 +69,28 @@ struct UserConfig usr;
 /* ======================================== Function ======================================== */
 /* ========================================================================================== */
 
+static void Init_Log()
+{
+    litelog.init("Pre");
+    litelog.log.notice("========== Program Version ==========");
+    litelog.log.notice("Git User: %s", __GIT_USER__);
+    litelog.log.notice("Git Branch: %s", __GIT_BRANCH__);
+    litelog.log.notice("Git Commit: %s", __GIT_COMMIT_ID__);
+    litelog.log.notice("Git Worktree: %s", __GIT_CLEAN__);
+    litelog.log.notice("Compile Host: %s", __COMPILE_HOST__);
+    litelog.log.notice("Compile User: %s", __COMPILE_USER__);
+    litelog.log.notice("Compile Time: %s", __COMPILE_TIME__);
+    litelog.log.notice("=====================================");
+}
+
+static void Init_User_Config()
+{
+    usr.pseudo = PSEUDO_IRONBOW_FORWARD;
+    usr.gas_enhancement = GAS_ENHANCEMENT_NONE;
+    usr.in_focus = false;
+    usr.mean_filter = false;
+}
+
 static void Init_Frame_Sync_DVP()
 {
     pthread_mutex_init(&frame_sync_dvp.mutex, NULL);
@@ -153,13 +175,6 @@ static void Init_CIS()
     Init_Frame_Sync_CSI();
 }
 
-static void Init_User_Config()
-{
-    usr.pseudo = PSEUDO_IRONBOW_FORWARD;
-    usr.gas_enhancement = GAS_ENHANCEMENT_NONE;
-    usr.in_focus = false;
-}
-
 static int Init_LUTs()
 {
     if (Init_LUT(LUT_IRONBOW_FORWARD, "/root/app/pseudo/ironbow_forward.bin") < 0)
@@ -217,20 +232,6 @@ static int Init_CL()
         printf("Failed to initialize FilterCL_Init\n");
         return -1;
     }
-}
-
-static void Init_Log()
-{
-    litelog.init("Pre");
-    litelog.log.notice("========== Program Version ==========");
-    litelog.log.notice("Git User: %s", __GIT_USER__);
-    litelog.log.notice("Git Branch: %s", __GIT_BRANCH__);
-    litelog.log.notice("Git Commit: %s", __GIT_COMMIT_ID__);
-    litelog.log.notice("Git Worktree: %s", __GIT_CLEAN__);
-    litelog.log.notice("Compile Host: %s", __COMPILE_HOST__);
-    litelog.log.notice("Compile User: %s", __COMPILE_USER__);
-    litelog.log.notice("Compile Time: %s", __COMPILE_TIME__);
-    litelog.log.notice("=====================================");
 }
 
 /* ===================================================================================== */

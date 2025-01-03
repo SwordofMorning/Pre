@@ -25,7 +25,8 @@ int Process_One_Frame()
     clock_gettime(CLOCK_MONOTONIC, &start_filter);
 #endif
 
-    fl.Mean_NV12(y, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height, 3);
+    if (usr.mean_filter)
+        fl.Mean_NV12(y, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height, 3);
 
 #if __SHOW_TIME_CONSUME__
     clock_gettime(CLOCK_MONOTONIC, &end_filter);
