@@ -32,7 +32,7 @@
 #define ALGO_HEIGHT 512
 #define ALGO_YUV_SIZE (ALGO_WIDTH * ALGO_HEIGHT * 3 / 2)
 #define ALGO_FLOAT_SIZE (ALGO_WIDTH * ALGO_HEIGHT * sizeof(float))
-#define ALGO_CSI_SIZE (2592 * 1944 * 2)
+#define ALGO_CSI_SIZE (2592 * 1944 * 1.5)
 #define ALGO_ALGO_SIZE ALGO_YUV_SIZE
 
 // FPS计算相关设置
