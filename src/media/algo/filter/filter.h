@@ -17,8 +17,6 @@
 
 class Filter
 {
-private:
-
 public:
     /**
      * @brief Mean filter For NV12 image.

@@ -25,14 +25,13 @@ int Process_One_Frame()
     clock_gettime(CLOCK_MONOTONIC, &start_filter);
 #endif
 
-    fl.Mean_NV12(y, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height, 5);
+    fl.Mean_NV12(y, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height, 3);
 
 #if __SHOW_TIME_CONSUME__
     clock_gettime(CLOCK_MONOTONIC, &end_filter);
     double filter_time_ms = ((end_filter.tv_sec - start_filter.tv_sec) * 1e9 + (end_filter.tv_nsec - start_filter.tv_nsec)) / 1e6;
 
-    printf("Processing Time - Pseudo: %.2f ms, Filter: %.2f ms, Total: %.2f ms\n",
-           pseudo_time_ms, filter_time_ms, pseudo_time_ms + filter_time_ms);
+    printf("Processing Time - Pseudo: %.2f ms, Filter: %.2f ms, Total: %.2f ms\n", pseudo_time_ms, filter_time_ms, pseudo_time_ms + filter_time_ms);
 #endif
 
     /* ----- Section 2 : Temp ----- */
