@@ -1,5 +1,16 @@
 #pragma once
 
+/**
+ * @file motor.h
+ * @author Xiaojintao
+ * @brief Motor driver.
+ * @version 0.1
+ * @date 2024-12-31
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ */
+
 #include "uartclass.h"
 #include "../log/litelog.h"
 

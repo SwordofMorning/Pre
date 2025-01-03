@@ -1,5 +1,7 @@
 #include "pseudo_am.h"
 
+PseudoAdaptiveMapper PAM_mapper;
+
 PseudoAdaptiveMapper::PseudoAdaptiveMapper()
     : smoothed_min(0)
     , smoothed_max(65535)

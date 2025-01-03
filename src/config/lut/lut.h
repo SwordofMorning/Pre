@@ -1,5 +1,16 @@
 #pragma once
 
+/**
+ * @file lut.h
+ * @author Xiaojintao
+ * @brief Look up table for pseudo.
+ * @version 0.1
+ * @date 2024-12-31
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ */
+
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>

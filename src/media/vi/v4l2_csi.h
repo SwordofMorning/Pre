@@ -1,9 +1,9 @@
 #pragma once
 
 /**
- * @file v4l2_dvp.h
+ * @file v4l2_csi.h
  * @author Xiaojintao
- * @brief 
+ * @brief CSI for visible.
  * @version 0.1
  * @date 2024-08-06
  * 
