@@ -224,13 +224,19 @@ static int Init_CL()
     if (!PseudoCL_Init(&pseudo_cl, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height))
     {
         printf("Failed to initialize PseudoCL_Init\n");
-        return -1;
+        exit(EXIT_FAILURE);
     }
 
     if (!FilterCL_Init(&filter_cl, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height))
     {
         printf("Failed to initialize FilterCL_Init\n");
-        return -1;
+        exit(EXIT_FAILURE);
+    }
+
+    if (!DiffCL_Init(&diff_cl, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height))
+    {
+        printf("Failed to initialize DiffCL_Init\n");
+        exit(EXIT_FAILURE);
     }
 }
 
@@ -252,5 +258,6 @@ void Config_Exit()
 {
     PseudoCL_Cleanup(&pseudo_cl);
     FilterCL_Cleanup(&filter_cl);
+    DiffCL_Cleanup(&diff_cl);
     Free_All_LUTs();
 }

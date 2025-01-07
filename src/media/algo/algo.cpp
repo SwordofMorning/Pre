@@ -1,11 +1,15 @@
 #include "algo.h"
 
-static Pseudo ps;
-static Filter fl;
+static Diff diff;
+static Pseudo pseudo;
+static Filter filter;
+uint16_t g_diff_result[640 * 512] = {0};  // 定义全局数组
 
 int Process_One_Frame()
 {
-    /* ----- Section 1 : Color ----- */
+    /* ============================= */
+    /* ===== Section 1 : Color ===== */
+    /* ============================= */
 
     uint8_t* y = shm_out_yuv;
     uint8_t* uv = y + v4l2_ir_dvp_valid_width * v4l2_ir_dvp_valid_height;
@@ -15,7 +19,20 @@ int Process_One_Frame()
     clock_gettime(CLOCK_MONOTONIC, &start_pseudo);
 #endif
 
-    ps(algo_in, y, uv, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height);
+    /* ----- Par 1 : Diff ----- */
+
+    diff.Process_Raw_Stats(algo_in, g_diff_result, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height, 0.98f);
+
+#if __SHOW_TIME_CONSUME__
+    clock_gettime(CLOCK_MONOTONIC, &end_pseudo);
+    double diff_time_ms = ((end_pseudo.tv_sec - start_pseudo.tv_sec) * 1e9 + (end_pseudo.tv_nsec - start_pseudo.tv_nsec)) / 1e6;
+    struct timespec start_filter, end_filter;
+    clock_gettime(CLOCK_MONOTONIC, &start_filter);
+#endif
+
+    /* ----- Par 2 : Pseudo Color ----- */
+
+    pseudo(g_diff_result, y, uv, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height);
 
 #if __SHOW_TIME_CONSUME__
     clock_gettime(CLOCK_MONOTONIC, &end_pseudo);
@@ -25,14 +42,16 @@ int Process_One_Frame()
     clock_gettime(CLOCK_MONOTONIC, &start_filter);
 #endif
 
+    /* ----- Par 3 : Filter ----- */
+
     if (usr.mean_filter)
-        fl.Bilateral_NV12(y, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height, 1.0, 30);
+        filter.Mean_NV12(y, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height, 3);
 
 #if __SHOW_TIME_CONSUME__
     clock_gettime(CLOCK_MONOTONIC, &end_filter);
     double filter_time_ms = ((end_filter.tv_sec - start_filter.tv_sec) * 1e9 + (end_filter.tv_nsec - start_filter.tv_nsec)) / 1e6;
-
-    printf("Processing Time - Pseudo: %.2f ms, Filter: %.2f ms, Total: %.2f ms\n", pseudo_time_ms, filter_time_ms, pseudo_time_ms + filter_time_ms);
+    double total_time_ms = diff_time_ms + pseudo_time_ms + pseudo_time_ms;
+    printf("Processing Time - Diff: %.2f ms, Pseudo: %.2f ms, Filter: %.2f ms, Total: %.2f ms\n", diff_time_ms, pseudo_time_ms, filter_time_ms, total_time_ms);
 #endif
 
     /* ----- Section 2 : Temp ----- */
