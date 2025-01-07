@@ -3,7 +3,7 @@
 static Diff diff;
 static Pseudo pseudo;
 static Filter filter;
-uint16_t g_diff_result[640 * 512] = {0};  // 定义全局数组
+uint16_t g_diff_result[640 * 512] = {0};
 
 int Process_One_Frame()
 {

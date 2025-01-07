@@ -31,20 +31,17 @@ bool DiffCL_Init(DiffCL* cl, int width, int height)
     const char* source = read_kernel_source("/root/app/cl/diff.cl");
     if (!source)
         goto cleanup_queue;
-    printf("XJT: read_kernel_source!\n");
 
     cl->program = clCreateProgramWithSource(cl->context, 1, &source, NULL, &err);
     free((void*)source);
     if (err != CL_SUCCESS)
         goto cleanup_queue;
-    printf("XJT: clCreateProgramWithSource!\n");
 
     // 构建程序
     err = clBuildProgram(cl->program, 1, &device, NULL, NULL, NULL);
     if (err != CL_SUCCESS)
         goto cleanup_program;
-    printf("XJT: clBuildProgram!\n");
-    
+
     // 创建内核
     cl->kernel_diff = clCreateKernel(cl->program, "compute_diff", &err);
     if (err != CL_SUCCESS)
@@ -52,12 +49,9 @@ bool DiffCL_Init(DiffCL* cl, int width, int height)
 
     // 创建缓冲区
     size_t buffer_size = width * height * sizeof(uint16_t);
-    cl->d_current = clCreateBuffer(cl->context, CL_MEM_READ_ONLY, 
-                                 buffer_size, NULL, &err);
-    cl->d_last = clCreateBuffer(cl->context, CL_MEM_READ_ONLY, 
-                               buffer_size, NULL, &err);
-    cl->d_output = clCreateBuffer(cl->context, CL_MEM_WRITE_ONLY, 
-                                buffer_size, NULL, &err);
+    cl->d_current = clCreateBuffer(cl->context, CL_MEM_READ_ONLY, buffer_size, NULL, &err);
+    cl->d_last = clCreateBuffer(cl->context, CL_MEM_READ_ONLY, buffer_size, NULL, &err);
+    cl->d_output = clCreateBuffer(cl->context, CL_MEM_WRITE_ONLY, buffer_size, NULL, &err);
 
     // 分配CPU端存储空间
     cl->last_frame = (uint16_t*)malloc(buffer_size);
@@ -85,8 +79,7 @@ cleanup_context:
     return false;
 }
 
-int DiffCL_Process(DiffCL* cl, uint16_t* input, uint16_t* output, 
-                   int width, int height, float rate)
+int DiffCL_Process(DiffCL* cl, uint16_t* input, uint16_t* output, int width, int height, float rate)
 {
     if (!cl->initialized)
         return -1;
@@ -95,10 +88,8 @@ int DiffCL_Process(DiffCL* cl, uint16_t* input, uint16_t* output,
     size_t buffer_size = width * height * sizeof(uint16_t);
 
     // 写入当前帧和上一帧数据
-    err = clEnqueueWriteBuffer(cl->queue, cl->d_current, CL_FALSE, 0,
-                              buffer_size, input, 0, NULL, NULL);
-    err |= clEnqueueWriteBuffer(cl->queue, cl->d_last, CL_FALSE, 0,
-                               buffer_size, cl->last_frame, 0, NULL, NULL);
+    err = clEnqueueWriteBuffer(cl->queue, cl->d_current, CL_FALSE, 0, buffer_size, input, 0, NULL, NULL);
+    err |= clEnqueueWriteBuffer(cl->queue, cl->d_last, CL_FALSE, 0, buffer_size, cl->last_frame, 0, NULL, NULL);
     if (err != CL_SUCCESS)
         return -1;
 
@@ -114,20 +105,16 @@ int DiffCL_Process(DiffCL* cl, uint16_t* input, uint16_t* output,
         return -1;
 
     // 设置工作组大小
-    size_t global_work_size[2] = {((width + 15) / 16) * 16, 
-                                 ((height + 15) / 16) * 16};
+    size_t global_work_size[2] = {((width + 15) / 16) * 16, ((height + 15) / 16) * 16};
     size_t local_work_size[2] = {16, 16};
 
     // 执行内核
-    err = clEnqueueNDRangeKernel(cl->queue, cl->kernel_diff, 2, NULL,
-                                global_work_size, local_work_size,
-                                0, NULL, NULL);
+    err = clEnqueueNDRangeKernel(cl->queue, cl->kernel_diff, 2, NULL, global_work_size, local_work_size, 0, NULL, NULL);
     if (err != CL_SUCCESS)
         return -1;
 
     // 读回结果
-    err = clEnqueueReadBuffer(cl->queue, cl->d_output, CL_TRUE, 0,
-                             buffer_size, output, 0, NULL, NULL);
+    err = clEnqueueReadBuffer(cl->queue, cl->d_output, CL_TRUE, 0, buffer_size, output, 0, NULL, NULL);
     if (err != CL_SUCCESS)
         return -1;
 

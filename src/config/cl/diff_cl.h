@@ -14,10 +14,10 @@ typedef struct
     cl_command_queue queue;
     cl_program program;
     cl_kernel kernel_diff;
-    cl_mem d_current;    // 当前帧
-    cl_mem d_last;       // 上一帧
-    cl_mem d_output;     // 输出
-    uint16_t* last_frame;  // CPU端存储上一帧
+    cl_mem d_current;
+    cl_mem d_last;
+    cl_mem d_output;
+    uint16_t* last_frame;
     bool initialized;
 } DiffCL;
 

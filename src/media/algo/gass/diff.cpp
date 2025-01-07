@@ -2,16 +2,12 @@
 #include <algorithm>
 #include <cstring>
 
-void Diff::Process_Raw(uint16_t* input, uint16_t* output,
-                      size_t width, size_t height, float rate)
+void Diff::Process_Raw(uint16_t* input, uint16_t* output, size_t width, size_t height, float rate)
 {
-    // 简单差分处理
     DiffCL_Process(&diff_cl, input, output, width, height, rate);
 }
 
-void Diff::Process_Raw_Stats(uint16_t* input, uint16_t* output,
-                           size_t width, size_t height, float rate,
-                           float percentile_min, float percentile_max)
+void Diff::Process_Raw_Stats(uint16_t* input, uint16_t* output, size_t width, size_t height, float rate, float percentile_min, float percentile_max)
 {
     size_t total_size = width * height;
     std::vector<uint16_t> temp_diff(total_size);
