@@ -22,3 +22,17 @@ void Filter::Bilateral_NV12(uint8_t* yuv, size_t width, size_t height, float sig
 
     std::memcpy(yuv, temp_y.data(), y_size);
 }
+
+bool Filter::Median_16U(uint16_t* data, size_t width, size_t height, int ksize)
+{
+    if (!data || width == 0 || height == 0 || ksize % 2 == 0)
+        return false;
+
+    cv::Mat src(height, width, CV_16U, data);
+    cv::Mat dst(height, width, CV_16U);
+    cv::medianBlur(src, dst, ksize);
+
+    memcpy(data, dst.data, width * height * sizeof(uint16_t));
+
+    return true;
+}

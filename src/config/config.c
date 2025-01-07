@@ -89,6 +89,7 @@ static void Init_User_Config()
     usr.gas_enhancement = GAS_ENHANCEMENT_NONE;
     usr.in_focus = false;
     usr.mean_filter = false;
+    usr.gas_enhancement_software = false;
 }
 
 static void Init_Frame_Sync_DVP()

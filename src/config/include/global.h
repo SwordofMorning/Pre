@@ -108,6 +108,7 @@ struct UserConfig
     int gas_enhancement;
     bool in_focus;
     bool mean_filter;
+    bool gas_enhancement_software;
 };
 extern struct UserConfig usr;
 

@@ -21,8 +21,12 @@ int Process_One_Frame()
     clock_gettime(CLOCK_MONOTONIC, &start_diff);
 #endif
 
-    if (!diff.Process_Raw_Stats_CV(algo_in, g_diff_result, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height, 0.98f))
-        return -1;
+    if (usr.gas_enhancement_software)
+    {
+        if (!diff.Process_Raw_Stats(algo_in, g_diff_result, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height, 0.98))
+            return -1;
+        filter.Median_16U(g_diff_result, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height, 3);
+    }
 
 #if __SHOW_TIME_CONSUME__
     clock_gettime(CLOCK_MONOTONIC, &end_diff);
@@ -34,7 +38,10 @@ int Process_One_Frame()
 
     /* ----- Par 2 : Pseudo Color ----- */
 
-    pseudo(g_diff_result, y, uv, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height);
+    if (usr.gas_enhancement_software)
+        pseudo(g_diff_result, y, uv, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height);
+    else
+        pseudo(algo_in, y, uv, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height);
 
 #if __SHOW_TIME_CONSUME__
     clock_gettime(CLOCK_MONOTONIC, &end_pseudo);
