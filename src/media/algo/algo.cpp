@@ -64,10 +64,10 @@ int Process_One_Frame()
     printf("Processing Time - Diff: %.2f ms, Pseudo: %.2f ms, Filter: %.2f ms, Total: %.2f ms\n", diff_time_ms, pseudo_time_ms, filter_time_ms, total_time_ms);
 #endif
 
-    /* ----- Section 2 : Temp ----- */
+    /* =================================== */
+    /* ===== Section 2 : Temperature ===== */
+    /* =================================== */
 
-#if 0
-    // 寻找数据范围（用于float输出）
     uint16_t min_val = 65535;
     uint16_t max_val = 0;
     for (int i = 0; i < v4l2_ir_dvp_valid_height; i++)
@@ -91,7 +91,6 @@ int Process_One_Frame()
             shm_out_float[i * v4l2_ir_dvp_valid_width + j] = (float)(val - min_val) * scale;
         }
     }
-#endif
 
     return 0;
 }
