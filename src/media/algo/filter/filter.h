@@ -27,4 +27,6 @@ public:
      * @param windows_size filter windows size.
      */
     void Mean_NV12(uint8_t* yuv, size_t width, size_t height, size_t windows_size);
+
+    void Bilateral_NV12(uint8_t* yuv, size_t width, size_t height, float sigma_space, float sigma_range);
 };

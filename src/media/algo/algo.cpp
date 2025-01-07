@@ -26,7 +26,7 @@ int Process_One_Frame()
 #endif
 
     if (usr.mean_filter)
-        fl.Mean_NV12(y, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height, 3);
+        fl.Bilateral_NV12(y, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height, 1.0, 30);
 
 #if __SHOW_TIME_CONSUME__
     clock_gettime(CLOCK_MONOTONIC, &end_filter);
