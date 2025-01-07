@@ -13,6 +13,7 @@
 #include <algorithm>
 #include <cstring>
 #include <cmath>
+#include <opencv2/opencv.hpp>
 #include "../../../config/config.h"
 
 class Filter
@@ -27,4 +28,17 @@ public:
      * @param windows_size filter windows size.
      */
     void Mean_NV12(uint8_t* yuv, size_t width, size_t height, size_t windows_size);
+
+    void Bilateral_NV12(uint8_t* yuv, size_t width, size_t height, float sigma_space, float sigma_range);
+
+    /**
+     * @brief Median filter for 16-bit image data
+     * 
+     * @param data Input/Output 16-bit data
+     * @param width Image width
+     * @param height Image height
+     * @param ksize Kernel size (must be odd)
+     * @return true if successful, false if invalid parameters
+     */
+    bool Median_16U(uint16_t* data, size_t width, size_t height, int ksize = 3);
 };

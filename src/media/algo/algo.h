@@ -28,5 +28,6 @@
 #include "pseudo/pseudo_am.h"
 #include "pseudo/pseudo.h"
 #include "filter/filter.h"
+#include "gass/diff.h"
 
 int Process_One_Frame();

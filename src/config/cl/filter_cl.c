@@ -28,7 +28,7 @@ bool FilterCL_Init(FilterCL* cl, int width, int height)
         goto cleanup_context;
 
     // 读取并创建程序
-    const char* source = read_kernel_source("/root/app/pseudo/filter.cl");
+    const char* source = read_kernel_source("/root/app/cl/filter.cl");
     if (!source)
         goto cleanup_queue;
 
@@ -44,6 +44,10 @@ bool FilterCL_Init(FilterCL* cl, int width, int height)
 
     // 创建内核
     cl->kernel_mean_filter = clCreateKernel(cl->program, "mean_filter_nv12", &err);
+    if (err != CL_SUCCESS)
+        goto cleanup_program;
+
+    cl->kernel_bilateral_filter = clCreateKernel(cl->program, "bilateral_filter_nv12", &err);
     if (err != CL_SUCCESS)
         goto cleanup_program;
 
@@ -93,6 +97,47 @@ int FilterCL_ProcessMean(FilterCL* cl, uint8_t* input, uint8_t* output, int widt
 
     // 执行内核
     err = clEnqueueNDRangeKernel(cl->queue, cl->kernel_mean_filter, 2, NULL, global_work_size, local_work_size, 0, NULL, NULL);
+    if (err != CL_SUCCESS)
+        return -1;
+
+    // 读回结果
+    err = clEnqueueReadBuffer(cl->queue, cl->d_output, CL_TRUE, 0, buffer_size, output, 0, NULL, NULL);
+    if (err != CL_SUCCESS)
+        return -1;
+
+    return 0;
+}
+
+int FilterCL_ProcessBilateral(FilterCL* cl, uint8_t* input, uint8_t* output, int width, int height, float sigma_space, float sigma_range)
+{
+    if (!cl->initialized)
+        return -1;
+
+    cl_int err;
+    size_t buffer_size = width * height;
+
+    // 写入输入数据
+    err = clEnqueueWriteBuffer(cl->queue, cl->d_input, CL_FALSE, 0, buffer_size, input, 0, NULL, NULL);
+    if (err != CL_SUCCESS)
+        return -1;
+
+    // 设置内核参数
+    err = clSetKernelArg(cl->kernel_bilateral_filter, 0, sizeof(cl_mem), &cl->d_input);
+    err |= clSetKernelArg(cl->kernel_bilateral_filter, 1, sizeof(cl_mem), &cl->d_output);
+    err |= clSetKernelArg(cl->kernel_bilateral_filter, 2, sizeof(int), &width);
+    err |= clSetKernelArg(cl->kernel_bilateral_filter, 3, sizeof(int), &height);
+    err |= clSetKernelArg(cl->kernel_bilateral_filter, 4, sizeof(float), &sigma_space);
+    err |= clSetKernelArg(cl->kernel_bilateral_filter, 5, sizeof(float), &sigma_range);
+
+    if (err != CL_SUCCESS)
+        return -1;
+
+    // 设置工作组大小
+    size_t global_work_size[2] = {((width + 15) / 16) * 16, ((height + 15) / 16) * 16};
+    size_t local_work_size[2] = {16, 16};
+
+    // 执行内核
+    err = clEnqueueNDRangeKernel(cl->queue, cl->kernel_bilateral_filter, 2, NULL, global_work_size, local_work_size, 0, NULL, NULL);
     if (err != CL_SUCCESS)
         return -1;
 
