@@ -14,20 +14,22 @@ int Process_One_Frame()
     uint8_t* y = shm_out_yuv;
     uint8_t* uv = y + v4l2_ir_dvp_valid_width * v4l2_ir_dvp_valid_height;
 
-#if __SHOW_TIME_CONSUME__
-    struct timespec start_pseudo, end_pseudo;
-    clock_gettime(CLOCK_MONOTONIC, &start_pseudo);
-#endif
-
     /* ----- Par 1 : Diff ----- */
 
-    diff.Process_Raw_Stats(algo_in, g_diff_result, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height, 0.98f);
+#if __SHOW_TIME_CONSUME__
+    struct timespec start_diff, end_diff;
+    clock_gettime(CLOCK_MONOTONIC, &start_diff);
+#endif
+
+    if (!diff.Process_Raw_Stats_CV(algo_in, g_diff_result, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height, 0.98f))
+        return -1;
 
 #if __SHOW_TIME_CONSUME__
-    clock_gettime(CLOCK_MONOTONIC, &end_pseudo);
-    double diff_time_ms = ((end_pseudo.tv_sec - start_pseudo.tv_sec) * 1e9 + (end_pseudo.tv_nsec - start_pseudo.tv_nsec)) / 1e6;
-    struct timespec start_filter, end_filter;
-    clock_gettime(CLOCK_MONOTONIC, &start_filter);
+    clock_gettime(CLOCK_MONOTONIC, &end_diff);
+    double diff_time_ms = ((end_diff.tv_sec - start_diff.tv_sec) * 1e9 + (end_diff.tv_nsec - start_diff.tv_nsec)) / 1e6;
+
+    struct timespec start_pseudo, end_pseudo;
+    clock_gettime(CLOCK_MONOTONIC, &start_pseudo);
 #endif
 
     /* ----- Par 2 : Pseudo Color ----- */
@@ -49,6 +51,7 @@ int Process_One_Frame()
 
 #if __SHOW_TIME_CONSUME__
     clock_gettime(CLOCK_MONOTONIC, &end_filter);
+
     double filter_time_ms = ((end_filter.tv_sec - start_filter.tv_sec) * 1e9 + (end_filter.tv_nsec - start_filter.tv_nsec)) / 1e6;
     double total_time_ms = diff_time_ms + pseudo_time_ms + pseudo_time_ms;
     printf("Processing Time - Diff: %.2f ms, Pseudo: %.2f ms, Filter: %.2f ms, Total: %.2f ms\n", diff_time_ms, pseudo_time_ms, filter_time_ms, total_time_ms);

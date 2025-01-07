@@ -3,11 +3,26 @@
 #include <iostream>
 #include <vector>
 #include <stdint.h>
+#include <opencv2/opencv.hpp>
 #include "../../../config/config.h"
 
 class Diff
 {
+private:
+    // checksum of last frame.
+    uint16_t m_checksum;
+
+    /**
+     * @brief Calculate checksum for first 10 pixels
+     * 
+     * @param data Input data
+     * @return uint16_t Calculated checksum
+     */
+    uint16_t Checksum(uint16_t* data);
+
 public:
+    Diff();
+
     /**
      * @brief Process frame difference
      * 
@@ -16,8 +31,9 @@ public:
      * @param width Image width
      * @param height Image height
      * @param rate Difference rate (0.0-1.0)
+     * @return true if frame processed, false if duplicate frame
      */
-    void Process_Raw(uint16_t* input, uint16_t* output, size_t width, size_t height, float rate);
+    bool Process_Raw(uint16_t* input, uint16_t* output, size_t width, size_t height, float rate);
 
     /**
      * @brief Process frame difference with statistics
@@ -29,6 +45,9 @@ public:
      * @param rate Difference rate (0.0-1.0)
      * @param percentile_min Min percentile threshold (0.0-1.0)
      * @param percentile_max Max percentile threshold (0.0-1.0)
+     * @return true if frame processed, false if duplicate frame
      */
-    void Process_Raw_Stats(uint16_t* input, uint16_t* output, size_t width, size_t height, float rate, float percentile_min = 0.02f, float percentile_max = 0.98f);
+    bool Process_Raw_Stats(uint16_t* input, uint16_t* output, size_t width, size_t height, float rate, float percentile_min = 0.02f, float percentile_max = 0.98f);
+
+    bool Process_Raw_Stats_CV(uint16_t* input, uint16_t* output, size_t width, size_t height, float rate, float percentile_min = 0.02f, float percentile_max = 0.98f);
 };
