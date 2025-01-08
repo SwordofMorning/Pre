@@ -1,5 +1,16 @@
 #pragma once
 
+/**
+ * @file global.h
+ * @author Xiaojintao
+ * @brief Global variable define.
+ * @version 0.1
+ * @date 2024-12-31
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -95,6 +106,9 @@ struct UserConfig
 {
     int pseudo;
     int gas_enhancement;
+    bool in_focus;
+    bool mean_filter;
+    bool gas_enhancement_software;
 };
 extern struct UserConfig usr;
 

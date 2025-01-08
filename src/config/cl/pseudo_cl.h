@@ -1,10 +1,17 @@
-// pseudo_cl.h
 #pragma once
-#include <CL/cl.h>
-#include <stdint.h>
-#include <stdbool.h>
-#include "lut.h"
-#include "../include/global.h"
+
+/**
+ * @file pseudo.h
+ * @author Xiaojintao
+ * @brief OpenCL kernel constructor for pseudo color.
+ * @version 0.1
+ * @date 2024-12-31
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ */
+
+#include "cl.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -29,7 +36,7 @@ typedef struct
     bool initialized;
 } PseudoCL;
 
-extern PseudoCL cl_processor;
+extern PseudoCL pseudo_cl;
 
 // 初始化OpenCL环境
 bool PseudoCL_Init(PseudoCL* cl, int width, int height);

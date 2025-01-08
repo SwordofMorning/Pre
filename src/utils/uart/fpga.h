@@ -1,5 +1,16 @@
 #pragma once
 
+/**
+ * @file fpga.h
+ * @author Xiaojintao
+ * @brief FPGA communication.
+ * @version 0.1
+ * @date 2024-12-31
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ */
+
 #include "uartclass.h"
 
 class FPGA : public UART

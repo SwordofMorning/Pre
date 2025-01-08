@@ -47,20 +47,28 @@ void EventListener::PrintKeyEvent(const std::string& device, int code, int value
     // 对焦，远离
     if (code == KEY_F5 && value == 1)
     {
+        if (usr.in_focus)
+            return;
+        usr.in_focus = true;
         m_motor.Move_IR_Start(Motor::Direction::FORWARD);
     }
     if (code == KEY_F5 && value == 0)
     {
         m_motor.Move_IR_Start(Motor::Direction::STOP);
+        usr.in_focus = false;
     }
     // 对焦，拉近
     else if (code == KEY_F4 && value == 1)
     {
+        if (usr.in_focus)
+            return;
+        usr.in_focus = true;
         m_motor.Move_IR_Start(Motor::Direction::BACKWARD);
     }
     else if (code == KEY_F4 && value == 0)
     {
         m_motor.Move_IR_Start(Motor::Direction::STOP);
+        usr.in_focus = false;
     }
     else if (code == KEY_F3 && value == 1)
     {
@@ -97,9 +105,20 @@ void EventListener::PrintKeyEvent(const std::string& device, int code, int value
     }
     else if (code == KEY_8 && value == 1)
     {
-        // m_fpga.Set_Gas_Enhancement(++usr.gas_enhancement);
+        if (usr.in_focus)
+            return;
+        usr.in_focus = true;
         ir_auto_focusing_by_image_continuous(m_motor, 320, 256);
+        usr.in_focus = false;
         // m_af_ir.Focus(320, 256);
+    }
+    else if (code == KEY_2 && value == 1)
+    {
+        usr.gas_enhancement_software = !usr.gas_enhancement_software;
+    }
+    else if (code == KEY_1 && value == 1)
+    {
+        usr.mean_filter = !usr.mean_filter;
     }
 }
 

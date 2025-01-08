@@ -1,5 +1,16 @@
 #pragma once
 
+/**
+ * @file shm_vo.h
+ * @author Xiaojintao
+ * @brief Share memory for Video Out program.
+ * @version 0.1
+ * @date 2024-12-31
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ */
+
 #include <iostream>
 #include <string.h>
 #include <stdio.h>

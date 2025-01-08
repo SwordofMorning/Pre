@@ -3,12 +3,6 @@
 void init()
 {
     Config_Init();
-
-    litelog.init("Pre");
-    litelog.log.notice("Start!");
-    litelog.log.notice("Branch: %s", __GIT_BRANCH__);
-    litelog.log.notice("Commit ID: %s", __GIT_COMMIT_ID__);
-    litelog.log.notice("User: %s", __GIT_USER__);
 }
 
 void exit()
@@ -35,14 +29,12 @@ void exit()
 
 void execute()
 {
-    // gst_thread = std::thread(gst_thread_func);
-    sleep(1);
     dvp_thread = std::thread(dvp_thread_func);
     csi_thread = std::thread(csi_thread_func);
-    sleep(1);
+    usleep(100 * 1000);
     vo_thread = std::thread(vo_thread_func);
     ab_thread = std::thread(ab_thread_func);
-    sleep(1);
+    usleep(100 * 1000);
 
     Motor motor;
     motor.Start();
