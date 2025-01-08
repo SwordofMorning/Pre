@@ -68,47 +68,18 @@ int Process_One_Frame()
     /* ===== Section 2 : Temperature ===== */
     /* =================================== */
 
-/*
-    uint16_t min_val = 65535;
-    uint16_t max_val = 0;
-    for (int i = 0; i < v4l2_ir_dvp_valid_height; i++)
-    {
-        for (int j = 0; j < v4l2_ir_dvp_valid_width; j++)
-        {
-            uint16_t val = algo_in[i * v4l2_ir_dvp_valid_width + j];
-            if (val > max_val)
-                max_val = val;
-            if (val < min_val)
-                min_val = val;
-        }
-    }
-
-    float scale = 1.0f / (max_val - min_val);
-    for (int i = 0; i < v4l2_ir_dvp_valid_height; i++)
-    {
-        for (int j = 0; j < v4l2_ir_dvp_valid_width; j++)
-        {
-            uint16_t val = algo_in[i * v4l2_ir_dvp_valid_width + j];
-            shm_out_float[i * v4l2_ir_dvp_valid_width + j] = (float)(val - min_val) * scale;
-        }
-    }
-*/
     float a = 4.095005068288752e-09;
     float b = 0.000681535692189997;
     float c = 5.249889753750205;
 
-    float point_1 = static_cast<float>(algo_in[640 * 255 + 320]);
-    float point_1_t = a * point_1 * point_1 + b * point_1 + c;
-
-    float point_2 = static_cast<float>(algo_in[640 * 255 + 321]);
-    float point_2_t = a * point_2 * point_2 + b * point_2 + c;
-
-    float point_3 = static_cast<float>(algo_in[640 * 255 + 323]);
-    float point_3_t = a * point_3 * point_3 + b * point_3 + c;
-
-    printf("Temp Matrix: [%.2f, %.2f, %.2f]\n", point_1_t, point_2_t, point_3_t);
-
-    // Copy back to buffer shm_out_float
+    for (int i = 0; i < v4l2_ir_dvp_valid_height; i++)
+    {
+        for (int j = 0; j < v4l2_ir_dvp_valid_width; j++)
+        {
+            float val = static_cast<float>(algo_in[i * v4l2_ir_dvp_valid_width + j]);
+            shm_out_float[i * v4l2_ir_dvp_valid_width + j] = a * val * val + b * val + c;
+        }
+    }
 
     return 0;
 }
