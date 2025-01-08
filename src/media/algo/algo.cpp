@@ -68,6 +68,7 @@ int Process_One_Frame()
     /* ===== Section 2 : Temperature ===== */
     /* =================================== */
 
+/*
     uint16_t min_val = 65535;
     uint16_t max_val = 0;
     for (int i = 0; i < v4l2_ir_dvp_valid_height; i++)
@@ -91,6 +92,23 @@ int Process_One_Frame()
             shm_out_float[i * v4l2_ir_dvp_valid_width + j] = (float)(val - min_val) * scale;
         }
     }
+*/
+    float a = 4.095005068288752e-09;
+    float b = 0.000681535692189997;
+    float c = 5.249889753750205;
+
+    float point_1 = static_cast<float>(algo_in[640 * 255 + 320]);
+    float point_1_t = a * point_1 * point_1 + b * point_1 + c;
+
+    float point_2 = static_cast<float>(algo_in[640 * 255 + 321]);
+    float point_2_t = a * point_2 * point_2 + b * point_2 + c;
+
+    float point_3 = static_cast<float>(algo_in[640 * 255 + 323]);
+    float point_3_t = a * point_3 * point_3 + b * point_3 + c;
+
+    printf("Temp Matrix: [%.2f, %.2f, %.2f]\n", point_1_t, point_2_t, point_3_t);
+
+    // Copy back to buffer shm_out_float
 
     return 0;
 }
