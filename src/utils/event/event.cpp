@@ -114,8 +114,11 @@ void EventListener::PrintKeyEvent(const std::string& device, int code, int value
     }
     else if (code == KEY_2 && value == 1)
     {
-        usr.mean_filter = !usr.mean_filter;
         usr.gas_enhancement_software = !usr.gas_enhancement_software;
+    }
+    else if (code == KEY_1 && value == 1)
+    {
+        usr.mean_filter = !usr.mean_filter;
     }
 }
 

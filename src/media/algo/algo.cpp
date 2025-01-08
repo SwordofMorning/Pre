@@ -64,34 +64,22 @@ int Process_One_Frame()
     printf("Processing Time - Diff: %.2f ms, Pseudo: %.2f ms, Filter: %.2f ms, Total: %.2f ms\n", diff_time_ms, pseudo_time_ms, filter_time_ms, total_time_ms);
 #endif
 
-    /* ----- Section 2 : Temp ----- */
+    /* =================================== */
+    /* ===== Section 2 : Temperature ===== */
+    /* =================================== */
 
-#if 0
-    // 寻找数据范围（用于float输出）
-    uint16_t min_val = 65535;
-    uint16_t max_val = 0;
+    float a = 4.095005068288752e-09;
+    float b = 0.000681535692189997;
+    float c = 5.249889753750205;
+
     for (int i = 0; i < v4l2_ir_dvp_valid_height; i++)
     {
         for (int j = 0; j < v4l2_ir_dvp_valid_width; j++)
         {
-            uint16_t val = algo_in[i * v4l2_ir_dvp_valid_width + j];
-            if (val > max_val)
-                max_val = val;
-            if (val < min_val)
-                min_val = val;
+            float val = static_cast<float>(algo_in[i * v4l2_ir_dvp_valid_width + j]);
+            shm_out_float[i * v4l2_ir_dvp_valid_width + j] = a * val * val + b * val + c;
         }
     }
-
-    float scale = 1.0f / (max_val - min_val);
-    for (int i = 0; i < v4l2_ir_dvp_valid_height; i++)
-    {
-        for (int j = 0; j < v4l2_ir_dvp_valid_width; j++)
-        {
-            uint16_t val = algo_in[i * v4l2_ir_dvp_valid_width + j];
-            shm_out_float[i * v4l2_ir_dvp_valid_width + j] = (float)(val - min_val) * scale;
-        }
-    }
-#endif
 
     return 0;
 }
