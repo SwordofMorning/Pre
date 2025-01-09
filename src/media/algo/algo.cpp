@@ -3,6 +3,7 @@
 static Diff diff;
 static Pseudo pseudo;
 static Filter filter;
+static Temperature_Measurement tm;
 uint16_t g_diff_result[640 * 512] = {0};
 
 int Process_One_Frame()
@@ -58,10 +59,10 @@ int Process_One_Frame()
 
 #if __SHOW_TIME_CONSUME__
     clock_gettime(CLOCK_MONOTONIC, &end_filter);
-
     double filter_time_ms = ((end_filter.tv_sec - start_filter.tv_sec) * 1e9 + (end_filter.tv_nsec - start_filter.tv_nsec)) / 1e6;
-    double total_time_ms = diff_time_ms + pseudo_time_ms + pseudo_time_ms;
-    printf("Processing Time - Diff: %.2f ms, Pseudo: %.2f ms, Filter: %.2f ms, Total: %.2f ms\n", diff_time_ms, pseudo_time_ms, filter_time_ms, total_time_ms);
+
+    struct timespec start_temp, end_temp;
+    clock_gettime(CLOCK_MONOTONIC, &start_temp);
 #endif
 
     /* =================================== */
@@ -72,14 +73,17 @@ int Process_One_Frame()
     float b = 0.000681535692189997;
     float c = 5.249889753750205;
 
-    for (int i = 0; i < v4l2_ir_dvp_valid_height; i++)
-    {
-        for (int j = 0; j < v4l2_ir_dvp_valid_width; j++)
-        {
-            float val = static_cast<float>(algo_in[i * v4l2_ir_dvp_valid_width + j]);
-            shm_out_float[i * v4l2_ir_dvp_valid_width + j] = a * val * val + b * val + c;
-        }
-    }
+    tm(algo_in, shm_out_float, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height, a, b, c);
 
+#if __SHOW_TIME_CONSUME__
+    clock_gettime(CLOCK_MONOTONIC, &end_temp);
+    double temp_time_ms = ((end_temp.tv_sec - start_temp.tv_sec) * 1e9 + (end_temp.tv_nsec - start_temp.tv_nsec)) / 1e6;
+    double total_time_ms = diff_time_ms + pseudo_time_ms + pseudo_time_ms + temp_time_ms;
+    // clang-format off
+    printf("Processing Time - Diff: %.2f ms, Pseudo: %.2f ms, Filter: %.2f ms, Temp: %.2f, Total: %.2f ms\n", 
+        diff_time_ms, pseudo_time_ms, filter_time_ms, temp_time_ms, total_time_ms);
+    printf("TM: [%.2f, %.2f %.2f]\n", shm_out_float[640 * 255 + 320], shm_out_float[640 * 255 + 321], shm_out_float[640 * 255 + 322]);
+    // clang-format on
+#endif
     return 0;
 }

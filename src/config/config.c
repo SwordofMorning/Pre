@@ -239,6 +239,12 @@ static int Init_CL()
         printf("Failed to initialize DiffCL_Init\n");
         exit(EXIT_FAILURE);
     }
+
+    if (!TMCL_Init(&tm_cl, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height))
+    {
+        printf("Failed to initialize TMCL_Init\n");
+        exit(EXIT_FAILURE);
+    }
 }
 
 /* ===================================================================================== */

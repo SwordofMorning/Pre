@@ -20,6 +20,7 @@
 #include "cl/pseudo_cl.h"
 #include "cl/filter_cl.h"
 #include "cl/diff_cl.h"
+#include "cl/tm_cl.h"
 #include "../../others/version/version.h"
 #include "../utils/log/litelog.h"
 
