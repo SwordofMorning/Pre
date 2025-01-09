@@ -112,6 +112,15 @@ struct UserConfig
 };
 extern struct UserConfig usr;
 
+struct TempParams
+{
+    float a;
+    float b;
+    float c;
+};
+
+extern struct TempParams temp_param;
+
 #ifdef __cplusplus
 }
 #endif

@@ -104,3 +104,13 @@ CONFIGURE_FILE(
 )
 
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/others/)
+
+# ===== Step 7 : Copy Configuration Files =====
+
+FILE(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
+CONFIGURE_FILE(
+    ${CMAKE_SOURCE_DIR}/others/tm/param.txt
+    ${CMAKE_BINARY_DIR}/bin/param.txt
+    COPYONLY
+)

@@ -65,6 +65,8 @@ uint8_t* shm_algo = NULL;
 
 struct UserConfig usr;
 
+struct TempParams temp_param;
+
 /* ========================================================================================== */
 /* ======================================== Function ======================================== */
 /* ========================================================================================== */
@@ -81,6 +83,62 @@ static void Init_Log()
     litelog.log.notice("Compile User: %s", __COMPILE_USER__);
     litelog.log.notice("Compile Time: %s", __COMPILE_TIME__);
     litelog.log.notice("=====================================");
+}
+
+static int Read_Temp_Params(const char* filepath, struct TempParams* params)
+{
+    if (!filepath || !params)
+    {
+        printf("Invalid arguments\n");
+        return -1;
+    }
+
+    FILE* fp = fopen(filepath, "r");
+    if (!fp)
+    {
+        printf("Failed to open file %s: %s\n", filepath, strerror(errno));
+        return -1;
+    }
+
+    struct TempParams temp;
+    char line[256];
+    int valid_params = 0;
+
+    while (fgets(line, sizeof(line), fp))
+    {
+        // Skip comments and blank lines
+        if (line[0] == '#' || line[0] == '\n' || line[0] == '\r')
+            continue;
+
+        // Parameters
+        if (sscanf(line, "%f %f %f", &temp.a, &temp.b, &temp.c) == 3)
+        {
+            valid_params = 1;
+            break;
+        }
+    }
+
+    fclose(fp);
+
+    if (!valid_params)
+    {
+        printf("No valid parameters found in file %s\n", filepath);
+        return -1;
+    }
+
+    if (temp.a == 0.0f && temp.b == 0.0f && temp.c == 0.0f)
+    {
+        printf("Warning: All parameters are zero\n");
+    }
+
+    *params = temp;
+
+    printf("Loaded temperature parameters:\n");
+    printf("a: %e\n", params->a);
+    printf("b: %e\n", params->b);
+    printf("c: %e\n", params->c);
+
+    return 0;
 }
 
 static void Init_User_Config()
@@ -254,6 +312,7 @@ static int Init_CL()
 void Config_Init()
 {
     Init_Log();
+    Read_Temp_Params("param.txt", &temp_param);
     Init_User_Config();
     Init_DVP();
     Init_CIS();
