@@ -69,7 +69,11 @@ int Process_One_Frame()
     /* ===== Section 2 : Temperature ===== */
     /* =================================== */
 
-    tm(algo_in, shm_out_float, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height, temp_param.a, temp_param.b, temp_param.c);
+    float A = 51095.033435f;
+    float B = 5.835506f;
+    float epsilon = 0.998f;
+
+    tm.Exp(algo_in, shm_out_float, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height, A, B, epsilon);
 
 #if __SHOW_TIME_CONSUME__
     clock_gettime(CLOCK_MONOTONIC, &end_temp);
@@ -78,6 +82,7 @@ int Process_One_Frame()
     // clang-format off
     printf("Processing Time - Diff: %.2f, Pseudo: %.2f, Filter: %.2f, Temp: %.2f, Total: %.2f ms\n", 
         diff_time_ms, pseudo_time_ms, filter_time_ms, temp_time_ms, total_time_ms);
+    printf("OM: [%d, %d, %d]\n", algo_in[640 * 255 + 320], algo_in[640 * 255 + 321], algo_in[640 * 255 + 322]);
     printf("TM: [%.2f, %.2f %.2f]\n", shm_out_float[640 * 255 + 320], shm_out_float[640 * 255 + 321], shm_out_float[640 * 255 + 322]);
     // clang-format on
 #endif

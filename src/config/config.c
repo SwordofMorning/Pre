@@ -65,8 +65,6 @@ uint8_t* shm_algo = NULL;
 
 struct UserConfig usr;
 
-struct TempParams temp_param;
-
 /* ========================================================================================== */
 /* ======================================== Function ======================================== */
 /* ========================================================================================== */
@@ -85,9 +83,9 @@ static void Init_Log()
     litelog.log.notice("=====================================");
 }
 
-static int Read_Temp_Params(const char* filepath, struct TempParams* params)
+static int Read_Temp_Params(const char* filepath, struct UserConfig* usr)
 {
-    if (!filepath || !params)
+    if (!filepath || !usr)
     {
         printf("Invalid arguments\n");
         return -1;
@@ -111,7 +109,7 @@ static int Read_Temp_Params(const char* filepath, struct TempParams* params)
             continue;
 
         // Parameters
-        if (sscanf(line, "%f %f %f", &temp.a, &temp.b, &temp.c) == 3)
+        if (sscanf(line, "%f %f", &temp.A, &temp.B) == 2)
         {
             valid_params = 1;
             break;
@@ -126,17 +124,16 @@ static int Read_Temp_Params(const char* filepath, struct TempParams* params)
         return -1;
     }
 
-    if (temp.a == 0.0f && temp.b == 0.0f && temp.c == 0.0f)
+    if (temp.A == 0.0f && temp.B == 0.0f)
     {
         printf("Warning: All parameters are zero\n");
     }
 
-    *params = temp;
+    usr->tm = temp;
 
     printf("Loaded temperature parameters:\n");
-    printf("a: %e\n", params->a);
-    printf("b: %e\n", params->b);
-    printf("c: %e\n", params->c);
+    printf("A: %e\n", usr->tm.A);
+    printf("B: %e\n", usr->tm.B);
 
     return 0;
 }
@@ -312,7 +309,7 @@ static int Init_CL()
 void Config_Init()
 {
     Init_Log();
-    Read_Temp_Params("param.txt", &temp_param);
+    Read_Temp_Params("param.txt", &usr);
     Init_User_Config();
     Init_DVP();
     Init_CIS();

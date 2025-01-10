@@ -14,6 +14,7 @@ typedef struct
     cl_command_queue queue;
     cl_program program;
     cl_kernel kernel_tm;
+    cl_kernel kernel_tm_exp;
     cl_mem d_input;
     cl_mem d_output;
     bool initialized;
@@ -24,6 +25,7 @@ extern TMCL tm_cl;
 bool TMCL_Init(TMCL* cl, int width, int height);
 void TMCL_Cleanup(TMCL* cl);
 int TMCL_Process(TMCL* cl, uint16_t* input, float* output, int width, int height, float a, float b, float c);
+int TMCL_Process_Exp(TMCL* cl, uint16_t* input, float* output, int width, int height, float A, float B, float epsilon);
 
 #ifdef __cplusplus
 }
