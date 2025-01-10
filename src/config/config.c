@@ -83,6 +83,18 @@ static void Init_Log()
     litelog.log.notice("=====================================");
 }
 
+static void Init_User_Config()
+{
+    usr.pseudo = PSEUDO_IRONBOW_FORWARD;
+    usr.gas_enhancement = GAS_ENHANCEMENT_NONE;
+    usr.in_focus = false;
+    usr.mean_filter = false;
+    usr.gas_enhancement_software = false;
+    usr.tm.A = 51095.033435;
+    usr.tm.B = 5.835506;
+    usr.tm.epsilon = 0.998;
+}
+
 static int Read_Temp_Params(const char* filepath, struct UserConfig* usr)
 {
     if (!filepath || !usr)
@@ -136,15 +148,6 @@ static int Read_Temp_Params(const char* filepath, struct UserConfig* usr)
     printf("B: %e\n", usr->tm.B);
 
     return 0;
-}
-
-static void Init_User_Config()
-{
-    usr.pseudo = PSEUDO_IRONBOW_FORWARD;
-    usr.gas_enhancement = GAS_ENHANCEMENT_NONE;
-    usr.in_focus = false;
-    usr.mean_filter = false;
-    usr.gas_enhancement_software = false;
 }
 
 static void Init_Frame_Sync_DVP()
@@ -309,8 +312,8 @@ static int Init_CL()
 void Config_Init()
 {
     Init_Log();
-    Read_Temp_Params("param.txt", &usr);
     Init_User_Config();
+    Read_Temp_Params("param.txt", &usr);
     Init_DVP();
     Init_CIS();
     Init_LUTs();

@@ -69,11 +69,7 @@ int Process_One_Frame()
     /* ===== Section 2 : Temperature ===== */
     /* =================================== */
 
-    float A = 51095.033435f;
-    float B = 5.835506f;
-    float epsilon = 0.998f;
-
-    tm.Exp(algo_in, shm_out_float, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height, A, B, epsilon);
+    tm.Exp(algo_in, shm_out_float, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height, usr.tm.A, usr.tm.B, usr.tm.epsilon);
 
 #if __SHOW_TIME_CONSUME__
     clock_gettime(CLOCK_MONOTONIC, &end_temp);

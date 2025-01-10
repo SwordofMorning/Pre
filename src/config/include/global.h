@@ -106,6 +106,7 @@ struct TempParams
 {
     float A;
     float B;
+    float epsilon;
 };
 
 struct UserConfig
@@ -116,7 +117,6 @@ struct UserConfig
     bool mean_filter;
     bool gas_enhancement_software;
     struct TempParams tm;
-
 };
 extern struct UserConfig usr;
 

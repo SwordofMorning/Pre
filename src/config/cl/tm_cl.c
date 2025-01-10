@@ -122,8 +122,7 @@ int TMCL_Process_Exp(TMCL* cl, uint16_t* input, float* output, int width, int he
     size_t output_size = width * height * sizeof(float);
 
     // 写入输入数据
-    err = clEnqueueWriteBuffer(cl->queue, cl->d_input, CL_FALSE, 0, 
-                              input_size, input, 0, NULL, NULL);
+    err = clEnqueueWriteBuffer(cl->queue, cl->d_input, CL_FALSE, 0, input_size, input, 0, NULL, NULL);
     if (err != CL_SUCCESS)
         return -1;
 
@@ -144,14 +143,12 @@ int TMCL_Process_Exp(TMCL* cl, uint16_t* input, float* output, int width, int he
     size_t local_work_size[2] = {16, 16};
 
     // 执行内核
-    err = clEnqueueNDRangeKernel(cl->queue, cl->kernel_tm_exp, 2, NULL, 
-                                 global_work_size, local_work_size, 0, NULL, NULL);
+    err = clEnqueueNDRangeKernel(cl->queue, cl->kernel_tm_exp, 2, NULL, global_work_size, local_work_size, 0, NULL, NULL);
     if (err != CL_SUCCESS)
         return -1;
 
     // 读回结果
-    err = clEnqueueReadBuffer(cl->queue, cl->d_output, CL_TRUE, 0, 
-                             output_size, output, 0, NULL, NULL);
+    err = clEnqueueReadBuffer(cl->queue, cl->d_output, CL_TRUE, 0, output_size, output, 0, NULL, NULL);
     if (err != CL_SUCCESS)
         return -1;
 
