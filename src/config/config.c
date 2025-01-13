@@ -96,13 +96,13 @@ static void trim(char* str)
 {
     char* start = str;
     char* end = str + strlen(str) - 1;
-    
-    while(isspace(*start))
+
+    while (isspace(*start))
         start++;
-    
-    while(end > start && isspace(*end))
+
+    while (end > start && isspace(*end))
         end--;
-    
+
     *(end + 1) = '\0';
     memmove(str, start, end - start + 2);
 }
@@ -137,22 +137,22 @@ static int Read_Temp_Params(const char* filepath)
     while (fgets(line, sizeof(line), fp))
     {
         line[strcspn(line, "\r\n")] = 0;
-        
+
         if (line[0] == '\0' || line[0] == ';')
             continue;
-            
+
         trim(line);
-        
+
         if (line[0] == '[')
         {
             in_quadratic = (strcmp(line, "[Quadratic]") == 0);
             in_ln = (strcmp(line, "[Ln]") == 0);
             continue;
         }
-        
+
         char key[INI_MAX_LINES] = {0};
         char value[INI_MAX_LINES] = {0};
-        
+
         if (sscanf(line, "%[^=]=%s", key, value) == 2)
         {
             trim(key);
@@ -164,11 +164,13 @@ static int Read_Temp_Params(const char* filepath)
                 {
                     usr.tm.quadratic.a = atof(value);
                     params_read |= 1;
-                } else if (strcmp(key, "b") == 0)
+                }
+                else if (strcmp(key, "b") == 0)
                 {
                     usr.tm.quadratic.b = atof(value);
                     params_read |= 2;
-                } else if (strcmp(key, "c") == 0)
+                }
+                else if (strcmp(key, "c") == 0)
                 {
                     usr.tm.quadratic.c = atof(value);
                     params_read |= 4;
@@ -176,12 +178,12 @@ static int Read_Temp_Params(const char* filepath)
             }
             else if (in_ln)
             {
-                if (strcmp(key, "A") == 0)
+                if (strcmp(key, "a") == 0)
                 {
                     usr.tm.ln.a = atof(value);
                     params_read |= 8;
                 }
-                else if (strcmp(key, "B") == 0)
+                else if (strcmp(key, "b") == 0)
                 {
                     usr.tm.ln.b = atof(value);
                     params_read |= 16;
