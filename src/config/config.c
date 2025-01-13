@@ -90,14 +90,33 @@ static void Init_User_Config()
     usr.in_focus = false;
     usr.mean_filter = false;
     usr.gas_enhancement_software = false;
-    usr.tm.A = 51095.033435;
-    usr.tm.B = 5.835506;
-    usr.tm.epsilon = 0.998;
 }
 
-static int Read_Temp_Params(const char* filepath, struct UserConfig* usr)
+static void trim(char* str)
 {
-    if (!filepath || !usr)
+    char* start = str;
+    char* end = str + strlen(str) - 1;
+    
+    while(isspace(*start))
+        start++;
+    
+    while(end > start && isspace(*end))
+        end--;
+    
+    *(end + 1) = '\0';
+    memmove(str, start, end - start + 2);
+}
+
+static int Read_Temp_Params(const char* filepath)
+{
+    usr.tm.quadratic.a = 4.095005068288752e-09;
+    usr.tm.quadratic.b = 0.000681535692189997;
+    usr.tm.quadratic.c = 5.249889753750205;
+    usr.tm.ln.a = 51095.033435;
+    usr.tm.ln.b = 5.835506;
+    usr.tm.ln.epsilon = 0.998;
+
+    if (!filepath)
     {
         printf("Invalid arguments\n");
         return -1;
@@ -110,42 +129,83 @@ static int Read_Temp_Params(const char* filepath, struct UserConfig* usr)
         return -1;
     }
 
-    struct TempParams temp;
-    char line[256];
-    int valid_params = 0;
+    char line[INI_MAX_LINES];
+    int in_quadratic = 0;
+    int in_ln = 0;
+    int params_read = 0;
 
     while (fgets(line, sizeof(line), fp))
     {
-        // Skip comments and blank lines
-        if (line[0] == '#' || line[0] == '\n' || line[0] == '\r')
+        line[strcspn(line, "\r\n")] = 0;
+        
+        if (line[0] == '\0' || line[0] == ';')
             continue;
-
-        // Parameters
-        if (sscanf(line, "%f %f", &temp.A, &temp.B) == 2)
+            
+        trim(line);
+        
+        if (line[0] == '[')
         {
-            valid_params = 1;
-            break;
+            in_quadratic = (strcmp(line, "[Quadratic]") == 0);
+            in_ln = (strcmp(line, "[Ln]") == 0);
+            continue;
+        }
+        
+        char key[INI_MAX_LINES] = {0};
+        char value[INI_MAX_LINES] = {0};
+        
+        if (sscanf(line, "%[^=]=%s", key, value) == 2)
+        {
+            trim(key);
+            trim(value);
+
+            if (in_quadratic)
+            {
+                if (strcmp(key, "a") == 0)
+                {
+                    usr.tm.quadratic.a = atof(value);
+                    params_read |= 1;
+                } else if (strcmp(key, "b") == 0)
+                {
+                    usr.tm.quadratic.b = atof(value);
+                    params_read |= 2;
+                } else if (strcmp(key, "c") == 0)
+                {
+                    usr.tm.quadratic.c = atof(value);
+                    params_read |= 4;
+                }
+            }
+            else if (in_ln)
+            {
+                if (strcmp(key, "A") == 0)
+                {
+                    usr.tm.ln.a = atof(value);
+                    params_read |= 8;
+                }
+                else if (strcmp(key, "B") == 0)
+                {
+                    usr.tm.ln.b = atof(value);
+                    params_read |= 16;
+                }
+            }
         }
     }
 
     fclose(fp);
 
-    if (!valid_params)
+    if (params_read != 31)
     {
-        printf("No valid parameters found in file %s\n", filepath);
+        printf("Not all parameters were read successfully\n");
         return -1;
     }
 
-    if (temp.A == 0.0f && temp.B == 0.0f)
-    {
-        printf("Warning: All parameters are zero\n");
-    }
-
-    usr->tm = temp;
-
     printf("Loaded temperature parameters:\n");
-    printf("A: %e\n", usr->tm.A);
-    printf("B: %e\n", usr->tm.B);
+    printf("Quadratic:\n");
+    printf("  a: %e\n", usr.tm.quadratic.a);
+    printf("  b: %e\n", usr.tm.quadratic.b);
+    printf("  c: %e\n", usr.tm.quadratic.c);
+    printf("Logarithmic:\n");
+    printf("  a: %e\n", usr.tm.ln.a);
+    printf("  b: %e\n", usr.tm.ln.a);
 
     return 0;
 }
@@ -313,7 +373,7 @@ void Config_Init()
 {
     Init_Log();
     Init_User_Config();
-    Read_Temp_Params("param.txt", &usr);
+    Read_Temp_Params("tm_params.ini");
     Init_DVP();
     Init_CIS();
     Init_LUTs();

@@ -69,7 +69,8 @@ int Process_One_Frame()
     /* ===== Section 2 : Temperature ===== */
     /* =================================== */
 
-    tm.Exp(algo_in, shm_out_float, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height, usr.tm.A, usr.tm.B, usr.tm.epsilon);
+    // tm.Exp(algo_in, shm_out_float, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height, usr.tm.ln.a, usr.tm.ln.b, usr.tm.ln.epsilon);
+    tm.Quadratic(algo_in, shm_out_float, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height, usr.tm.quadratic.a, usr.tm.quadratic.b, usr.tm.quadratic.c);
 
 #if __SHOW_TIME_CONSUME__
     clock_gettime(CLOCK_MONOTONIC, &end_temp);

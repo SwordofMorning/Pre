@@ -108,9 +108,13 @@ INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/others/)
 # ===== Step 7 : Copy Configuration Files =====
 
 FILE(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+FILE(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/bin/cl)
 
 CONFIGURE_FILE(
-    ${CMAKE_SOURCE_DIR}/others/tm/param.txt
-    ${CMAKE_BINARY_DIR}/bin/param.txt
+    ${CMAKE_SOURCE_DIR}/others/tm/tm_params.ini
+    ${CMAKE_BINARY_DIR}/bin/tm_params.ini
     COPYONLY
 )
+
+FILE(GLOB CL_FILES "${CMAKE_SOURCE_DIR}/src/config/cl/*.cl")
+FILE(COPY ${CL_FILES} DESTINATION ${CMAKE_BINARY_DIR}/bin/cl)

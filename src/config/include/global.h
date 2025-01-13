@@ -102,11 +102,24 @@ extern uint8_t* shm_algo;
 
 /* ========== Config ========== */
 
+struct TempParamsQuadratic
+{
+    float a;
+    float b;
+    float c;
+};
+
+struct TempParamsLn
+{
+    float a;
+    float b;
+    float epsilon;
+};
+
 struct TempParams
 {
-    float A;
-    float B;
-    float epsilon;
+    struct TempParamsQuadratic quadratic;
+    struct TempParamsLn ln;
 };
 
 struct UserConfig

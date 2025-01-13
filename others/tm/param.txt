@@ -1,3 +1,0 @@
-# Temperature calculation parameters
-# Format: A B
-51095.033435 5.835506
