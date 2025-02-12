@@ -24,7 +24,7 @@ int Process_One_Frame()
 
     if (usr.gas_enhancement_software)
     {
-        if (!diff.Process_Raw_Stats(algo_in, g_diff_result, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height, 0.98))
+        if (!diff.Process_Raw_Stats_CV_Vague(algo_in, g_diff_result, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height, 0.98))
             return -1;
         filter.Median_16U(g_diff_result, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height, 3);
     }

@@ -29,7 +29,7 @@
 class PseudoAdaptiveMapper
 {
 private:
-    static constexpr int HISTORY_SIZE = 30;
+    static constexpr int HISTORY_SIZE = 25;
     static constexpr float ALPHA = 0.1f;
     static constexpr int MIN_RANGE = 1000;
     static constexpr int SAMPLE_STRIDE = 4;

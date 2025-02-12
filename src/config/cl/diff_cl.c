@@ -79,7 +79,7 @@ cleanup_context:
     return false;
 }
 
-int DiffCL_Process(DiffCL* cl, uint16_t* input, uint16_t* output, int width, int height, float rate)
+int DiffCL_Diff(DiffCL* cl, uint16_t* input, uint16_t* output, int width, int height, float rate)
 {
     if (!cl->initialized)
         return -1;

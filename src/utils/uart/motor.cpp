@@ -108,11 +108,13 @@ int Motor::Shutter(uint8_t operation)
 
 int Motor::Shutter_Open()
 {
+    litelog.log.debug("Open Shutter!");
     return this->Shutter(0x00);
 }
 
 int Motor::Shutter_Close()
 {
+    litelog.log.debug("Close Shutter!");
     return this->Shutter(0x02);
 }
 
