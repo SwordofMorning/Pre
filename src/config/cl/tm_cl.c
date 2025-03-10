@@ -47,6 +47,10 @@ bool TMCL_Init(TMCL* cl, int width, int height)
     if (err != CL_SUCCESS)
         goto cleanup_program;
 
+    cl->kernel_tm_exp = clCreateKernel(cl->program, "compute_temperature_exp", &err);
+    if (err != CL_SUCCESS)
+        goto cleanup_program;
+
     // 创建缓冲区
     size_t input_size = width * height * sizeof(uint16_t);
     size_t output_size = width * height * sizeof(float);
@@ -108,6 +112,49 @@ int TMCL_Process(TMCL* cl, uint16_t* input, float* output, int width, int height
     return 0;
 }
 
+int TMCL_Process_Exp(TMCL* cl, uint16_t* input, float* output, int width, int height, float A, float B, float epsilon)
+{
+    if (!cl->initialized)
+        return -1;
+
+    cl_int err;
+    size_t input_size = width * height * sizeof(uint16_t);
+    size_t output_size = width * height * sizeof(float);
+
+    // 写入输入数据
+    err = clEnqueueWriteBuffer(cl->queue, cl->d_input, CL_FALSE, 0, input_size, input, 0, NULL, NULL);
+    if (err != CL_SUCCESS)
+        return -1;
+
+    // 设置内核参数
+    err = clSetKernelArg(cl->kernel_tm_exp, 0, sizeof(cl_mem), &cl->d_input);
+    err |= clSetKernelArg(cl->kernel_tm_exp, 1, sizeof(cl_mem), &cl->d_output);
+    err |= clSetKernelArg(cl->kernel_tm_exp, 2, sizeof(float), &A);
+    err |= clSetKernelArg(cl->kernel_tm_exp, 3, sizeof(float), &B);
+    err |= clSetKernelArg(cl->kernel_tm_exp, 4, sizeof(float), &epsilon);
+    err |= clSetKernelArg(cl->kernel_tm_exp, 5, sizeof(int), &width);
+    err |= clSetKernelArg(cl->kernel_tm_exp, 6, sizeof(int), &height);
+
+    if (err != CL_SUCCESS)
+        return -1;
+
+    // 设置工作组大小
+    size_t global_work_size[2] = {((width + 15) / 16) * 16, ((height + 15) / 16) * 16};
+    size_t local_work_size[2] = {16, 16};
+
+    // 执行内核
+    err = clEnqueueNDRangeKernel(cl->queue, cl->kernel_tm_exp, 2, NULL, global_work_size, local_work_size, 0, NULL, NULL);
+    if (err != CL_SUCCESS)
+        return -1;
+
+    // 读回结果
+    err = clEnqueueReadBuffer(cl->queue, cl->d_output, CL_TRUE, 0, output_size, output, 0, NULL, NULL);
+    if (err != CL_SUCCESS)
+        return -1;
+
+    return 0;
+}
+
 void TMCL_Cleanup(TMCL* cl)
 {
     if (!cl->initialized)
@@ -119,6 +166,8 @@ void TMCL_Cleanup(TMCL* cl)
         clReleaseMemObject(cl->d_output);
     if (cl->kernel_tm)
         clReleaseKernel(cl->kernel_tm);
+    if (cl->kernel_tm_exp)
+        clReleaseKernel(cl->kernel_tm_exp);
     if (cl->program)
         clReleaseProgram(cl->program);
     if (cl->queue)

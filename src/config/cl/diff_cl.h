@@ -25,7 +25,7 @@ extern DiffCL diff_cl;
 
 bool DiffCL_Init(DiffCL* cl, int width, int height);
 void DiffCL_Cleanup(DiffCL* cl);
-int DiffCL_Process(DiffCL* cl, uint16_t* input, uint16_t* output, int width, int height, float rate);
+int DiffCL_Diff(DiffCL* cl, uint16_t* input, uint16_t* output, int width, int height, float rate);
 
 #ifdef __cplusplus
 }

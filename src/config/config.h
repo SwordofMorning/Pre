@@ -12,6 +12,7 @@
 #include <time.h>
 #include <sys/sysinfo.h>
 #include <stdarg.h>
+#include <ctype.h>
 #include "include/device.h"
 #include "include/enum.h"
 #include "include/global.h"
@@ -39,6 +40,7 @@
 extern "C" {
 #endif
 
+#define INI_MAX_LINES 256
 #define CLEAR(x) memset(&(x), 0, sizeof(x))
 
 /**

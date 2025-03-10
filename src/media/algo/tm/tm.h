@@ -19,5 +19,7 @@
 class Temperature_Measurement
 {
 public:
-    void operator()(uint16_t* input, float* output, int width, int height, float a, float b, float c);
+    void Quadratic(uint16_t* input, float* output, int width, int height, float a, float b, float c);
+
+    void Exp(uint16_t* input, float* output, int width, int height, float A, float B, float emi);
 };

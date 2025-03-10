@@ -67,6 +67,8 @@ int Motor::Move(uint8_t dev, int32_t steps)
 
     this->Send(cmd);
 
+    litelog.log.debug("Move: [%x][%x][%x][%x][%x][%x][%x][%x][%x]", cmd[0], cmd[1], cmd[2], cmd[3], cmd[4], cmd[5], cmd[6], cmd[7], cmd[8]);
+
     return 0;
 }
 
@@ -108,11 +110,13 @@ int Motor::Shutter(uint8_t operation)
 
 int Motor::Shutter_Open()
 {
+    litelog.log.debug("Open Shutter!");
     return this->Shutter(0x00);
 }
 
 int Motor::Shutter_Close()
 {
+    litelog.log.debug("Close Shutter!");
     return this->Shutter(0x02);
 }
 
@@ -131,9 +135,9 @@ int Motor::Parse_Move(const uint8_t* data, size_t len)
     if (data[1] == 0x02)
         m_step_ir_cur = tmp;
     else if (data[1] == 0x03)
-        m_dev_vis_zoom = tmp;
+        m_step_vis_zoom_cur = tmp;
     else if (data[1] == 0x04)
-        m_dev_vis_focus = tmp;
+        m_step_vis_focus_cur = tmp;
     return 0;
 }
 

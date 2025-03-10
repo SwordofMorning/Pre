@@ -21,10 +21,10 @@ private:
     int32_t m_step_vis_focus_cur;
     int32_t m_step_vis_zoom_cur;
 
-    uint8_t m_dev_ir;
-    uint8_t m_dev_vis_zoom;
-    uint8_t m_dev_vis_focus;
-    uint8_t m_dev_shutter;
+    const uint8_t m_dev_ir;
+    const uint8_t m_dev_vis_zoom;
+    const uint8_t m_dev_vis_focus;
+    const uint8_t m_dev_shutter;
 
     /* Continuous Move */
     std::thread m_continuous_thread;

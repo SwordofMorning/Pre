@@ -24,7 +24,7 @@ int Process_One_Frame()
 
     if (usr.gas_enhancement_software)
     {
-        if (!diff.Process_Raw_Stats(algo_in, g_diff_result, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height, 0.98))
+        if (!diff.Process_Raw_Stats_CV_Vague(algo_in, g_diff_result, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height, 0.98))
             return -1;
         filter.Median_16U(g_diff_result, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height, 3);
     }
@@ -69,7 +69,8 @@ int Process_One_Frame()
     /* ===== Section 2 : Temperature ===== */
     /* =================================== */
 
-    tm(algo_in, shm_out_float, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height, temp_param.a, temp_param.b, temp_param.c);
+    // tm.Exp(algo_in, shm_out_float, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height, usr.tm.ln.a, usr.tm.ln.b, usr.tm.ln.epsilon);
+    tm.Quadratic(algo_in, shm_out_float, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height, usr.tm.quadratic.a, usr.tm.quadratic.b, usr.tm.quadratic.c);
 
 #if __SHOW_TIME_CONSUME__
     clock_gettime(CLOCK_MONOTONIC, &end_temp);
@@ -78,6 +79,7 @@ int Process_One_Frame()
     // clang-format off
     printf("Processing Time - Diff: %.2f, Pseudo: %.2f, Filter: %.2f, Temp: %.2f, Total: %.2f ms\n", 
         diff_time_ms, pseudo_time_ms, filter_time_ms, temp_time_ms, total_time_ms);
+    printf("OM: [%d, %d, %d]\n", algo_in[640 * 255 + 320], algo_in[640 * 255 + 321], algo_in[640 * 255 + 322]);
     printf("TM: [%.2f, %.2f %.2f]\n", shm_out_float[640 * 255 + 320], shm_out_float[640 * 255 + 321], shm_out_float[640 * 255 + 322]);
     // clang-format on
 #endif

@@ -102,6 +102,26 @@ extern uint8_t* shm_algo;
 
 /* ========== Config ========== */
 
+struct TempParamsQuadratic
+{
+    float a;
+    float b;
+    float c;
+};
+
+struct TempParamsLn
+{
+    float a;
+    float b;
+    float epsilon;
+};
+
+struct TempParams
+{
+    struct TempParamsQuadratic quadratic;
+    struct TempParamsLn ln;
+};
+
 struct UserConfig
 {
     int pseudo;
@@ -109,17 +129,9 @@ struct UserConfig
     bool in_focus;
     bool mean_filter;
     bool gas_enhancement_software;
+    struct TempParams tm;
 };
 extern struct UserConfig usr;
-
-struct TempParams
-{
-    float a;
-    float b;
-    float c;
-};
-
-extern struct TempParams temp_param;
 
 #ifdef __cplusplus
 }

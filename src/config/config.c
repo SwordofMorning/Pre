@@ -65,8 +65,6 @@ uint8_t* shm_algo = NULL;
 
 struct UserConfig usr;
 
-struct TempParams temp_param;
-
 /* ========================================================================================== */
 /* ======================================== Function ======================================== */
 /* ========================================================================================== */
@@ -85,9 +83,40 @@ static void Init_Log()
     litelog.log.notice("=====================================");
 }
 
-static int Read_Temp_Params(const char* filepath, struct TempParams* params)
+static void Init_User_Config()
 {
-    if (!filepath || !params)
+    usr.pseudo = PSEUDO_IRONBOW_FORWARD;
+    usr.gas_enhancement = GAS_ENHANCEMENT_NONE;
+    usr.in_focus = false;
+    usr.mean_filter = false;
+    usr.gas_enhancement_software = false;
+}
+
+static void trim(char* str)
+{
+    char* start = str;
+    char* end = str + strlen(str) - 1;
+
+    while (isspace(*start))
+        start++;
+
+    while (end > start && isspace(*end))
+        end--;
+
+    *(end + 1) = '\0';
+    memmove(str, start, end - start + 2);
+}
+
+static int Read_Temp_Params(const char* filepath)
+{
+    usr.tm.quadratic.a = 4.095005068288752e-09;
+    usr.tm.quadratic.b = 0.000681535692189997;
+    usr.tm.quadratic.c = 5.249889753750205;
+    usr.tm.ln.a = 51095.033435;
+    usr.tm.ln.b = 5.835506;
+    usr.tm.ln.epsilon = 0.998;
+
+    if (!filepath)
     {
         printf("Invalid arguments\n");
         return -1;
@@ -100,54 +129,87 @@ static int Read_Temp_Params(const char* filepath, struct TempParams* params)
         return -1;
     }
 
-    struct TempParams temp;
-    char line[256];
-    int valid_params = 0;
+    char line[INI_MAX_LINES];
+    int in_quadratic = 0;
+    int in_ln = 0;
+    int params_read = 0;
 
     while (fgets(line, sizeof(line), fp))
     {
-        // Skip comments and blank lines
-        if (line[0] == '#' || line[0] == '\n' || line[0] == '\r')
+        line[strcspn(line, "\r\n")] = 0;
+
+        if (line[0] == '\0' || line[0] == ';')
             continue;
 
-        // Parameters
-        if (sscanf(line, "%f %f %f", &temp.a, &temp.b, &temp.c) == 3)
+        trim(line);
+
+        if (line[0] == '[')
         {
-            valid_params = 1;
-            break;
+            in_quadratic = (strcmp(line, "[Quadratic]") == 0);
+            in_ln = (strcmp(line, "[Ln]") == 0);
+            continue;
+        }
+
+        char key[INI_MAX_LINES] = {0};
+        char value[INI_MAX_LINES] = {0};
+
+        if (sscanf(line, "%[^=]=%s", key, value) == 2)
+        {
+            trim(key);
+            trim(value);
+
+            if (in_quadratic)
+            {
+                if (strcmp(key, "a") == 0)
+                {
+                    usr.tm.quadratic.a = atof(value);
+                    params_read |= 1;
+                }
+                else if (strcmp(key, "b") == 0)
+                {
+                    usr.tm.quadratic.b = atof(value);
+                    params_read |= 2;
+                }
+                else if (strcmp(key, "c") == 0)
+                {
+                    usr.tm.quadratic.c = atof(value);
+                    params_read |= 4;
+                }
+            }
+            else if (in_ln)
+            {
+                if (strcmp(key, "a") == 0)
+                {
+                    usr.tm.ln.a = atof(value);
+                    params_read |= 8;
+                }
+                else if (strcmp(key, "b") == 0)
+                {
+                    usr.tm.ln.b = atof(value);
+                    params_read |= 16;
+                }
+            }
         }
     }
 
     fclose(fp);
 
-    if (!valid_params)
+    if (params_read != 31)
     {
-        printf("No valid parameters found in file %s\n", filepath);
+        printf("Not all parameters were read successfully\n");
         return -1;
     }
 
-    if (temp.a == 0.0f && temp.b == 0.0f && temp.c == 0.0f)
-    {
-        printf("Warning: All parameters are zero\n");
-    }
-
-    *params = temp;
-
     printf("Loaded temperature parameters:\n");
-    printf("a: %e\n", params->a);
-    printf("b: %e\n", params->b);
-    printf("c: %e\n", params->c);
+    printf("Quadratic:\n");
+    printf("  a: %e\n", usr.tm.quadratic.a);
+    printf("  b: %e\n", usr.tm.quadratic.b);
+    printf("  c: %e\n", usr.tm.quadratic.c);
+    printf("Logarithmic:\n");
+    printf("  a: %e\n", usr.tm.ln.a);
+    printf("  b: %e\n", usr.tm.ln.a);
 
     return 0;
-}
-
-static void Init_User_Config()
-{
-    usr.pseudo = PSEUDO_IRONBOW_FORWARD;
-    usr.gas_enhancement = GAS_ENHANCEMENT_NONE;
-    usr.in_focus = false;
-    usr.mean_filter = false;
-    usr.gas_enhancement_software = false;
 }
 
 static void Init_Frame_Sync_DVP()
@@ -236,35 +298,35 @@ static void Init_CIS()
 
 static int Init_LUTs()
 {
-    if (Init_LUT(LUT_IRONBOW_FORWARD, "/root/app/pseudo/ironbow_forward.bin") < 0)
+    if (Init_LUT(LUT_IRONBOW_FORWARD, "/root/app/pseudo/ironbow_reverse.bin") < 0)
     {
         return -1;
     }
-    if (Init_LUT(LUT_IRONBOW_REVERSE, "/root/app/pseudo/ironbow_reverse.bin") < 0)
+    if (Init_LUT(LUT_IRONBOW_REVERSE, "/root/app/pseudo/ironbow_forward.bin") < 0)
     {
         return -1;
     }
-    if (Init_LUT(LUT_LAVA_FORWARD, "/root/app/pseudo/lava_forward.bin") < 0)
+    if (Init_LUT(LUT_LAVA_FORWARD, "/root/app/pseudo/lava_reverse.bin") < 0)
     {
         return -1;
     }
-    if (Init_LUT(LUT_LAVA_REVERSE, "/root/app/pseudo/lava_reverse.bin") < 0)
+    if (Init_LUT(LUT_LAVA_REVERSE, "/root/app/pseudo/lava_forward.bin") < 0)
     {
         return -1;
     }
-    if (Init_LUT(LUT_RAINBOW_FORWARD, "/root/app/pseudo/rainbow_forward.bin") < 0)
+    if (Init_LUT(LUT_RAINBOW_FORWARD, "/root/app/pseudo/rainbow_reverse.bin") < 0)
     {
         return -1;
     }
-    if (Init_LUT(LUT_RAINBOW_REVERSE, "/root/app/pseudo/rainbow_reverse.bin") < 0)
+    if (Init_LUT(LUT_RAINBOW_REVERSE, "/root/app/pseudo/rainbow_forward.bin") < 0)
     {
         return -1;
     }
-    if (Init_LUT(LUT_RAINBOWHC_FORWARD, "/root/app/pseudo/rainbowhc_forward.bin") < 0)
+    if (Init_LUT(LUT_RAINBOWHC_FORWARD, "/root/app/pseudo/rainbowhc_reverse.bin") < 0)
     {
         return -1;
     }
-    if (Init_LUT(LUT_RAINBOWHC_REVERSE, "/root/app/pseudo/rainbowhc_reverse.bin") < 0)
+    if (Init_LUT(LUT_RAINBOWHC_REVERSE, "/root/app/pseudo/rainbowhc_forward.bin") < 0)
     {
         return -1;
     }
@@ -312,8 +374,8 @@ static int Init_CL()
 void Config_Init()
 {
     Init_Log();
-    Read_Temp_Params("param.txt", &temp_param);
     Init_User_Config();
+    Read_Temp_Params("tm_params.ini");
     Init_DVP();
     Init_CIS();
     Init_LUTs();

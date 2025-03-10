@@ -31,7 +31,7 @@ extern "C" {
 // Captured number of frames on noncontinuous dvp mode.
 #define __DVP_CAPTURE_FRAMES__ 100
 
-#define __SHOW_TIME_CONSUME__ 1
+#define __SHOW_TIME_CONSUME__ 0
 
 #ifdef __cplusplus
 }
