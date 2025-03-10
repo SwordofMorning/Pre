@@ -297,7 +297,7 @@ void Auto_Focusing::show()
 void ir_auto_focusing_by_image_continuous(Motor& ir_motor, int x, int y)
 {
     printf(" auto_focusing starting .....\n");
-    
+
     litelog.log.debug("Entering AF");
 
     Auto_Focusing* auto_focusing = new Auto_Focusing(ir_motor);
