@@ -60,10 +60,92 @@ void PseudoAdaptiveMapper::CalculateFrameStats(uint16_t* input, int size, uint16
     max_val = quickSelect(buffer.data(), 0, sample_size - 1, upper_pos);
 }
 
+void PseudoAdaptiveMapper::CalculateFrameStats_HIST(uint16_t* input, int size, uint16_t& min_val, uint16_t& max_val)
+{
+    // Initialize counter and temporary array
+    const int HIST_SIZE = 65536;
+    const int BIN_SIZE = 256;
+    const int SAMPLES_PER_BIN = HIST_SIZE / BIN_SIZE;
+
+    // Histogram array
+    int histogram[BIN_SIZE] = {0};
+    int total_samples = 0;
+
+    /* Loop 1: Create a histogram */
+    for (int i = 0; i < size; i += SAMPLE_STRIDE)
+    {
+        uint16_t value = input[i];
+        int bin = value / SAMPLES_PER_BIN;
+        // Make sure not to cross the boundary
+        bin = std::min(bin, BIN_SIZE - 1);
+        histogram[bin]++;
+        total_samples++;
+    }
+
+    // Calculate target position: 1%
+    int target_min = total_samples * 0.01;
+    // Calculate target position: 99%
+    int target_max = total_samples * 0.99;
+
+    /* Loop 2: Find min */
+    int count = 0;
+    int min_bin = 0;
+    for (int i = 0; i < BIN_SIZE; i++)
+    {
+        count += histogram[i];
+        if (count >= target_min)
+        {
+            min_bin = i;
+            break;
+        }
+    }
+
+    /* Loop 3: Find max */
+    count = 0;
+    int max_bin = BIN_SIZE - 1;
+    for (int i = BIN_SIZE - 1; i >= 0; i--)
+    {
+        count += histogram[i];
+        if (count >= total_samples - target_max)
+        {
+            max_bin = i;
+            break;
+        }
+    }
+
+    // Convert bins back to actual values
+    min_val = min_bin * SAMPLES_PER_BIN;
+    max_val = (max_bin + 1) * SAMPLES_PER_BIN - 1;
+
+    // Refine the search: find a more precise value within a certain interval
+    uint16_t refined_min = 65535;
+    uint16_t refined_max = 0;
+
+    /* Loop 4: Refine */
+    for (int i = 0; i < size; i += SAMPLE_STRIDE)
+    {
+        uint16_t value = input[i];
+        if (value >= min_val && value <= min_val + SAMPLES_PER_BIN)
+        {
+            refined_min = std::min(refined_min, value);
+        }
+        if (value >= max_val - SAMPLES_PER_BIN && value <= max_val)
+        {
+            refined_max = std::max(refined_max, value);
+        }
+    }
+
+    // Use the refined value
+    if (refined_min != 65535)
+        min_val = refined_min;
+    if (refined_max != 0)
+        max_val = refined_max;
+}
+
 void PseudoAdaptiveMapper::UpdateRange(uint16_t* input, int width, int height)
 {
     uint16_t frame_min, frame_max;
-    CalculateFrameStats(input, width * height, frame_min, frame_max);
+    CalculateFrameStats_HIST(input, width * height, frame_min, frame_max);
 
     if (!initialized)
     {
