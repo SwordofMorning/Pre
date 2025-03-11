@@ -40,8 +40,10 @@ private:
     bool initialized;
     std::vector<uint16_t> buffer;
 
-    // Auxiliary function: calculate statistics for the current frame
+    // Auxiliary function: calculate statistics for the current frame. By quick select.
     void CalculateFrameStats(uint16_t* input, int size, uint16_t& min_val, uint16_t& max_val);
+    // By Hist
+    void CalculateFrameStats_HIST(uint16_t* input, int size, uint16_t& min_val, uint16_t& max_val);
 
 public:
     PseudoAdaptiveMapper();
