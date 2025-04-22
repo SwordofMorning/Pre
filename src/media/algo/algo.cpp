@@ -4,6 +4,8 @@ static Diff diff;
 static Pseudo pseudo;
 static Filter filter;
 static Temperature_Measurement tm;
+
+uint16_t g_cut_result[640 * 512] = {0};
 uint16_t g_diff_result[640 * 512] = {0};
 
 int Process_One_Frame()
@@ -15,6 +17,10 @@ int Process_One_Frame()
     uint8_t* y = shm_out_yuv;
     uint8_t* uv = y + v4l2_ir_dvp_valid_width * v4l2_ir_dvp_valid_height;
 
+    /* ----- Par 0 : Background ----- */
+
+    vignetting.Cut(algo_in, g_cut_result, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height);
+
     /* ----- Par 1 : Diff ----- */
 
 #if __SHOW_TIME_CONSUME__
@@ -24,7 +30,7 @@ int Process_One_Frame()
 
     if (usr.gas_enhancement_software)
     {
-        if (!diff.Process_Raw_Stats_CV_Vague(algo_in, g_diff_result, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height, 0.98))
+        if (!diff.Process_Raw_Stats_CV_Vague(g_cut_result, g_diff_result, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height, 0.98))
             return -1;
         filter.Median_16U(g_diff_result, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height, 3);
     }
@@ -42,7 +48,7 @@ int Process_One_Frame()
     if (usr.gas_enhancement_software)
         pseudo(g_diff_result, y, uv, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height);
     else
-        pseudo(algo_in, y, uv, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height);
+        pseudo(g_cut_result, y, uv, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height);
 
 #if __SHOW_TIME_CONSUME__
     clock_gettime(CLOCK_MONOTONIC, &end_pseudo);
@@ -83,5 +89,16 @@ int Process_One_Frame()
     printf("TM: [%.2f, %.2f %.2f]\n", shm_out_float[640 * 255 + 320], shm_out_float[640 * 255 + 321], shm_out_float[640 * 255 + 322]);
     // clang-format on
 #endif
+
+    // 新增：从左上角到中心点的采样打印
+    int max_pos = v4l2_ir_dvp_valid_width / 2;
+    
+    printf("Line: \n");
+    for (int i = 0; i < max_pos; i += 16)
+    {
+        printf("%d ", algo_in[i * 640 + i]);
+    }
+    printf("\n");
+
     return 0;
 }

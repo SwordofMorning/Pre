@@ -116,9 +116,10 @@ void EventListener::PrintKeyEvent(const std::string& device, int code, int value
     {
         usr.gas_enhancement_software = !usr.gas_enhancement_software;
     }
-    else if (code == KEY_1 && value == 1)
+    else if (code == KEY_0 && value == 1)
     {
-        usr.mean_filter = !usr.mean_filter;
+        // usr.mean_filter = !usr.mean_filter;
+        vignetting.Save(algo_in, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height);
     }
 }
 

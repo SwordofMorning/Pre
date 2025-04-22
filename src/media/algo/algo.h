@@ -30,5 +30,6 @@
 #include "filter/filter.h"
 #include "gass/diff.h"
 #include "tm/tm.h"
+#include "vignetting/vignetting.h"
 
 int Process_One_Frame();

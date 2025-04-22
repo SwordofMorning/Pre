@@ -15,6 +15,7 @@
 #include "../uart/fpga.h"
 #include "../../media/algo/af/ir_auto_focusing.h"
 #include "../../media/algo/af/af_ir.h"
+#include "../../media/algo/vignetting/vignetting.h"
 
 class EventListener
 {
