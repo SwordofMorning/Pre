@@ -42,7 +42,7 @@ bool PseudoCL_Init(PseudoCL* cl, int width, int height)
     }
 
     // Read then create program
-    char* source = read_kernel_source("/root/app/cl/pseudo.cl");
+    char* source = read_kernel_source("/app/cl/pseudo.cl");
     if (!source)
         goto cleanup_queue;
 

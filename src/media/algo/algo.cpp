@@ -90,15 +90,5 @@ int Process_One_Frame()
     // clang-format on
 #endif
 
-    // 新增：从左上角到中心点的采样打印
-    int max_pos = v4l2_ir_dvp_valid_width / 2;
-    
-    printf("Line: \n");
-    for (int i = 0; i < max_pos; i += 16)
-    {
-        printf("%d ", algo_in[i * 640 + i]);
-    }
-    printf("\n");
-
     return 0;
 }

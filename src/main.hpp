@@ -14,21 +14,12 @@
 
 std::thread dvp_thread;
 bool dvp_running = true;
-std::thread csi_thread;
-bool csi_running = true;
 std::thread vo_thread;
 bool vo_running = true;
-std::thread ab_thread;
-bool ab_running = true;
 
 void dvp_thread_func()
 {
     DVP_Streaming();
-}
-
-void csi_thread_func()
-{
-    CSI_Streaming();
 }
 
 void vo_thread_func()
@@ -39,15 +30,4 @@ void vo_thread_func()
         SHM_VO_Process();
     }
     SHM_VO_Exit();
-}
-
-// i.e. algo backend
-void ab_thread_func()
-{
-    SHM_ALGO_Init();
-    while (ab_running)
-    {
-        SHM_ALGO_Process();
-    }
-    SHM_ALGO_Exit();
 }
