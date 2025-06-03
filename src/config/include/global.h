@@ -62,43 +62,20 @@ struct FrameSync16
 };
 extern struct FrameSync16 frame_sync_dvp;
 
-struct FrameSync8
-{
-    pthread_mutex_t mutex;
-    pthread_cond_t producer_cond;
-    pthread_cond_t consumer_cond;
-    int write_pos;
-    int read_pos;
-    int frame_count;
-    bool buffer_full;
-    struct timeval last_frame_time;
-    // Loop Buffer
-    uint8_t* frame_buffer[FRAME_SYNC_BUFFER_SIZE];
-};
-extern struct FrameSync8 frame_sync_csi;
-
 /* ========== SHM ========== */
 
 extern uint16_t* algo_in;
 extern uint8_t* shm_out_yuv;
 extern float* shm_out_float;
-extern uint8_t* shm_out_algo;
 
 extern int shmid_yuv;
 extern int shmid_float;
-extern int shmid_csi;
-extern int shmid_algo;
 extern int semid_vo;
-extern int semid_ab;
 
 // IR yuv data
 extern uint8_t* shm_yuv;
 // IR temperature data
 extern float* shm_float;
-// Visible yuv data
-extern uint8_t* shm_vis;
-// IR algo data.
-extern uint8_t* shm_algo;
 
 /* ========== Config ========== */
 

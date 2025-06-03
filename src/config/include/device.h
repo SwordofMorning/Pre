@@ -30,7 +30,6 @@
 #include <sys/socket.h>
 #include <sys/wait.h>
 #include <arpa/inet.h>
-#include "_vis_cmaera.h"
 
 #ifdef __cplusplus
 extern "C" {
