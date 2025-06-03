@@ -111,53 +111,6 @@ struct V4L2_IR_DVP_Buffer
 // Point to DVP's capture buffer.
 extern struct V4L2_IR_DVP_Buffer* v4l2_ir_dvp_buffer_global;
 
-/* ============================================================================================ */
-/* ======================================== Vis Camera ======================================== */
-/* ============================================================================================ */
-
-#if (VISIBLE_CAMERA_MODE == VISIBLE_CAMERA_MODE_HGD_IMX335)
-#define V4L2_VIS_CSI_DEVICE_NAME "/dev/video22"
-#define V4L2_VIS_CSI_PIX_FMT V4L2_PIX_FMT_NV12
-// It means NV12 have 1.5 times size of pixels
-#define V4L2_VIS_CSI_PIX_FMT_SCALE 1.5
-#elif (VISIBLE_CAMERA_MODE == VISIBLE_CAMERA_MODE_NGD)
-#define V4L2_VIS_CSI_DEVICE_NAME "/dev/video11"
-#define V4L2_VIS_CSI_PIX_FMT V4L2_PIX_FMT_UYVY
-// It means UYVY have 2 times size of pixels
-#define V4L2_VIS_CSI_PIX_FMT_SCALE 2
-#endif
-
-#define V4L2_VIS_CSI_REQ_COUNT 5
-
-enum V4L2_VIS_CSI_MODE
-{
-    V4L2_VIS_CSI_MODE_NGD_2688x1520at25 = 0,
-    V4L2_VIS_CSI_MODE_HGD_2592x1944at30 = 1,
-    V4L2_VIS_CSI_MODE_NUMS,
-};
-
-#define V4L2_VIS_CSI_CAPTURE_WIDTH_2688 2688
-#define V4L2_VIS_CSI_CAPTURE_HEIGHT_1520 1520
-#define V4L2_VIS_CSI_CAPTURE_WIDTH_2592 2592
-#define V4L2_VIS_CSI_CAPTURE_HEIGHT_1944 1944
-
-extern int v4l2_vis_csi_fd;
-extern int v4l2_vis_csi_nplanes;
-extern int v4l2_vis_csi_buffer_global_index;
-extern int v4l2_vis_csi_buffer_global_length;
-
-struct V4L2_VIS_CSI_Buffer
-{
-    void* start;
-    size_t length;
-};
-
-extern struct V4L2_VIS_CSI_Buffer* v4l2_vis_csi_buffer_global;
-
-extern int v4l2_vis_csi_mode;
-extern int v4l2_vis_csi_width;
-extern int v4l2_vis_csi_height;
-
 #ifdef __cplusplus
 }
 #endif
