@@ -53,9 +53,46 @@ public:
      */
     bool Process_Raw_Stats(uint16_t* input, uint16_t* output, size_t width, size_t height, float rate, float percentile_min = 0.02f, float percentile_max = 0.98f);
 
+    /**
+     * @brief Process frame difference with statistics via OpenCV
+     * 
+     * @param input Input raw data (uint16_t)
+     * @param output Output difference data (uint16_t)
+     * @param width Image width
+     * @param height Image height
+     * @param rate Difference rate (0.0-1.0)
+     * @param percentile_min Min percentile threshold (0.0-1.0)
+     * @param percentile_max Max percentile threshold (0.0-1.0)
+     * @return true if frame processed, false if duplicate frame
+     */
     bool Process_Raw_Stats_CV(uint16_t* input, uint16_t* output, size_t width, size_t height, float rate, float percentile_min = 0.02f, float percentile_max = 0.98f);
 
+    /**
+     * @brief Process frame difference with statistics in vague mode
+     * 
+     * @param input Input raw data (uint16_t)
+     * @param output Output difference data (uint16_t)
+     * @param width Image width
+     * @param height Image height
+     * @param rate Difference rate (0.0-1.0)
+     * @param percentile_min Min percentile threshold (0.0-1.0)
+     * @param percentile_max Max percentile threshold (0.0-1.0)
+     * @return true if frame processed, false if duplicate frame
+     */
     bool Process_Raw_Stats_Vague(uint16_t* input, uint16_t* output, size_t width, size_t height, float rate, float percentile_min = 0.02f, float percentile_max = 0.98f);
 
+
+    /**
+     * @brief Process frame difference with statistics in vague mode via OpenCV
+     * 
+     * @param input Input raw data (uint16_t)
+     * @param output Output difference data (uint16_t)
+     * @param width Image width
+     * @param height Image height
+     * @param rate Difference rate (0.0-1.0)
+     * @param percentile_min Min percentile threshold (0.0-1.0)
+     * @param percentile_max Max percentile threshold (0.0-1.0)
+     * @return true if frame processed, false if duplicate frame
+     */
     bool Process_Raw_Stats_CV_Vague(uint16_t* input, uint16_t* output, size_t width, size_t height, float rate, float percentile_min = 0.02f, float percentile_max = 0.98f);
 };
