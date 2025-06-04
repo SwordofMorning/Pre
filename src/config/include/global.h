@@ -101,6 +101,7 @@ struct TempParams
 
 struct UserConfig
 {
+    pthread_mutex_t mutex;
     int pseudo;
     int gas_enhancement;
     bool in_focus;

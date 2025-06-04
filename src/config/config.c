@@ -73,6 +73,7 @@ static void Init_Log()
 
 static void Init_User_Config()
 {
+    pthread_mutex_init(&usr.mutex, NULL);
     usr.pseudo = PSEUDO_IRONBOW_FORWARD;
     usr.gas_enhancement = GAS_ENHANCEMENT_NONE;
     usr.in_focus = false;

@@ -9,6 +9,8 @@ uint16_t g_diff_result[640 * 512] = {0};
 
 int Process_One_Frame()
 {
+    pthread_mutex_lock(&usr.mutex);
+
     /* ============================= */
     /* ===== Section 1 : Color ===== */
     /* ============================= */
@@ -85,5 +87,6 @@ int Process_One_Frame()
     // clang-format on
 #endif
 
+    pthread_mutex_unlock(&usr.mutex);
     return 0;
 }
