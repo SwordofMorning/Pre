@@ -81,7 +81,6 @@ public:
      */
     bool Process_Raw_Stats_Vague(uint16_t* input, uint16_t* output, size_t width, size_t height, float rate, float percentile_min = 0.02f, float percentile_max = 0.98f);
 
-
     /**
      * @brief Process frame difference with statistics in vague mode via OpenCV
      * 

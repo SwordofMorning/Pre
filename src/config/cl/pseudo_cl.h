@@ -38,25 +38,41 @@ typedef struct
 
 extern PseudoCL pseudo_cl;
 
-// 初始化OpenCL环境
+// Init OpenCL
 bool PseudoCL_Init(PseudoCL* cl, int width, int height);
 
-// 清理OpenCL资源
+// Cleanup OpenCL
 void PseudoCL_Cleanup(PseudoCL* cl);
 
-// 处理图像
+/**
+ * @brief Pseudo interface via OpenCL.
+ * 
+ * @param cl OpenCL handle.
+ * @param input Original Data from sensor.
+ * @param y_out Luma of output data.
+ * @param uv_out Chroma ouf output data.
+ * @param width Width of picture.
+ * @param height Height of picture.
+ * @param pseudo_type enum of pseudo, eg. PSEUDO_IRONBOW_FORWARD.
+ * @param lut pesudo lookup table.
+ * @param scale 16bits to 8bits scale params, i.e. max of valid data in 16bits array.
+ * @param min_val min of valid data in 16bits array.
+ * @param scale_min colar bar min scale params.
+ * @param scale_max colar bar max scale params.
+ * @return success or not.
+ */
 int PseudoCL_ProcessNV12(PseudoCL* cl,
-    uint16_t* input,
-    uint8_t* y_out,
-    uint8_t* uv_out,
-    int width,
-    int height,
-    int pseudo_type,
-    const struct YUV420P_LUT* lut,
-    float scale,
-    float min_val,
-    float scale_min,    // 新增参数
-    float scale_max);   // 新增参数
+                         uint16_t* input,
+                         uint8_t* y_out,
+                         uint8_t* uv_out,
+                         int width,
+                         int height,
+                         int pseudo_type,
+                         const struct YUV420P_LUT* lut,
+                         float scale,
+                         float min_val,
+                         float scale_min,
+                         float scale_max);
 
 #ifdef __cplusplus
 }
