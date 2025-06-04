@@ -46,15 +46,17 @@ void PseudoCL_Cleanup(PseudoCL* cl);
 
 // 处理图像
 int PseudoCL_ProcessNV12(PseudoCL* cl,
-                         uint16_t* input,
-                         uint8_t* y_out,
-                         uint8_t* uv_out,
-                         int width,
-                         int height,
-                         int pseudo_type,
-                         const struct YUV420P_LUT* lut,
-                         float scale,
-                         float min_val);
+    uint16_t* input,
+    uint8_t* y_out,
+    uint8_t* uv_out,
+    int width,
+    int height,
+    int pseudo_type,
+    const struct YUV420P_LUT* lut,
+    float scale,
+    float min_val,
+    float scale_min,    // 新增参数
+    float scale_max);   // 新增参数
 
 #ifdef __cplusplus
 }

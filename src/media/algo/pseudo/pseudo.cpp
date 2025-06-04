@@ -211,7 +211,13 @@ void Pseudo::Pseudo_NV12_CL(uint16_t* input, uint8_t* y_out, uint8_t* uv_out, in
     if (usr.pseudo != PSEUDO_BLACK_HOT && usr.pseudo != PSEUDO_WHITE_HOT)
         lut = Get_LUT(usr.pseudo);
 
-    if (PseudoCL_ProcessNV12(&pseudo_cl, input, y_out, uv_out, width, height, usr.pseudo, lut, scale, min_val) != 0)
+    // 假设这些参数从配置中读取或设置了默认值
+    float scale_min = 0.8f;  // 可以从配置读取
+    float scale_max = 0.9f;  // 可以从配置读取
+
+    if (PseudoCL_ProcessNV12(&pseudo_cl, input, y_out, uv_out, 
+                            width, height, usr.pseudo, lut, 
+                            scale, min_val, scale_min, scale_max) != 0)
         litelog.log.warning("PseudoCL_ProcessNV12 processing failed\n");
 }
 

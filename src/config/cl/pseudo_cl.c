@@ -155,7 +155,9 @@ int PseudoCL_ProcessNV12(PseudoCL* cl,
                          int pseudo_type,
                          const struct YUV420P_LUT* lut,
                          float scale,
-                         float min_val)
+                         float min_val,
+                         float scale_min,
+                         float scale_max)
 {
     if (!cl->initialized)
         return -1;
@@ -163,7 +165,8 @@ int PseudoCL_ProcessNV12(PseudoCL* cl,
     cl_int err;
 
     // Input data
-    err = clEnqueueWriteBuffer(cl->queue, cl->d_input, CL_TRUE, 0, width * height * sizeof(uint16_t), input, 0, NULL, NULL);
+    err = clEnqueueWriteBuffer(cl->queue, cl->d_input, CL_TRUE, 0, 
+                              width * height * sizeof(uint16_t), input, 0, NULL, NULL);
     if (err != CL_SUCCESS)
     {
         printf("Failed to write input data: %d\n", err);
@@ -172,7 +175,6 @@ int PseudoCL_ProcessNV12(PseudoCL* cl,
 
     // Choose Kernel
     cl_kernel active_kernel = NULL;
-    // clang-format off
     switch(pseudo_type)
     {
         case PSEUDO_BLACK_HOT:
@@ -186,32 +188,35 @@ int PseudoCL_ProcessNV12(PseudoCL* cl,
             {
                 active_kernel = cl->kernel_color_map;
 
-                // Create and update lut
+                // Create and update lut buffers
                 size_t lut_size = lut->size * sizeof(uint8_t);
 
-                // Create lut buffer
-                cl->d_lut_y = clCreateBuffer(cl->context, CL_MEM_READ_ONLY, lut_size, NULL, &err);
-                if (err != CL_SUCCESS)
-                {
-                    printf("Failed to create LUT Y buffer: %d\n", err);
-                    return -1;
+                // Create lut buffers if not exists
+                if (!cl->d_lut_y) {
+                    cl->d_lut_y = clCreateBuffer(cl->context, CL_MEM_READ_ONLY, lut_size, NULL, &err);
+                    if (err != CL_SUCCESS) {
+                        printf("Failed to create LUT Y buffer: %d\n", err);
+                        return -1;
+                    }
                 }
 
-                cl->d_lut_u = clCreateBuffer(cl->context, CL_MEM_READ_ONLY, lut_size, NULL, &err);
-                if (err != CL_SUCCESS)
-                {
-                    printf("Failed to create LUT U buffer: %d\n", err);
-                    goto cleanup_lut_y;
+                if (!cl->d_lut_u) {
+                    cl->d_lut_u = clCreateBuffer(cl->context, CL_MEM_READ_ONLY, lut_size, NULL, &err);
+                    if (err != CL_SUCCESS) {
+                        printf("Failed to create LUT U buffer: %d\n", err);
+                        goto cleanup_lut_y;
+                    }
                 }
 
-                cl->d_lut_v = clCreateBuffer(cl->context, CL_MEM_READ_ONLY, lut_size, NULL, &err);
-                if (err != CL_SUCCESS)
-                {
-                    printf("Failed to create LUT V buffer: %d\n", err);
-                    goto cleanup_lut_u;
+                if (!cl->d_lut_v) {
+                    cl->d_lut_v = clCreateBuffer(cl->context, CL_MEM_READ_ONLY, lut_size, NULL, &err);
+                    if (err != CL_SUCCESS) {
+                        printf("Failed to create LUT V buffer: %d\n", err);
+                        goto cleanup_lut_u;
+                    }
                 }
 
-                // write lut data to pseudo
+                // Write lut data
                 err = clEnqueueWriteBuffer(cl->queue, cl->d_lut_y, CL_TRUE, 0, lut_size, lut->y, 0, NULL, NULL);
                 err |= clEnqueueWriteBuffer(cl->queue, cl->d_lut_u, CL_TRUE, 0, lut_size, lut->u, 0, NULL, NULL);
                 err |= clEnqueueWriteBuffer(cl->queue, cl->d_lut_v, CL_TRUE, 0, lut_size, lut->v, 0, NULL, NULL);
@@ -223,7 +228,6 @@ int PseudoCL_ProcessNV12(PseudoCL* cl,
             }
             break;
     }
-    // clang-format on
 
     if (!active_kernel)
     {
@@ -231,7 +235,7 @@ int PseudoCL_ProcessNV12(PseudoCL* cl,
         return -1;
     }
 
-    // 设置内核参数
+    // Set kernel arguments
     err = clSetKernelArg(active_kernel, 0, sizeof(cl_mem), &cl->d_input);
     err |= clSetKernelArg(active_kernel, 1, sizeof(cl_mem), &cl->d_y_out);
     err |= clSetKernelArg(active_kernel, 2, sizeof(cl_mem), &cl->d_uv_out);
@@ -246,6 +250,8 @@ int PseudoCL_ProcessNV12(PseudoCL* cl,
         err |= clSetKernelArg(active_kernel, 8, sizeof(int), &lut->size);
         err |= clSetKernelArg(active_kernel, 9, sizeof(int), &width);
         err |= clSetKernelArg(active_kernel, 10, sizeof(int), &height);
+        err |= clSetKernelArg(active_kernel, 11, sizeof(float), &scale_min);  // 新增参数
+        err |= clSetKernelArg(active_kernel, 12, sizeof(float), &scale_max);  // 新增参数
     }
     else
     {
@@ -259,21 +265,24 @@ int PseudoCL_ProcessNV12(PseudoCL* cl,
         goto cleanup_lut;
     }
 
-    // Make sure work size, Round up to a multiple of 16
+    // Set work size
     size_t global_work_size[2] = {((width + 15) / 16) * 16, ((height + 15) / 16) * 16};
     size_t local_work_size[2] = {16, 16};
 
-    // execute kernel
-    err = clEnqueueNDRangeKernel(cl->queue, active_kernel, 2, NULL, global_work_size, local_work_size, 0, NULL, NULL);
+    // Execute kernel
+    err = clEnqueueNDRangeKernel(cl->queue, active_kernel, 2, NULL, 
+                                global_work_size, local_work_size, 0, NULL, NULL);
     if (err != CL_SUCCESS)
     {
         printf("Failed to execute kernel: %d\n", err);
         goto cleanup_lut;
     }
 
-    // Readout
-    err = clEnqueueReadBuffer(cl->queue, cl->d_y_out, CL_TRUE, 0, width * height, y_out, 0, NULL, NULL);
-    err |= clEnqueueReadBuffer(cl->queue, cl->d_uv_out, CL_TRUE, 0, width * height / 2, uv_out, 0, NULL, NULL);
+    // Read results
+    err = clEnqueueReadBuffer(cl->queue, cl->d_y_out, CL_TRUE, 0, 
+                             width * height, y_out, 0, NULL, NULL);
+    err |= clEnqueueReadBuffer(cl->queue, cl->d_uv_out, CL_TRUE, 0, 
+                              width * height / 2, uv_out, 0, NULL, NULL);
 
     if (err != CL_SUCCESS)
     {
@@ -282,25 +291,14 @@ int PseudoCL_ProcessNV12(PseudoCL* cl,
     }
 
     clFinish(cl->queue);
-
-cleanup_lut:
-    if (active_kernel == cl->kernel_color_map)
-    {
-        if (cl->d_lut_y)
-            clReleaseMemObject(cl->d_lut_y);
-        if (cl->d_lut_u)
-            clReleaseMemObject(cl->d_lut_u);
-        if (cl->d_lut_v)
-            clReleaseMemObject(cl->d_lut_v);
-        cl->d_lut_y = cl->d_lut_u = cl->d_lut_v = NULL;
-    }
-    return (err == CL_SUCCESS) ? 0 : -1;
+    return 0;
 
 cleanup_lut_v:
-    clReleaseMemObject(cl->d_lut_v);
+    if (cl->d_lut_v) clReleaseMemObject(cl->d_lut_v);
 cleanup_lut_u:
-    clReleaseMemObject(cl->d_lut_u);
+    if (cl->d_lut_u) clReleaseMemObject(cl->d_lut_u);
 cleanup_lut_y:
-    clReleaseMemObject(cl->d_lut_y);
+    if (cl->d_lut_y) clReleaseMemObject(cl->d_lut_y);
+cleanup_lut:
     return -1;
 }
