@@ -28,7 +28,7 @@ bool FilterCL_Init(FilterCL* cl, int width, int height)
         goto cleanup_context;
 
     // 读取并创建程序
-    const char* source = read_kernel_source("/app/cl/filter.cl");
+    const char* source = read_kernel_source(CL_FILTER_PATH);
     if (!source)
         goto cleanup_queue;
 

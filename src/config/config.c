@@ -51,6 +51,12 @@ struct UserConfig usr;
 /* ======================================== Function ======================================== */
 /* ========================================================================================== */
 
+void EXIT_ERROR(const char* error_str)
+{
+    printf("%s", error_str);
+    exit(EXIT_FAILURE);
+}
+
 static void Init_Log()
 {
     litelog.init("Pre");
@@ -234,43 +240,42 @@ static void Init_DVP()
 
 static int Init_LUTs()
 {
-    if (Init_LUT(LUT_IRONBOW_FORWARD, "/app/pseudo/ironbow_reverse.bin") < 0)
+    if (Init_LUT(LUT_IRONBOW_FORWARD, LUT_IRONBOW_FORWARD_PATH) < 0)
     {
-        return -1;
+        EXIT_ERROR("Failed to initialize LUT_IRONBOW_FORWARD\n");
     }
-    if (Init_LUT(LUT_IRONBOW_REVERSE, "/app/pseudo/ironbow_forward.bin") < 0)
+    if (Init_LUT(LUT_IRONBOW_REVERSE, LUT_IRONBOW_REVERSE_PATH) < 0)
     {
-        return -1;
+        EXIT_ERROR("Failed to initialize LUT_IRONBOW_FORWARD\n");
     }
-    if (Init_LUT(LUT_LAVA_FORWARD, "/app/pseudo/lava_reverse.bin") < 0)
+    if (Init_LUT(LUT_LAVA_FORWARD, LUT_LAVA_FORWARD_PATH) < 0)
     {
-        return -1;
+        EXIT_ERROR("Failed to initialize LUT_IRONBOW_FORWARD\n");
     }
-    if (Init_LUT(LUT_LAVA_REVERSE, "/app/pseudo/lava_forward.bin") < 0)
+    if (Init_LUT(LUT_LAVA_REVERSE, LUT_LAVA_REVERSE_PATH) < 0)
     {
-        return -1;
+        EXIT_ERROR("Failed to initialize LUT_IRONBOW_FORWARD\n");
     }
-    if (Init_LUT(LUT_RAINBOW_FORWARD, "/app/pseudo/rainbow_reverse.bin") < 0)
+    if (Init_LUT(LUT_RAINBOW_FORWARD, LUT_RAINBOW_FORWARD_PATH) < 0)
     {
-        return -1;
+        EXIT_ERROR("Failed to initialize LUT_IRONBOW_FORWARD\n");
     }
-    if (Init_LUT(LUT_RAINBOW_REVERSE, "/app/pseudo/rainbow_forward.bin") < 0)
+    if (Init_LUT(LUT_RAINBOW_REVERSE, LUT_RAINBOW_REVERSE_PATH) < 0)
     {
-        return -1;
+        EXIT_ERROR("Failed to initialize LUT_IRONBOW_FORWARD\n");
     }
-    if (Init_LUT(LUT_RAINBOWHC_FORWARD, "/app/pseudo/rainbowhc_reverse.bin") < 0)
+    if (Init_LUT(LUT_RAINBOWHC_FORWARD, LUT_RAINBOWHC_FORWARD_PATH) < 0)
     {
-        return -1;
+        EXIT_ERROR("Failed to initialize LUT_IRONBOW_FORWARD\n");
     }
-    if (Init_LUT(LUT_RAINBOWHC_REVERSE, "/app/pseudo/rainbowhc_forward.bin") < 0)
+    if (Init_LUT(LUT_RAINBOWHC_REVERSE, LUT_RAINBOWHC_REVERSE_PATH) < 0)
     {
-        return -1;
+        EXIT_ERROR("Failed to initialize LUT_IRONBOW_FORWARD\n");
     }
 
     if (!PseudoCL_Init(&pseudo_cl, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height))
     {
-        printf("Failed to initialize OpenCL\n");
-        return -1;
+        EXIT_ERROR("Failed to initialize OpenCL\n");
     }
 
     return 0;
@@ -280,26 +285,22 @@ static int Init_CL()
 {
     if (!PseudoCL_Init(&pseudo_cl, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height))
     {
-        printf("Failed to initialize PseudoCL_Init\n");
-        exit(EXIT_FAILURE);
+        EXIT_ERROR("Failed to initialize PseudoCL_Init\n");
     }
 
     if (!FilterCL_Init(&filter_cl, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height))
     {
-        printf("Failed to initialize FilterCL_Init\n");
-        exit(EXIT_FAILURE);
+        EXIT_ERROR("Failed to initialize FilterCL_Init\n");
     }
 
     if (!DiffCL_Init(&diff_cl, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height))
     {
-        printf("Failed to initialize DiffCL_Init\n");
-        exit(EXIT_FAILURE);
+        EXIT_ERROR("Failed to initialize DiffCL_Init\n");
     }
 
     if (!TMCL_Init(&tm_cl, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height))
     {
-        printf("Failed to initialize TMCL_Init\n");
-        exit(EXIT_FAILURE);
+        EXIT_ERROR("Failed to initialize TMCL_Init\n");
     }
 }
 
@@ -311,7 +312,7 @@ void Config_Init()
 {
     Init_Log();
     Init_User_Config();
-    Read_Temp_Params("tm_params.ini");
+    Read_Temp_Params(TM_PARAMS_PATH);
     Init_DVP();
     Init_LUTs();
     Init_CL();

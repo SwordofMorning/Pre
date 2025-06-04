@@ -17,6 +17,7 @@
 #include "include/enum.h"
 #include "include/global.h"
 #include "include/debug.h"
+#include "include/path.h"
 #include "lut/lut.h"
 #include "cl/pseudo_cl.h"
 #include "cl/filter_cl.h"
@@ -42,6 +43,8 @@ extern "C" {
 
 #define INI_MAX_LINES 256
 #define CLEAR(x) memset(&(x), 0, sizeof(x))
+
+void EXIT_ERROR(const char* error_str);
 
 /**
  * @brief Config all parameters.
