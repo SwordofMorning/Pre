@@ -9,9 +9,9 @@
 #define LUT_RAINBOWHC_FORWARD_PATH "/app/pseudo/rainbowhc_reverse.bin"
 #define LUT_RAINBOWHC_REVERSE_PATH "/app/pseudo/rainbowhc_forward.bin"
 
-#define CL_DIFF_PATH "/app/cl/diff.cl"
-#define CL_FILTER_PATH "/app/cl/filter.cl"
-#define CL_PSEUDO_PATH "/app/cl/pseudo.cl"
-#define CL_TM_PATH "/app/cl/tm.cl"
+#define CL_DIFF_PATH "/app/pre/cl/diff.cl"
+#define CL_FILTER_PATH "/app/pre/cl/filter.cl"
+#define CL_PSEUDO_PATH "/app/pre/cl/pseudo.cl"
+#define CL_TM_PATH "/app/pre/cl/tm.cl"
 
 #define TM_PARAMS_PATH "/hold/tm_params.ini"

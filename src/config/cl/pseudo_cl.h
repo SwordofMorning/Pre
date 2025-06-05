@@ -25,6 +25,7 @@ typedef struct
     cl_kernel kernel_black_hot;
     cl_kernel kernel_white_hot;
     cl_kernel kernel_color_map;
+    cl_kernel kernel_isotherms;
 
     cl_mem d_input;
     cl_mem d_y_out;
@@ -32,6 +33,8 @@ typedef struct
     cl_mem d_lut_y;
     cl_mem d_lut_u;
     cl_mem d_lut_v;
+    cl_mem d_temps;
+    cl_mem d_uv_maps;
 
     bool initialized;
 } PseudoCL;
@@ -73,6 +76,20 @@ int PseudoCL_ProcessNV12(PseudoCL* cl,
                          float min_val,
                          float scale_min,
                          float scale_max);
+
+int PseudoCL_ProcessIsotherms(PseudoCL* cl,
+                            uint16_t* input,
+                            uint8_t* y_out,
+                            uint8_t* uv_out,
+                            int width,
+                            int height,
+                            const struct YUV420P_LUT* lut,
+                            float scale,
+                            float min_val,
+                            float* temps,
+                            float threshold_min,
+                            float threshold_max,
+                            uint8_t* uv_maps);
 
 #ifdef __cplusplus
 }

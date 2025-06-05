@@ -16,10 +16,9 @@
 class Pseudo
 {
 private:
-    void Pseudo_420P(uint16_t* input, uint8_t* y_out, uint8_t* u_out, uint8_t* v_out, int width, int height);
-    void Pseudo_NV12(uint16_t* input, uint8_t* y_out, uint8_t* uv_out, int width, int height);
     void Pseudo_NV12_CL(uint16_t* input, uint8_t* y_out, uint8_t* uv_out, int width, int height, float cb_min, float cb_max);
+    void Pseudo_Isotherms_CL(uint16_t* input, uint8_t* y_out, uint8_t* uv_out, int width, int height, float* temps, float threshold_min, float threshold_max, uint8_t* uv_maps);
 
 public:
-    void operator()(uint16_t* input, uint8_t* y_out, uint8_t* uv_out, int width, int height, float cb_min, float cb_max);
+    void operator()(uint16_t* input, uint8_t* y_out, uint8_t* uv_out, int width, int height, float cb_min, float cb_max, float* temps);
 };
