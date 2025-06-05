@@ -78,18 +78,18 @@ int PseudoCL_ProcessNV12(PseudoCL* cl,
                          float scale_max);
 
 int PseudoCL_ProcessIsotherms(PseudoCL* cl,
-                            uint16_t* input,
-                            uint8_t* y_out,
-                            uint8_t* uv_out,
-                            int width,
-                            int height,
-                            const struct YUV420P_LUT* lut,
-                            float scale,
-                            float min_val,
-                            float* temps,
-                            float threshold_min,
-                            float threshold_max,
-                            uint8_t* uv_maps);
+                              uint16_t* input,
+                              uint8_t* y_out,
+                              uint8_t* uv_out,
+                              int width,
+                              int height,
+                              const struct YUV420P_LUT* lut,
+                              float scale,
+                              float min_val,
+                              float* temps,
+                              float threshold_min,
+                              float threshold_max,
+                              uint8_t* uv_maps);
 
 #ifdef __cplusplus
 }

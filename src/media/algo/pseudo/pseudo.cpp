@@ -39,7 +39,8 @@ void Pseudo::Pseudo_Isotherms_CL(uint16_t* input, uint8_t* y_out, uint8_t* uv_ou
 
 void Pseudo::operator()(uint16_t* input, uint8_t* y_out, uint8_t* uv_out, int width, int height, float cb_min, float cb_max, float* temps)
 {
-    uint8_t UV_MAP[6] = {0, 0, 128, 0, 255, 255};  // 映射表
+    // UV 映射表
+    uint8_t UV_MAP[6] = {0, 0, 128, 128, 255, 255};
 
     // isotherms mode
     if (true)

@@ -84,35 +84,41 @@ bool PseudoCL_Init(PseudoCL* cl, int width, int height)
     size_t y_size = width * height;
     size_t uv_size = y_size / 2;
     size_t temps_size = width * height * sizeof(float);
-    size_t uv_maps_size = 6 * sizeof(uint8_t);  // 3对UV值
+    // 3 * u * v = 6
+    size_t uv_maps_size = 6 * sizeof(uint8_t);
 
     // 创建所有需要的缓冲区
     cl->d_input = clCreateBuffer(cl->context, CL_MEM_READ_ONLY, input_size, NULL, &err);
-    if (err != CL_SUCCESS) {
+    if (err != CL_SUCCESS)
+    {
         printf("Failed to create input buffer: %d\n", err);
         goto cleanup_kernels;
     }
 
     cl->d_y_out = clCreateBuffer(cl->context, CL_MEM_WRITE_ONLY, y_size, NULL, &err);
-    if (err != CL_SUCCESS) {
+    if (err != CL_SUCCESS)
+    {
         printf("Failed to create Y output buffer: %d\n", err);
         goto cleanup_input;
     }
 
     cl->d_uv_out = clCreateBuffer(cl->context, CL_MEM_WRITE_ONLY, uv_size, NULL, &err);
-    if (err != CL_SUCCESS) {
+    if (err != CL_SUCCESS)
+    {
         printf("Failed to create UV output buffer: %d\n", err);
         goto cleanup_y_out;
     }
 
     cl->d_temps = clCreateBuffer(cl->context, CL_MEM_READ_ONLY, temps_size, NULL, &err);
-    if (err != CL_SUCCESS) {
+    if (err != CL_SUCCESS)
+    {
         printf("Failed to create temps buffer: %d\n", err);
         goto cleanup_uv_out;
     }
 
     cl->d_uv_maps = clCreateBuffer(cl->context, CL_MEM_READ_ONLY, uv_maps_size, NULL, &err);
-    if (err != CL_SUCCESS) {
+    if (err != CL_SUCCESS)
+    {
         printf("Failed to create UV maps buffer: %d\n", err);
         goto cleanup_temps;
     }
@@ -386,18 +392,18 @@ cleanup_lut_y:
 }
 
 int PseudoCL_ProcessIsotherms(PseudoCL* cl,
-                             uint16_t* input,
-                             uint8_t* y_out,
-                             uint8_t* uv_out,
-                             int width,
-                             int height,
-                             const struct YUV420P_LUT* lut,
-                             float scale,
-                             float min_val,
-                             float* temps,
-                             float threshold_min,
-                             float threshold_max,
-                             uint8_t* uv_maps)
+                              uint16_t* input,
+                              uint8_t* y_out,
+                              uint8_t* uv_out,
+                              int width,
+                              int height,
+                              const struct YUV420P_LUT* lut,
+                              float scale,
+                              float min_val,
+                              float* temps,
+                              float threshold_min,
+                              float threshold_max,
+                              uint8_t* uv_maps)
 {
     if (!cl->initialized)
         return -1;
@@ -405,77 +411,89 @@ int PseudoCL_ProcessIsotherms(PseudoCL* cl,
     cl_int err = CL_SUCCESS;
 
     // 1. 处理输入数据
-    err = clEnqueueWriteBuffer(cl->queue, cl->d_input, CL_TRUE, 0, 
-                              width * height * sizeof(uint16_t), input, 0, NULL, NULL);
-    if (err != CL_SUCCESS) {
+    err = clEnqueueWriteBuffer(cl->queue, cl->d_input, CL_TRUE, 0, width * height * sizeof(uint16_t), input, 0, NULL, NULL);
+    if (err != CL_SUCCESS)
+    {
         printf("Failed to write input data: %d\n", err);
         return -1;
     }
 
     // 2. 处理色表数据（如果需要）
-    if (lut) {
+    if (lut)
+    {
         size_t current_lut_size = 0;
-        if (cl->d_lut_y) {
+        if (cl->d_lut_y)
+        {
             clGetMemObjectInfo(cl->d_lut_y, CL_MEM_SIZE, sizeof(size_t), &current_lut_size, NULL);
         }
 
         size_t new_lut_size = lut->size * sizeof(uint8_t);
-        if (current_lut_size != new_lut_size) {
+        if (current_lut_size != new_lut_size)
+        {
             // 释放旧的LUT缓冲区
-            if (cl->d_lut_y) {
+            if (cl->d_lut_y)
+            {
                 clReleaseMemObject(cl->d_lut_y);
                 cl->d_lut_y = NULL;
             }
-            if (cl->d_lut_u) {
+            if (cl->d_lut_u)
+            {
                 clReleaseMemObject(cl->d_lut_u);
                 cl->d_lut_u = NULL;
             }
-            if (cl->d_lut_v) {
+            if (cl->d_lut_v)
+            {
                 clReleaseMemObject(cl->d_lut_v);
                 cl->d_lut_v = NULL;
             }
 
             // 创建新的LUT缓冲区
             cl->d_lut_y = clCreateBuffer(cl->context, CL_MEM_READ_ONLY, new_lut_size, NULL, &err);
-            if (err != CL_SUCCESS) {
+            if (err != CL_SUCCESS)
+            {
                 printf("Failed to create LUT Y buffer: %d\n", err);
                 return -1;
             }
 
             cl->d_lut_u = clCreateBuffer(cl->context, CL_MEM_READ_ONLY, new_lut_size, NULL, &err);
-            if (err != CL_SUCCESS) {
+            if (err != CL_SUCCESS)
+            {
                 goto cleanup_lut_y;
             }
 
             cl->d_lut_v = clCreateBuffer(cl->context, CL_MEM_READ_ONLY, new_lut_size, NULL, &err);
-            if (err != CL_SUCCESS) {
+            if (err != CL_SUCCESS)
+            {
                 goto cleanup_lut_u;
             }
         }
 
         // 写入LUT数据
         err = clEnqueueWriteBuffer(cl->queue, cl->d_lut_y, CL_TRUE, 0, new_lut_size, lut->y, 0, NULL, NULL);
-        if (err != CL_SUCCESS) goto cleanup_lut_v;
+        if (err != CL_SUCCESS)
+            goto cleanup_lut_v;
 
         err = clEnqueueWriteBuffer(cl->queue, cl->d_lut_u, CL_TRUE, 0, new_lut_size, lut->u, 0, NULL, NULL);
-        if (err != CL_SUCCESS) goto cleanup_lut_v;
+        if (err != CL_SUCCESS)
+            goto cleanup_lut_v;
 
         err = clEnqueueWriteBuffer(cl->queue, cl->d_lut_v, CL_TRUE, 0, new_lut_size, lut->v, 0, NULL, NULL);
-        if (err != CL_SUCCESS) goto cleanup_lut_v;
+        if (err != CL_SUCCESS)
+            goto cleanup_lut_v;
     }
 
     // 3. 写入温度数据
-    err = clEnqueueWriteBuffer(cl->queue, cl->d_temps, CL_TRUE, 0,
-                              width * height * sizeof(float), temps, 0, NULL, NULL);
-    if (err != CL_SUCCESS) {
+    err = clEnqueueWriteBuffer(cl->queue, cl->d_temps, CL_TRUE, 0, width * height * sizeof(float), temps, 0, NULL, NULL);
+    if (err != CL_SUCCESS)
+    {
         printf("Failed to write temperature data: %d\n", err);
         goto cleanup_lut;
     }
 
     // 4. 写入UV映射表
-    err = clEnqueueWriteBuffer(cl->queue, cl->d_uv_maps, CL_TRUE, 0,
-                              6 * sizeof(uint8_t), uv_maps, 0, NULL, NULL);
-    if (err != CL_SUCCESS) {
+    err = clEnqueueWriteBuffer(cl->queue, cl->d_uv_maps, CL_TRUE, 0, 6 * sizeof(uint8_t), uv_maps, 0, NULL, NULL);
+    if (err != CL_SUCCESS)
+    {
         printf("Failed to write UV maps data: %d\n", err);
         goto cleanup_lut;
     }
@@ -487,12 +505,15 @@ int PseudoCL_ProcessIsotherms(PseudoCL* cl,
     err |= clSetKernelArg(cl->kernel_isotherms, 3, sizeof(float), &scale);
     err |= clSetKernelArg(cl->kernel_isotherms, 4, sizeof(float), &min_val);
 
-    if (lut) {
+    if (lut)
+    {
         err |= clSetKernelArg(cl->kernel_isotherms, 5, sizeof(cl_mem), &cl->d_lut_y);
         err |= clSetKernelArg(cl->kernel_isotherms, 6, sizeof(cl_mem), &cl->d_lut_u);
         err |= clSetKernelArg(cl->kernel_isotherms, 7, sizeof(cl_mem), &cl->d_lut_v);
         err |= clSetKernelArg(cl->kernel_isotherms, 8, sizeof(int), &lut->size);
-    } else {
+    }
+    else
+    {
         // 如果没有LUT，使用NULL
         cl_mem null_mem = NULL;
         err |= clSetKernelArg(cl->kernel_isotherms, 5, sizeof(cl_mem), &null_mem);
@@ -509,7 +530,8 @@ int PseudoCL_ProcessIsotherms(PseudoCL* cl,
     err |= clSetKernelArg(cl->kernel_isotherms, 13, sizeof(float), &threshold_max);
     err |= clSetKernelArg(cl->kernel_isotherms, 14, sizeof(cl_mem), &cl->d_uv_maps);
 
-    if (err != CL_SUCCESS) {
+    if (err != CL_SUCCESS)
+    {
         printf("Failed to set kernel arguments: %d\n", err);
         goto cleanup_lut;
     }
@@ -518,24 +540,24 @@ int PseudoCL_ProcessIsotherms(PseudoCL* cl,
     size_t global_work_size[2] = {((width + 15) / 16) * 16, ((height + 15) / 16) * 16};
     size_t local_work_size[2] = {16, 16};
 
-    err = clEnqueueNDRangeKernel(cl->queue, cl->kernel_isotherms, 2, NULL,
-                                global_work_size, local_work_size, 0, NULL, NULL);
-    if (err != CL_SUCCESS) {
+    err = clEnqueueNDRangeKernel(cl->queue, cl->kernel_isotherms, 2, NULL, global_work_size, local_work_size, 0, NULL, NULL);
+    if (err != CL_SUCCESS)
+    {
         printf("Failed to execute kernel: %d\n", err);
         goto cleanup_lut;
     }
 
     // 7. 读取结果
-    err = clEnqueueReadBuffer(cl->queue, cl->d_y_out, CL_TRUE, 0,
-                             width * height, y_out, 0, NULL, NULL);
-    if (err != CL_SUCCESS) {
+    err = clEnqueueReadBuffer(cl->queue, cl->d_y_out, CL_TRUE, 0, width * height, y_out, 0, NULL, NULL);
+    if (err != CL_SUCCESS)
+    {
         printf("Failed to read Y output: %d\n", err);
         goto cleanup_lut;
     }
 
-    err = clEnqueueReadBuffer(cl->queue, cl->d_uv_out, CL_TRUE, 0,
-                             width * height / 2, uv_out, 0, NULL, NULL);
-    if (err != CL_SUCCESS) {
+    err = clEnqueueReadBuffer(cl->queue, cl->d_uv_out, CL_TRUE, 0, width * height / 2, uv_out, 0, NULL, NULL);
+    if (err != CL_SUCCESS)
+    {
         printf("Failed to read UV output: %d\n", err);
         goto cleanup_lut;
     }
@@ -544,17 +566,20 @@ int PseudoCL_ProcessIsotherms(PseudoCL* cl,
     return 0;
 
 cleanup_lut_v:
-    if (cl->d_lut_v) {
+    if (cl->d_lut_v)
+    {
         clReleaseMemObject(cl->d_lut_v);
         cl->d_lut_v = NULL;
     }
 cleanup_lut_u:
-    if (cl->d_lut_u) {
+    if (cl->d_lut_u)
+    {
         clReleaseMemObject(cl->d_lut_u);
         cl->d_lut_u = NULL;
     }
 cleanup_lut_y:
-    if (cl->d_lut_y) {
+    if (cl->d_lut_y)
+    {
         clReleaseMemObject(cl->d_lut_y);
         cl->d_lut_y = NULL;
     }
