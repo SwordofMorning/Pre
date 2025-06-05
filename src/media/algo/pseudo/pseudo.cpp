@@ -200,7 +200,7 @@ void Pseudo::Pseudo_NV12(uint16_t* input, uint8_t* y_out, uint8_t* uv_out, int w
     // clang-format on
 }
 
-void Pseudo::Pseudo_NV12_CL(uint16_t* input, uint8_t* y_out, uint8_t* uv_out, int width, int height)
+void Pseudo::Pseudo_NV12_CL(uint16_t* input, uint8_t* y_out, uint8_t* uv_out, int width, int height, float cb_min, float cb_max)
 {
     PAM_mapper.UpdateRange(input, width, height);
     float scale = PAM_mapper.GetScale();
@@ -211,20 +211,15 @@ void Pseudo::Pseudo_NV12_CL(uint16_t* input, uint8_t* y_out, uint8_t* uv_out, in
     if (usr.pseudo != PSEUDO_BLACK_HOT && usr.pseudo != PSEUDO_WHITE_HOT)
         lut = Get_LUT(usr.pseudo);
 
-    // Color Bar Scale
-    // @todo
-    float scale_min = 0.8f;
-    float scale_max = 0.9f;
-
     // clang-format off
     if (PseudoCL_ProcessNV12(&pseudo_cl, input, y_out, uv_out, 
                             width, height, usr.pseudo, lut, 
-                            scale, min_val, scale_min, scale_max) != 0)
+                            scale, min_val, cb_min, cb_max) != 0)
         litelog.log.warning("PseudoCL_ProcessNV12 processing failed\n");
     // clang-format on
 }
 
-void Pseudo::operator()(uint16_t* input, uint8_t* y_out, uint8_t* uv_out, int width, int height)
+void Pseudo::operator()(uint16_t* input, uint8_t* y_out, uint8_t* uv_out, int width, int height, float cb_min, float cb_max)
 {
-    return this->Pseudo_NV12_CL(input, y_out, uv_out, width, height);
+    return this->Pseudo_NV12_CL(input, y_out, uv_out, width, height, cb_min, cb_max);
 }

@@ -11,6 +11,22 @@ int Process_One_Frame()
 {
     pthread_mutex_lock(&usr.mutex);
 
+    /* =================================== */
+    /* ===== Section 2 : Temperature ===== */
+    /* =================================== */
+
+#if __SHOW_TIME_CONSUME__
+    struct timespec start_temp, end_temp;
+    clock_gettime(CLOCK_MONOTONIC, &start_temp);
+#endif
+
+    tm.Quadratic(algo_in, shm_out_float, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height, usr.tm.quadratic.a, usr.tm.quadratic.b, usr.tm.quadratic.c);
+
+#if __SHOW_TIME_CONSUME__
+    clock_gettime(CLOCK_MONOTONIC, &end_temp);
+    double temp_time_ms = ((end_temp.tv_sec - start_temp.tv_sec) * 1e9 + (end_temp.tv_nsec - start_temp.tv_nsec)) / 1e6;
+#endif
+
     /* ============================= */
     /* ===== Section 1 : Color ===== */
     /* ============================= */
@@ -43,9 +59,9 @@ int Process_One_Frame()
     /* ----- Par 2 : Pseudo Color ----- */
 
     if (usr.gas_enhancement_software)
-        pseudo(g_diff_result, y, uv, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height);
+        pseudo(g_diff_result, y, uv, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height, 0.8f, 1.0f);
     else
-        pseudo(algo_in, y, uv, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height);
+        pseudo(algo_in, y, uv, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height, 0.8f, 1.0f);
 
 #if __SHOW_TIME_CONSUME__
     clock_gettime(CLOCK_MONOTONIC, &end_pseudo);
@@ -63,21 +79,9 @@ int Process_One_Frame()
 #if __SHOW_TIME_CONSUME__
     clock_gettime(CLOCK_MONOTONIC, &end_filter);
     double filter_time_ms = ((end_filter.tv_sec - start_filter.tv_sec) * 1e9 + (end_filter.tv_nsec - start_filter.tv_nsec)) / 1e6;
-
-    struct timespec start_temp, end_temp;
-    clock_gettime(CLOCK_MONOTONIC, &start_temp);
 #endif
 
-    /* =================================== */
-    /* ===== Section 2 : Temperature ===== */
-    /* =================================== */
-
-    // tm.Exp(algo_in, shm_out_float, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height, usr.tm.ln.a, usr.tm.ln.b, usr.tm.ln.epsilon);
-    tm.Quadratic(algo_in, shm_out_float, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height, usr.tm.quadratic.a, usr.tm.quadratic.b, usr.tm.quadratic.c);
-
 #if __SHOW_TIME_CONSUME__
-    clock_gettime(CLOCK_MONOTONIC, &end_temp);
-    double temp_time_ms = ((end_temp.tv_sec - start_temp.tv_sec) * 1e9 + (end_temp.tv_nsec - start_temp.tv_nsec)) / 1e6;
     double total_time_ms = diff_time_ms + pseudo_time_ms + pseudo_time_ms + temp_time_ms;
     // clang-format off
     printf("Processing Time - Diff: %.2f, Pseudo: %.2f, Filter: %.2f, Temp: %.2f, Total: %.2f ms\n", 
