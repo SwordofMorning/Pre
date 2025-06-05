@@ -43,14 +43,17 @@ void Listen::operator()()
             JWrap jw(std::string{m_mqtt_handle->received_message, static_cast<size_t>(m_mqtt_handle->received_message_len)});
 
             int retval = 0;
-            pthread_mutex_lock(&usr.mutex);
             switch (jw.GetCodeEnum())
             {
             case JWrap::CODE_ENUM::PSEUDO:
+                pthread_mutex_lock(&usr.mutex);
                 retval = Set_Pseudo(jw.GetValue());
+                pthread_mutex_unlock(&usr.mutex);
                 break;
             case JWrap::CODE_ENUM::GAS_ENHANCEMENT:
+                pthread_mutex_lock(&usr.mutex);
                 retval = Set_Gas_Enhancement(jw.GetValue());
+                pthread_mutex_unlock(&usr.mutex);
                 break;
             case JWrap::CODE_ENUM::AUTOFOCUS_IR:
                 retval = Set_IR_Focus(jw.GetValue());
@@ -60,7 +63,6 @@ void Listen::operator()()
                 retval = Controller::ErrorCode::INVALID_CODE;
                 break;
             }
-            pthread_mutex_unlock(&usr.mutex);
 
             mqtt_publish(m_mqtt_handle, const_cast<char*>(m_topic.c_str()), const_cast<char*>(jw.CreateReturnJson(std::to_string(retval)).c_str()), QOS_EXACTLY_ONCE);
         }

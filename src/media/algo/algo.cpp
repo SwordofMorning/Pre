@@ -59,9 +59,9 @@ int Process_One_Frame()
     /* ----- Par 2 : Pseudo Color ----- */
 
     if (usr.gas_enhancement_software)
-        pseudo(g_diff_result, y, uv, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height, 0.8f, 1.0f, shm_out_float);
+        pseudo(g_diff_result, y, uv, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height, shm_out_float);
     else
-        pseudo(algo_in, y, uv, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height, 0.8f, 1.0f, shm_out_float);
+        pseudo(algo_in, y, uv, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height, shm_out_float);
 
 #if __SHOW_TIME_CONSUME__
     clock_gettime(CLOCK_MONOTONIC, &end_pseudo);

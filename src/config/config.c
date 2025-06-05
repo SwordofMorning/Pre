@@ -74,11 +74,21 @@ static void Init_Log()
 static void Init_User_Config()
 {
     pthread_mutex_init(&usr.mutex, NULL);
+
     usr.pseudo = PSEUDO_IRONBOW_FORWARD;
     usr.gas_enhancement = GAS_ENHANCEMENT_NONE;
     usr.in_focus = false;
     usr.mean_filter = false;
     usr.gas_enhancement_software = false;
+
+    usr.color_bar_max = 0.0f;
+    usr.color_bar_max = 1.0f;
+
+    usr.isothermal = false;
+    usr.isothermal_threshold_max = 40.0f;
+    usr.isothermal_threshold_min = 30.0f;
+    uint8_t uv_map[6] = {0, 0, 128, 128, 255, 255};
+    memcpy(usr.isothermal_uv_map, uv_map, sizeof(usr.isothermal_uv_map));
 }
 
 static void trim(char* str)

@@ -101,13 +101,35 @@ struct TempParams
 
 struct UserConfig
 {
+    // mutex of UserConfig
     pthread_mutex_t mutex;
+
+    // @see: enum PSEUDO
     int pseudo;
+    // @see: enum GAS_ENHANCEMENT
     int gas_enhancement;
+    // @see: in_focus or not, avoid repeated focus
     bool in_focus;
+    // mean filter enable or not
     bool mean_filter;
+    // software GE enable or not
     bool gas_enhancement_software;
+    // temperature measurements
     struct TempParams tm;
+
+    // Color Bar max, percentage [0, 1]
+    float color_bar_max;
+    // Color Bar min, percentage [0, 1]
+    float color_bar_min;
+
+    // ture, enable isothermal mode; otherwise use normal pseudo mode
+    bool isothermal;
+    // isothermal threshold max, float tempreatures
+    float isothermal_threshold_max;
+    // isothermal threshold min, float tempreatures
+    float isothermal_threshold_min;
+    // isothermal uv map, i.e. lt[u][v], med[u][v], gt[u][v], 3 groups of uv
+    uint8_t isothermal_uv_map[6];
 };
 extern struct UserConfig usr;
 
