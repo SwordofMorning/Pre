@@ -24,22 +24,9 @@ pthread_mutex_t v4l2_ir_dvp_share_buffer_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t v4l2_ir_dvp_share_buffer_cond = PTHREAD_COND_INITIALIZER;
 int v4l2_ir_dvp_share_buffer_updated;
 
-/* ----- V4L2 CSI ---- */
-
-int v4l2_vis_csi_fd;
-int v4l2_vis_csi_nplanes;
-int v4l2_vis_csi_buffer_global_index;
-int v4l2_vis_csi_buffer_global_length;
-struct V4L2_VIS_CSI_Buffer* v4l2_vis_csi_buffer_global;
-
-int v4l2_vis_csi_mode;
-int v4l2_vis_csi_width;
-int v4l2_vis_csi_height;
-
 /* ----- SHM ---- */
 
 struct FrameSync16 frame_sync_dvp;
-struct FrameSync8 frame_sync_csi;
 
 // Buffer
 uint16_t* algo_in = NULL;
@@ -50,16 +37,11 @@ uint8_t* shm_out_algo = NULL;
 // ID
 int shmid_yuv = -1;
 int shmid_float = -1;
-int shmid_csi = -1;
-int shmid_algo = -1;
 int semid_vo = -1;
-int semid_ab = -1;
 
 // Pointer
 uint8_t* shm_yuv = NULL;
 float* shm_float = NULL;
-uint8_t* shm_vis = NULL;
-uint8_t* shm_algo = NULL;
 
 /* ----- User Config ---- */
 
@@ -68,6 +50,12 @@ struct UserConfig usr;
 /* ========================================================================================== */
 /* ======================================== Function ======================================== */
 /* ========================================================================================== */
+
+void EXIT_ERROR(const char* error_str)
+{
+    printf("%s", error_str);
+    exit(EXIT_FAILURE);
+}
 
 static void Init_Log()
 {
@@ -85,11 +73,22 @@ static void Init_Log()
 
 static void Init_User_Config()
 {
+    pthread_mutex_init(&usr.mutex, NULL);
+
     usr.pseudo = PSEUDO_IRONBOW_FORWARD;
     usr.gas_enhancement = GAS_ENHANCEMENT_NONE;
     usr.in_focus = false;
     usr.mean_filter = false;
     usr.gas_enhancement_software = false;
+
+    usr.color_bar_max = 0.0f;
+    usr.color_bar_max = 1.0f;
+
+    usr.isothermal = false;
+    usr.isothermal_threshold_max = 40.0f;
+    usr.isothermal_threshold_min = 30.0f;
+    uint8_t uv_map[6] = {0, 0, 128, 128, 255, 255};
+    memcpy(usr.isothermal_uv_map, uv_map, sizeof(usr.isothermal_uv_map));
 }
 
 static void trim(char* str)
@@ -250,91 +249,44 @@ static void Init_DVP()
     Init_Frame_Sync_DVP();
 }
 
-static void Init_Frame_Sync_CSI()
-{
-    pthread_mutex_init(&frame_sync_csi.mutex, NULL);
-    pthread_cond_init(&frame_sync_csi.producer_cond, NULL);
-    pthread_cond_init(&frame_sync_csi.consumer_cond, NULL);
-    frame_sync_csi.write_pos = 0;
-    frame_sync_csi.read_pos = 0;
-    frame_sync_csi.frame_count = 0;
-    frame_sync_csi.buffer_full = false;
-    gettimeofday(&frame_sync_csi.last_frame_time, NULL);
-
-    for (int i = 0; i < FRAME_SYNC_BUFFER_SIZE; i++)
-    {
-        frame_sync_csi.frame_buffer[i] = (uint8_t*)malloc(v4l2_vis_csi_width * v4l2_vis_csi_height * sizeof(uint8_t) * V4L2_VIS_CSI_PIX_FMT_SCALE);
-    }
-}
-
-static void Init_CIS()
-{
-    /* Without any action  */
-    v4l2_vis_csi_fd = 0;
-    v4l2_vis_csi_nplanes = 0;
-    v4l2_vis_csi_buffer_global_index = 0;
-    v4l2_vis_csi_buffer_global_length = 0;
-
-    /* Set default mode */
-#if (VISIBLE_CAMERA_MODE == VISIBLE_CAMERA_MODE_HGD_IMX335)
-    v4l2_vis_csi_mode = V4L2_VIS_CSI_MODE_HGD_2592x1944at30;
-#elif (VISIBLE_CAMERA_MODE == VISIBLE_CAMERA_MODE_NGD)
-    v4l2_vis_csi_mode = V4L2_VIS_CSI_MODE_NGD_2688x1520at25;
-#endif
-
-    if (v4l2_vis_csi_mode == V4L2_VIS_CSI_MODE_HGD_2592x1944at30)
-    {
-        v4l2_vis_csi_width = V4L2_VIS_CSI_CAPTURE_WIDTH_2592;
-        v4l2_vis_csi_height = V4L2_VIS_CSI_CAPTURE_HEIGHT_1944;
-    }
-    else if (v4l2_vis_csi_mode == V4L2_VIS_CSI_MODE_NGD_2688x1520at25)
-    {
-        v4l2_vis_csi_width = V4L2_VIS_CSI_CAPTURE_WIDTH_2688;
-        v4l2_vis_csi_height = V4L2_VIS_CSI_CAPTURE_HEIGHT_1520;
-    }
-
-    Init_Frame_Sync_CSI();
-}
-
 static int Init_LUTs()
 {
-    if (Init_LUT(LUT_IRONBOW_FORWARD, "/root/app/pseudo/ironbow_reverse.bin") < 0)
+    if (Init_LUT(LUT_IRONBOW_FORWARD, LUT_IRONBOW_FORWARD_PATH) < 0)
     {
-        return -1;
+        EXIT_ERROR("Failed to initialize LUT_IRONBOW_FORWARD\n");
     }
-    if (Init_LUT(LUT_IRONBOW_REVERSE, "/root/app/pseudo/ironbow_forward.bin") < 0)
+    if (Init_LUT(LUT_IRONBOW_REVERSE, LUT_IRONBOW_REVERSE_PATH) < 0)
     {
-        return -1;
+        EXIT_ERROR("Failed to initialize LUT_IRONBOW_FORWARD\n");
     }
-    if (Init_LUT(LUT_LAVA_FORWARD, "/root/app/pseudo/lava_reverse.bin") < 0)
+    if (Init_LUT(LUT_LAVA_FORWARD, LUT_LAVA_FORWARD_PATH) < 0)
     {
-        return -1;
+        EXIT_ERROR("Failed to initialize LUT_IRONBOW_FORWARD\n");
     }
-    if (Init_LUT(LUT_LAVA_REVERSE, "/root/app/pseudo/lava_forward.bin") < 0)
+    if (Init_LUT(LUT_LAVA_REVERSE, LUT_LAVA_REVERSE_PATH) < 0)
     {
-        return -1;
+        EXIT_ERROR("Failed to initialize LUT_IRONBOW_FORWARD\n");
     }
-    if (Init_LUT(LUT_RAINBOW_FORWARD, "/root/app/pseudo/rainbow_reverse.bin") < 0)
+    if (Init_LUT(LUT_RAINBOW_FORWARD, LUT_RAINBOW_FORWARD_PATH) < 0)
     {
-        return -1;
+        EXIT_ERROR("Failed to initialize LUT_IRONBOW_FORWARD\n");
     }
-    if (Init_LUT(LUT_RAINBOW_REVERSE, "/root/app/pseudo/rainbow_forward.bin") < 0)
+    if (Init_LUT(LUT_RAINBOW_REVERSE, LUT_RAINBOW_REVERSE_PATH) < 0)
     {
-        return -1;
+        EXIT_ERROR("Failed to initialize LUT_IRONBOW_FORWARD\n");
     }
-    if (Init_LUT(LUT_RAINBOWHC_FORWARD, "/root/app/pseudo/rainbowhc_reverse.bin") < 0)
+    if (Init_LUT(LUT_RAINBOWHC_FORWARD, LUT_RAINBOWHC_FORWARD_PATH) < 0)
     {
-        return -1;
+        EXIT_ERROR("Failed to initialize LUT_IRONBOW_FORWARD\n");
     }
-    if (Init_LUT(LUT_RAINBOWHC_REVERSE, "/root/app/pseudo/rainbowhc_forward.bin") < 0)
+    if (Init_LUT(LUT_RAINBOWHC_REVERSE, LUT_RAINBOWHC_REVERSE_PATH) < 0)
     {
-        return -1;
+        EXIT_ERROR("Failed to initialize LUT_IRONBOW_FORWARD\n");
     }
 
     if (!PseudoCL_Init(&pseudo_cl, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height))
     {
-        printf("Failed to initialize OpenCL\n");
-        return -1;
+        EXIT_ERROR("Failed to initialize OpenCL\n");
     }
 
     return 0;
@@ -344,26 +296,22 @@ static int Init_CL()
 {
     if (!PseudoCL_Init(&pseudo_cl, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height))
     {
-        printf("Failed to initialize PseudoCL_Init\n");
-        exit(EXIT_FAILURE);
+        EXIT_ERROR("Failed to initialize PseudoCL_Init\n");
     }
 
     if (!FilterCL_Init(&filter_cl, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height))
     {
-        printf("Failed to initialize FilterCL_Init\n");
-        exit(EXIT_FAILURE);
+        EXIT_ERROR("Failed to initialize FilterCL_Init\n");
     }
 
     if (!DiffCL_Init(&diff_cl, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height))
     {
-        printf("Failed to initialize DiffCL_Init\n");
-        exit(EXIT_FAILURE);
+        EXIT_ERROR("Failed to initialize DiffCL_Init\n");
     }
 
     if (!TMCL_Init(&tm_cl, v4l2_ir_dvp_valid_width, v4l2_ir_dvp_valid_height))
     {
-        printf("Failed to initialize TMCL_Init\n");
-        exit(EXIT_FAILURE);
+        EXIT_ERROR("Failed to initialize TMCL_Init\n");
     }
 }
 
@@ -375,9 +323,8 @@ void Config_Init()
 {
     Init_Log();
     Init_User_Config();
-    Read_Temp_Params("tm_params.ini");
+    Read_Temp_Params(TM_PARAMS_PATH);
     Init_DVP();
-    Init_CIS();
     Init_LUTs();
     Init_CL();
 }

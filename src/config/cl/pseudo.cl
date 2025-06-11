@@ -9,21 +9,37 @@ __kernel void color_map_nv12(
     __global uchar* lut_v,
     int lut_size,
     int width,
-    int height)
+    int height,
+    float scale_min,    // 新增参数
+    float scale_max)    // 新增参数
 {
     int x = get_global_id(0);
     int y = get_global_id(1);
     
-    // 边界检查
     if(x >= width || y >= height)
         return;
         
     int idx = y * width + x;
     float mapped = (input[idx] - min_val) * scale;
     mapped = clamp(mapped, 0.0f, 255.0f);
-    int color_idx = (int)(mapped * (lut_size - 1) / 255.0f);
     
-    // 确保color_idx在有效范围内
+    // 新的映射逻辑
+    float lut_min = scale_min * lut_size;
+    float lut_max = scale_max * lut_size;
+    
+    // 将[0,255]映射到[lut_min,lut_max]
+    float color_idx_f = (mapped * (lut_size - 1) / 255.0f);
+    
+    int color_idx;
+    if(color_idx_f <= lut_min) {
+        color_idx = 0;
+    } else if(color_idx_f >= lut_max) {
+        color_idx = lut_size - 1;
+    } else {
+        // 将[lut_min,lut_max]重新映射到[0,lut_size-1]
+        color_idx = (int)((color_idx_f - lut_min) * (lut_size - 1) / (lut_max - lut_min));
+    }
+    
     color_idx = clamp(color_idx, 0, lut_size - 1);
     
     // 写入Y分量
@@ -31,22 +47,31 @@ __kernel void color_map_nv12(
     
     // UV处理
     if((x < width/2) && (y < height/2)) {
-        // 计算UV索引
         int uv_idx = y * width + x * 2;
         
-        // 计算2x2块的平均值
         uint sum = 0;
         for(int di = 0; di < 2; di++) {
             for(int dj = 0; dj < 2; dj++) {
                 sum += input[(y*2+di) * width + (x*2+dj)];
             }
         }
+        
         float avg_mapped = ((sum / 4) - min_val) * scale;
         avg_mapped = clamp(avg_mapped, 0.0f, 255.0f);
-        int uv_color_idx = (int)(avg_mapped * (lut_size - 1) / 255.0f);
+        
+        float uv_color_idx_f = (avg_mapped * (lut_size - 1) / 255.0f);
+        
+        int uv_color_idx;
+        if(uv_color_idx_f <= lut_min) {
+            uv_color_idx = 0;
+        } else if(uv_color_idx_f >= lut_max) {
+            uv_color_idx = lut_size - 1;
+        } else {
+            uv_color_idx = (int)((uv_color_idx_f - lut_min) * (lut_size - 1) / (lut_max - lut_min));
+        }
+        
         uv_color_idx = clamp(uv_color_idx, 0, lut_size - 1);
         
-        // 写入UV分量
         uv_out[uv_idx] = lut_u[uv_color_idx];
         uv_out[uv_idx + 1] = lut_v[uv_color_idx];
     }
@@ -109,5 +134,63 @@ __kernel void white_hot_nv12(
         int uv_idx = y * width + x * 2;
         uv_out[uv_idx] = 128;     // U
         uv_out[uv_idx + 1] = 128; // V
+    }
+}
+
+__kernel void color_map_isotherms(
+    __global ushort* input,
+    __global uchar* y_out,
+    __global uchar* uv_out,
+    float scale,
+    float min_val,
+    __global uchar* lut_y,
+    __global uchar* lut_u,
+    __global uchar* lut_v,
+    int lut_size,
+    int width,
+    int height,
+    __global float* temps,          // 温度矩阵
+    float threshold_min,            // 低温阈值
+    float threshold_max,            // 高温阈值
+    __global uchar* uv_maps)        // UV映射表[3][2]
+{
+    int x = get_global_id(0);
+    int y = get_global_id(1);
+    
+    if(x >= width || y >= height)
+        return;
+        
+    int idx = y * width + x;
+    
+    // Y分量处理（与原来相同）
+    float mapped = (input[idx] - min_val) * scale;
+    mapped = clamp(mapped, 0.0f, 255.0f);
+    float color_idx_f = (mapped * (lut_size - 1) / 255.0f);
+    int color_idx = (int)color_idx_f;
+    color_idx = clamp(color_idx, 0, lut_size - 1);
+    y_out[idx] = lut_y[color_idx];
+    
+    // UV处理
+    if((x < width/2) && (y < height/2)) {
+        int uv_idx = y * width + x * 2;
+        
+        // 计算2x2块的平均温度
+        float avg_temp = 0.0f;
+        for(int di = 0; di < 2; di++) {
+            for(int dj = 0; dj < 2; dj++) {
+                avg_temp += temps[(y*2+di) * width + (x*2+dj)];
+            }
+        }
+        avg_temp *= 0.25f;  // 除以4
+        
+        // 确定mask
+        int mask = 0;
+        if(avg_temp < threshold_min) mask = -1;
+        else if(avg_temp > threshold_max) mask = 1;
+        
+        // 获取UV值 (mask + 1) * 2 获取对应的UV对
+        int uv_idx_map = (mask + 1) * 2;
+        uv_out[uv_idx] = uv_maps[uv_idx_map];        // U
+        uv_out[uv_idx + 1] = uv_maps[uv_idx_map+1];  // V
     }
 }

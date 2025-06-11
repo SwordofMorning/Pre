@@ -46,10 +46,14 @@ void Listen::operator()()
             switch (jw.GetCodeEnum())
             {
             case JWrap::CODE_ENUM::PSEUDO:
+                pthread_mutex_lock(&usr.mutex);
                 retval = Set_Pseudo(jw.GetValue());
+                pthread_mutex_unlock(&usr.mutex);
                 break;
             case JWrap::CODE_ENUM::GAS_ENHANCEMENT:
+                pthread_mutex_lock(&usr.mutex);
                 retval = Set_Gas_Enhancement(jw.GetValue());
+                pthread_mutex_unlock(&usr.mutex);
                 break;
             case JWrap::CODE_ENUM::AUTOFOCUS_IR:
                 retval = Set_IR_Focus(jw.GetValue());

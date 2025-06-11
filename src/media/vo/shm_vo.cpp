@@ -94,20 +94,6 @@ static int SHM_VO_Send()
     memcpy(shm_yuv, shm_out_yuv, SHM_OUT_YUV_SIZE);
     memcpy(shm_float, shm_out_float, SHM_OUT_FLOAT_SIZE);
 
-    // Copy CSI data
-    pthread_mutex_lock(&frame_sync_csi.mutex);
-    if (frame_sync_csi.frame_count > 0)
-    {
-        memcpy(shm_vis, frame_sync_csi.frame_buffer[frame_sync_csi.read_pos], SHM_OUT_CSI_SIZE);
-
-        frame_sync_csi.read_pos = (frame_sync_csi.read_pos + 1) % FRAME_SYNC_BUFFER_SIZE;
-        frame_sync_csi.frame_count--;
-        frame_sync_csi.buffer_full = false;
-
-        pthread_cond_signal(&frame_sync_csi.producer_cond);
-    }
-    pthread_mutex_unlock(&frame_sync_csi.mutex);
-
     // Release signal
     sem_op.sem_num = 0;
     sem_op.sem_op = 1;
@@ -139,8 +125,7 @@ int SHM_VO_Init()
     // Create SHM buffer
     shmid_yuv = shmget(VO_YUV_KEY, SHM_OUT_YUV_SIZE, IPC_CREAT | 0666);
     shmid_float = shmget(VO_FLOAT_KEY, SHM_OUT_FLOAT_SIZE, IPC_CREAT | 0666);
-    shmid_csi = shmget(VO_CSI_KEY, SHM_OUT_CSI_SIZE, IPC_CREAT | 0666);
-    if (shmid_yuv < 0 || shmid_float < 0 || shmid_csi < 0)
+    if (shmid_yuv < 0 || shmid_float < 0)
     {
         litelog.log.fatal("VO Create SHM error.");
         perror("shmget");
@@ -150,8 +135,7 @@ int SHM_VO_Init()
     // Mapping shared memory
     shm_yuv = (uint8_t*)shmat(shmid_yuv, NULL, 0);
     shm_float = (float*)shmat(shmid_float, NULL, 0);
-    shm_vis = (uint8_t*)shmat(shmid_csi, NULL, 0);
-    if (shm_yuv == (void*)-1 || shm_float == (void*)-1 || shm_vis == (void*)-1)
+    if (shm_yuv == (void*)-1 || shm_float == (void*)-1)
     {
         litelog.log.fatal("shmat error.");
         perror("shmat");
@@ -229,16 +213,12 @@ void SHM_VO_Exit()
         shmdt(shm_yuv);
     if (shm_float != (void*)-1)
         shmdt(shm_float);
-    if (shm_vis != (void*)-1)
-        shmdt(shm_vis);
 
     // Delete SHM
     if (shmid_yuv >= 0)
         shmctl(shmid_yuv, IPC_RMID, NULL);
     if (shmid_float >= 0)
         shmctl(shmid_float, IPC_RMID, NULL);
-    if (shmid_csi >= 0)
-        shmctl(shmid_csi, IPC_RMID, NULL);
 
     // Delete signal
     if (semid_vo >= 0)

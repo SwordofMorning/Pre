@@ -28,7 +28,7 @@ bool TMCL_Init(TMCL* cl, int width, int height)
         goto cleanup_context;
 
     // 读取并创建程序
-    const char* source = read_kernel_source("/root/app/cl/tm.cl");
+    const char* source = read_kernel_source(CL_TM_PATH);
     if (!source)
         goto cleanup_queue;
 

@@ -31,15 +31,11 @@
 #define VO_YUV_KEY 0x0011
 // Float Buffer, used for temperature data.
 #define VO_FLOAT_KEY 0x0012
-// YUV Buffer, used for visible image data.
-#define VO_CSI_KEY 0x0013
 
 // YUV420SP | NV12, for IR data.
 #define SHM_OUT_YUV_SIZE (v4l2_ir_dvp_valid_width * v4l2_ir_dvp_valid_height * 3 / 2)
 // Float, for Temp data.
 #define SHM_OUT_FLOAT_SIZE (v4l2_ir_dvp_valid_width * v4l2_ir_dvp_valid_height * sizeof(float))
-// YUV420SP | NV12, for Vis data.
-#define SHM_OUT_CSI_SIZE (v4l2_vis_csi_width * v4l2_vis_csi_height * V4L2_VIS_CSI_PIX_FMT_SCALE)
 
 /**
  * @brief Init SHM, create shm and allocate buffer.
